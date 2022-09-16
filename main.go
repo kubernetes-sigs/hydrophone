@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	c := client.NewClient()
-	c.ClientSet = service.Init()
+	client := client.NewClient()
+	client.ClientSet = service.Init()
 
-	
+	client.CheckForE2ELogs()
 }
