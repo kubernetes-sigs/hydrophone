@@ -6,6 +6,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+const (
+	NAMESPACE = "conformance"
+	POD_NAME  = "e2e-conformance-test"
+)
+
 var (
 	ctx = context.TODO()
 )
