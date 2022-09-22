@@ -2,6 +2,7 @@ package client
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
@@ -9,8 +10,10 @@ import (
 )
 
 // List pod resource with the given namespace
-func GetPodLogs(clientset *kubernetes.Clientset) error {
-	podLogOpts := v1.PodLogOptions{}
+func getPodLogs(cancelCtx context.Context, clientset *kubernetes.Clientset) error {
+	podLogOpts := v1.PodLogOptions{
+		Follow: true,
+	}
 
 	req := clientset.CoreV1().Pods(NAMESPACE).GetLogs(POD_NAME, &podLogOpts)
 	podLogs, err := req.Stream(ctx)
@@ -20,10 +23,16 @@ func GetPodLogs(clientset *kubernetes.Clientset) error {
 	defer podLogs.Close()
 
 	reader := bufio.NewScanner(podLogs)
+
 	for {
-		for reader.Scan() {
-			line := reader.Text()
-			fmt.Println(line)
+		select {
+		case <-cancelCtx.Done():
+			return nil
+		default:
+			for reader.Scan() {
+				line := reader.Text()
+				fmt.Println(line)
+			}
 		}
 	}
 }
