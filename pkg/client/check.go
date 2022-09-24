@@ -3,8 +3,11 @@ package client
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
+	"github.com/dims/k8s-run-e2e/pkg/service"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
@@ -21,7 +24,13 @@ func (c *Client) CheckForE2ELogs() {
 	informerFactory.Start(wait.NeverStop)
 	informerFactory.WaitForCacheSync(wait.NeverStop)
 
-	c.getLogs()
+	for {
+		pod, _ := podInformer.Lister().Pods(service.Namespace).Get(service.PodName)
+		if pod.Status.Phase == v1.PodRunning {
+			c.getLogs()
+			break
+		}
+	}
 }
 
 func (c *Client) getLogs() {
