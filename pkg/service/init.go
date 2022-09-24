@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -46,7 +47,7 @@ func Init() *kubernetes.Clientset {
 	return clientset
 }
 
-func RunE2E(clientset *kubernetes.Clientset) {
+func RunE2E(clientset *kubernetes.Clientset, focus string) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "conformance",
@@ -118,7 +119,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 					Env: []v1.EnvVar{
 						{
 							Name:  "E2E_FOCUS",
-							Value: "", // TODO
+							Value: fmt.Sprintf("\\[%s\\]", focus),
 						},
 						{
 							Name:  "E2E_SKIP",
