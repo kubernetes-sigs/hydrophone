@@ -9,14 +9,11 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-)
-
-const (
-	container_image = "registry.k8s.io/conformance-amd64:v1.25.0"
 )
 
 var (
@@ -50,7 +47,7 @@ func Init() *kubernetes.Clientset {
 func RunE2E(clientset *kubernetes.Clientset, focus string) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "conformance",
+			Name: Namespace,
 		},
 	}
 
@@ -59,7 +56,7 @@ func RunE2E(clientset *kubernetes.Clientset, focus string) {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name:      "conformance-serviceaccount",
+			Name:      ServiceAccountName,
 			Namespace: "conformance",
 		},
 	}
@@ -69,7 +66,7 @@ func RunE2E(clientset *kubernetes.Clientset, focus string) {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name: "conformance-serviceaccount",
+			Name: ClusterRoleName,
 		},
 		Rules: []rbac.PolicyRule{
 			{
@@ -89,7 +86,7 @@ func RunE2E(clientset *kubernetes.Clientset, focus string) {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name: "conformance-serviceaccount-role",
+			Name: ClusterRoleBindingName,
 		},
 		RoleRef: rbac.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
@@ -114,7 +111,7 @@ func RunE2E(clientset *kubernetes.Clientset, focus string) {
 			Containers: []v1.Container{
 				{
 					Name:            "conformance-container",
-					Image:           container_image,
+					Image:           containerImage,
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
 						{
@@ -190,4 +187,56 @@ func RunE2E(clientset *kubernetes.Clientset, focus string) {
 		log.Fatal(err)
 	}
 	log.Printf("pod created %s\n", pod.Name)
+}
+
+func Cleanup(clientset *kubernetes.Clientset) {
+	err := clientset.CoreV1().Pods(Namespace).Delete(ctx, PodName, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			log.Printf("pod %s doesn't exist\n", PodName)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("pod deleted %s\n", PodName)
+
+	err = clientset.RbacV1().ClusterRoleBindings().Delete(ctx, ClusterRoleBindingName, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			log.Printf("clusterrolebinding %s doesn't exist\n", ClusterRoleBindingName)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("clusterrolebinding deleted %s\n", ClusterRoleBindingName)
+
+	err = clientset.RbacV1().ClusterRoles().Delete(ctx, ClusterRoleName, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			log.Printf("clusterrole %s doesn't exist\n", ClusterRoleName)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("clusterrole deleted %s\n", ClusterRoleName)
+
+	err = clientset.CoreV1().ServiceAccounts(Namespace).Delete(ctx, ServiceAccountName, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			log.Printf("serviceaccount %s doesn't exist\n", ServiceAccountName)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("serviceaccount deleted %s\n", ServiceAccountName)
+
+	err = clientset.CoreV1().Namespaces().Delete(ctx, Namespace, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			log.Printf("namespace %s doesn't exist\n", Namespace)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("namespace deleted %s\n", Namespace)
 }

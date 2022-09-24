@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/dims/k8s-run-e2e/pkg/service"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -15,7 +16,7 @@ func getPodLogs(cancelCtx context.Context, clientset *kubernetes.Clientset) erro
 		Follow: true,
 	}
 
-	req := clientset.CoreV1().Pods(NAMESPACE).GetLogs(POD_NAME, &podLogOpts)
+	req := clientset.CoreV1().Pods(service.Namespace).GetLogs(service.PodName, &podLogOpts)
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		return err
@@ -24,15 +25,9 @@ func getPodLogs(cancelCtx context.Context, clientset *kubernetes.Clientset) erro
 
 	reader := bufio.NewScanner(podLogs)
 
-	for {
-		select {
-		case <-cancelCtx.Done():
-			return nil
-		default:
-			for reader.Scan() {
-				line := reader.Text()
-				fmt.Println(line)
-			}
-		}
+	for reader.Scan() {
+		line := reader.Text()
+		fmt.Println(line)
 	}
+	return nil
 }
