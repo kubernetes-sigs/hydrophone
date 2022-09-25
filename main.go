@@ -11,6 +11,6 @@ func main() {
 
 	cfg := service.InitArgs()
 	service.RunE2E(client.ClientSet, cfg.Focus)
-
-	client.CheckForE2ELogs()
+	client.CheckForE2ELogs(cfg.Output)
+	service.Cleanup(client.ClientSet)
 }
