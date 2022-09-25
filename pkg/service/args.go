@@ -2,7 +2,6 @@ package service
 
 import (
 	"flag"
-	"fmt"
 )
 
 // ArgConfig stores the argument passed when running the program
@@ -22,8 +21,6 @@ func InitArgs() ArgConfig {
 	flag.StringVar(&cfg.Output, "output", "pod_logs", "output lets people get the logs of the pod in a directory")
 
 	flag.Parse()
-
-	fmt.Println(cfg)
 
 	return cfg
 }
