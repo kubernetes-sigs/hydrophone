@@ -2,8 +2,6 @@ package client
 
 import (
 	"bufio"
-	"context"
-	"fmt"
 
 	"github.com/dims/k8s-run-e2e/pkg/service"
 	v1 "k8s.io/api/core/v1"
@@ -11,7 +9,7 @@ import (
 )
 
 // List pod resource with the given namespace
-func getPodLogs(cancelCtx context.Context, clientset *kubernetes.Clientset) error {
+func getPodLogs(clientset *kubernetes.Clientset, stream streamLogs) {
 	podLogOpts := v1.PodLogOptions{
 		Follow: true,
 	}
@@ -19,7 +17,7 @@ func getPodLogs(cancelCtx context.Context, clientset *kubernetes.Clientset) erro
 	req := clientset.CoreV1().Pods(service.Namespace).GetLogs(service.PodName, &podLogOpts)
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
-		return err
+		stream.errCh <- err
 	}
 	defer podLogs.Close()
 
@@ -27,7 +25,7 @@ func getPodLogs(cancelCtx context.Context, clientset *kubernetes.Clientset) erro
 
 	for reader.Scan() {
 		line := reader.Text()
-		fmt.Println(line)
+		stream.logCh <- line + "\n"
 	}
-	return nil
+	stream.doneCh <- true
 }
