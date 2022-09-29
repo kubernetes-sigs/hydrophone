@@ -44,7 +44,7 @@ func Init() *kubernetes.Clientset {
 	return clientset
 }
 
-func RunE2E(clientset *kubernetes.Clientset, focus string) {
+func RunE2E(clientset *kubernetes.Clientset, cfg ArgConfig) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: Namespace,
@@ -111,12 +111,12 @@ func RunE2E(clientset *kubernetes.Clientset, focus string) {
 			Containers: []v1.Container{
 				{
 					Name:            "conformance-container",
-					Image:           containerImage,
+					Image:           cfg.Image,
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
 						{
 							Name:  "E2E_FOCUS",
-							Value: fmt.Sprintf("\\[%s\\]", focus),
+							Value: fmt.Sprintf("\\[%s\\]", cfg.Focus),
 						},
 						{
 							Name:  "E2E_SKIP",
@@ -160,31 +160,51 @@ func RunE2E(clientset *kubernetes.Clientset, focus string) {
 
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
-		log.Fatal(err)
+		if errors.IsAlreadyExists(err) {
+			log.Printf("namespace already exist %s", PodName)
+		} else {
+			log.Fatal(err)
+		}
 	}
 	log.Printf("namespace created %s\n", ns.Name)
 
 	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
-		log.Fatal(err)
+		if errors.IsAlreadyExists(err) {
+			log.Printf("serviceaccount already exist %s", PodName)
+		} else {
+			log.Fatal(err)
+		}
 	}
 	log.Printf("serviceaccount created %s\n", sa.Name)
 
 	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
-		log.Fatal(err)
+		if errors.IsAlreadyExists(err) {
+			log.Printf("clusterrole already exist %s", PodName)
+		} else {
+			log.Fatal(err)
+		}
 	}
 	log.Printf("clusterrole created %s\n", clusterRole.Name)
 
 	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
-		log.Fatal(err)
+		if errors.IsAlreadyExists(err) {
+			log.Printf("clusterrolebinding already exist %s", PodName)
+		} else {
+			log.Fatal(err)
+		}
 	}
 	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
 
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
-		log.Fatal(err)
+		if errors.IsAlreadyExists(err) {
+			log.Printf("pod already exist %s", PodName)
+		} else {
+			log.Fatal(err)
+		}
 	}
 	log.Printf("pod created %s\n", pod.Name)
 }
