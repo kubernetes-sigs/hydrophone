@@ -10,7 +10,7 @@ func main() {
 	client.ClientSet = service.Init()
 
 	cfg := service.InitArgs()
-	service.RunE2E(client.ClientSet, cfg.Focus)
+	service.RunE2E(client.ClientSet, cfg)
 	client.CheckForE2ELogs(cfg.Output)
 	service.Cleanup(client.ClientSet)
 }

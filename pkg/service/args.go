@@ -15,6 +15,7 @@ type ArgConfig struct {
 
 	// Image let's people use the conformance container image of their own choice
 	// Get the list of images from https://console.cloud.google.com/gcr/images/k8s-artifacts-prod/us/conformance
+	// default registry.k8s.io/conformance-amd64:v1.25.0
 	Image string
 }
 
@@ -23,7 +24,8 @@ func InitArgs() ArgConfig {
 
 	flag.StringVar(&cfg.Focus, "focus", "Conformance", "focus runs a specific e2e test. e.g. - sig-auth")
 	flag.StringVar(&cfg.Output, "output", "pod_logs", "output lets people get the logs of the pod in a directory")
-	flag.StringVar(&cfg.Image, "image", containerImage, "image let's you select your conformance container image of yoor choice")
+	flag.StringVar(&cfg.Image, "image", containerImage,
+		"image let's you select your conformance container image of your choice. for example, for v1.25.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0'")
 
 	flag.Parse()
 
