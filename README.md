@@ -40,7 +40,7 @@ bin/hydrophone --focus '[Conformance]'
 
 To run a specific test use:
 ```
-bin/hydrophone --focus 'Simple pod should support exec'
+bin/hydrophone --focus 'Simple pod should contain last line of the log'
 ```
 
 To specify a version of conformance image use:
