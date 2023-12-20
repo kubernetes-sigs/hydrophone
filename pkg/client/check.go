@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -21,7 +22,7 @@ type streamLogs struct {
 }
 
 // Check for Pod and start a go routine if new deployment added
-func (c *Client) CheckForE2ELogs(output string) {
+func (c *Client) PrintE2ELogs() {
 	informerFactory := informers.NewSharedInformerFactory(c.ClientSet, 10*time.Second)
 
 	podInformer := informerFactory.Core().V1().Pods()
@@ -34,12 +35,7 @@ func (c *Client) CheckForE2ELogs(output string) {
 	for {
 		pod, _ := podInformer.Lister().Pods(service.Namespace).Get(service.PodName)
 		if pod.Status.Phase == v1.PodRunning {
-			file, err := createLogDirAndFile(output)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer file.Close()
-
+			var err error
 			stream := streamLogs{
 				logCh:  make(chan string),
 				errCh:  make(chan error),
@@ -57,7 +53,7 @@ func (c *Client) CheckForE2ELogs(output string) {
 				case err = <-stream.errCh:
 					log.Fatal(err)
 				case logStream := <-stream.logCh:
-					_, err = file.WriteString(logStream)
+					_, err = fmt.Print(logStream)
 					if err != nil {
 						log.Fatal(err)
 					}

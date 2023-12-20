@@ -18,6 +18,6 @@ func main() {
 	}
 
 	service.RunE2E(client.ClientSet, cfg)
-	client.CheckForE2ELogs(cfg.Output)
+	client.PrintE2ELogs()
 	service.Cleanup(client.ClientSet)
 }
