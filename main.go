@@ -25,13 +25,15 @@ import (
 
 func main() {
 	client := client.NewClient()
-	config, clientSet := service.Init()
-	client.ClientSet = clientSet
 
 	cfg, err := service.InitArgs()
 	if err != nil {
 		log.Fatal("Error parsing arguments: ", err)
 	}
+
+	config, clientSet := service.Init(cfg)
+	client.ClientSet = clientSet
+
 	serverVersion, err := client.ClientSet.ServerVersion()
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
