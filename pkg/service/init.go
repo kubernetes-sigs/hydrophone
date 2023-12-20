@@ -116,7 +116,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg ArgConfig) {
 					Env: []v1.EnvVar{
 						{
 							Name:  "E2E_FOCUS",
-							Value: fmt.Sprintf("\\[%s\\]", cfg.Focus),
+							Value: fmt.Sprintf("%s", cfg.Focus),
 						},
 						{
 							Name:  "E2E_SKIP",
