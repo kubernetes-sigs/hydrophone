@@ -2,6 +2,7 @@ package service
 
 import (
 	"flag"
+	"fmt"
 )
 
 // ArgConfig stores the argument passed when running the program
@@ -16,7 +17,7 @@ type ArgConfig struct {
 	Image string
 }
 
-func InitArgs() ArgConfig {
+func InitArgs() (*ArgConfig, error) {
 	var cfg ArgConfig
 
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth")
@@ -25,5 +26,9 @@ func InitArgs() ArgConfig {
 
 	flag.Parse()
 
-	return cfg
+	if cfg.Focus == "" {
+		return nil, fmt.Errorf("missing --focus argument (use '[Conformance]' to run all conformance tests)")
+	}
+
+	return &cfg, nil
 }
