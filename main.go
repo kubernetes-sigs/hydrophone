@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/dims/k8s-run-e2e/pkg/client"
-	"github.com/dims/k8s-run-e2e/pkg/service"
+	"github.com/dims/hydrophone/pkg/client"
+	"github.com/dims/hydrophone/pkg/service"
 )
 
 func main() {

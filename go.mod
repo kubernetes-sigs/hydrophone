@@ -1,4 +1,4 @@
-module github.com/dims/k8s-run-e2e
+module github.com/dims/hydrophone
 
 go 1.18
 

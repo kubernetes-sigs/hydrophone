@@ -1,5 +1,5 @@
 build:
-	go build -o bin/k8s-run-e2e main.go
+	go build -o bin/hydrophone main.go
 
 run:
 	go run main.go
