@@ -22,6 +22,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -36,15 +37,11 @@ var (
 	ctx = context.Background()
 )
 
-// Initializes the kube confif clientset
-func Init() (*rest.Config, *kubernetes.Clientset) {
+// Initializes the kube config clientset
+func Init(cfg *ArgConfig) (*rest.Config, *kubernetes.Clientset) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		homeDir := os.Getenv("HOME")
-		kubeconfig := filepath.Join(homeDir, ".kube", "config")
-		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
-			kubeconfig = envvar
-		}
+		kubeconfig := getKubeConfig(cfg.Kubeconfig)
 
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
@@ -58,6 +55,23 @@ func Init() (*rest.Config, *kubernetes.Clientset) {
 	}
 
 	return config, clientset
+}
+
+func getKubeConfig(kubeconfig string) string {
+	homeDir := os.Getenv("HOME")
+	if kubeconfig == "" {
+		kubeconfig = filepath.Join(homeDir, ".kube", "config")
+		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
+			kubeconfig = envvar
+		}
+	}
+
+	// Handle cases where kubeconfig is set to users home directory in linux
+	if strings.HasPrefix(kubeconfig, "~") {
+		kubeconfig = filepath.Join(homeDir, kubeconfig[1:])
+	}
+
+	return kubeconfig
 }
 
 func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {

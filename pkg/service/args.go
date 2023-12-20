@@ -34,6 +34,9 @@ type ArgConfig struct {
 	// Get the list of images from https://console.cloud.google.com/gcr/images/k8s-artifacts-prod/us/conformance
 	// default registry.k8s.io/conformance:v1.28.0
 	Image string
+
+	// Kubeconfig is the path to the kubeconfig file
+	Kubeconfig string
 }
 
 func InitArgs() (*ArgConfig, error) {
@@ -43,6 +46,7 @@ func InitArgs() (*ArgConfig, error) {
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
 	flag.StringVar(&cfg.Image, "image", containerImage,
 		"image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0'")
+	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file")
 
 	flag.Parse()
 
