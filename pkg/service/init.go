@@ -136,7 +136,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 						},
 						{
 							Name:  "E2E_SKIP",
-							Value: "",
+							Value: fmt.Sprintf("%s", cfg.Skip),
 						},
 						{
 							Name:  "E2E_PROVIDER",

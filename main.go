@@ -39,6 +39,9 @@ func main() {
 	log.Printf("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
 	log.Printf("Running tests : '%s'", cfg.Focus)
+	if cfg.Skip != "" {
+		log.Printf("Skipping tests : '%s'", cfg.Skip)
+	}
 	log.Printf("Using image : '%s'", cfg.Image)
 
 	service.RunE2E(client.ClientSet, cfg)
