@@ -24,9 +24,11 @@ go install github.com/dims/hydrophone@latest
 $ bin/hydrophone --help
 Usage of bin/hydrophone:
   -focus string
-        focus runs a specific e2e test. e.g. - sig-auth
+        focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
   -image string
-        image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.28.0' (default "registry.k8s.io/conformance:v1.28.0")
+        image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0' (default "registry.k8s.io/conformance:v1.28.0")
+  -skip string
+        skip specific tests. allows regular expressions.
 ```
 
 ## Run
