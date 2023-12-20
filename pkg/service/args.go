@@ -22,7 +22,7 @@ func InitArgs() (*ArgConfig, error) {
 
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth")
 	flag.StringVar(&cfg.Image, "image", containerImage,
-		"image let's you select your conformance container image of your choice. for example, for v1.25.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0'")
+		"image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0'")
 
 	flag.Parse()
 
