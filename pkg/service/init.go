@@ -21,7 +21,7 @@ var (
 )
 
 // Initializes the kube confif clientset
-func Init() *kubernetes.Clientset {
+func Init() (*rest.Config, *kubernetes.Clientset) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		homeDir := os.Getenv("HOME")
@@ -41,10 +41,10 @@ func Init() *kubernetes.Clientset {
 		log.Fatalf("error getting config client: %v\n", err)
 	}
 
-	return clientset
+	return config, clientset
 }
 
-func RunE2E(clientset *kubernetes.Clientset, cfg ArgConfig) {
+func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: Namespace,

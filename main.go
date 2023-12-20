@@ -1,21 +1,29 @@
 package main
 
 import (
+	"log"
+
 	"github.com/dims/k8s-run-e2e/pkg/client"
 	"github.com/dims/k8s-run-e2e/pkg/service"
-	"log"
 )
 
 func main() {
 	client := client.NewClient()
-	client.ClientSet = service.Init()
+	config, clientSet := service.Init()
+	client.ClientSet = clientSet
 
-	cfg := service.InitArgs()
-
-	if cfg.Focus == "" {
-		log.Fatal("please specify which tests to run using --focus argument\n" +
-			"(for example '[Conformance]' to run all conformance tests)")
+	cfg, err := service.InitArgs()
+	if err != nil {
+		log.Fatal("Error parsing arguments: ", err)
 	}
+	serverVersion, err := client.ClientSet.ServerVersion()
+	if err != nil {
+		log.Fatal("Error fetching server version: ", err)
+	}
+	log.Printf("API endpoint : %s", config.Host)
+	log.Printf("Server version : %#v", *serverVersion)
+	log.Printf("Running tests : '%s'", cfg.Focus)
+	log.Printf("Using image : '%s'", cfg.Image)
 
 	service.RunE2E(client.ClientSet, cfg)
 	client.PrintE2ELogs()
