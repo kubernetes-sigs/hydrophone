@@ -37,6 +37,12 @@ type ArgConfig struct {
 
 	// Kubeconfig is the path to the kubeconfig file
 	Kubeconfig string
+
+	// Parallel sets the E2E_PARALLEL env var for tests
+	Parallel int
+
+	// Verbosity sets the E2E_VERBOSITY env var for tests
+	Verbosity int
 }
 
 func InitArgs() (*ArgConfig, error) {
@@ -45,8 +51,10 @@ func InitArgs() (*ArgConfig, error) {
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
 	flag.StringVar(&cfg.Image, "image", containerImage,
-		"image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0'")
+		"image let's you select your conformance container image of your choice.")
 	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
+	flag.IntVar(&cfg.Parallel, "parallel", 1, "number of parallel threads in test framework.")
+	flag.IntVar(&cfg.Verbosity, "verbosity", 4, "verbosity of test framework.")
 
 	flag.Parse()
 

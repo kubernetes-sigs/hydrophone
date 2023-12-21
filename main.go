@@ -45,6 +45,8 @@ func main() {
 		log.Printf("Skipping tests : '%s'", cfg.Skip)
 	}
 	log.Printf("Using image : '%s'", cfg.Image)
+	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
+		cfg.Parallel, cfg.Verbosity)
 
 	service.RunE2E(client.ClientSet, cfg)
 	client.PrintE2ELogs()
