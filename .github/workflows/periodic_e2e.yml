@@ -1,0 +1,51 @@
+name: Periodic Test with Kind
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+
+env:
+  KIND_VERSION: v0.20.0
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21
+
+      - name: Install kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/${{ env.KIND_VERSION }}/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Create kind cluster with three nodes
+        run: |
+          cat <<EOF | kind create cluster --config=-
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+          - role: worker
+          - role: worker
+          EOF
+
+      - name: Set up kubectl
+        run: |
+          kubectl cluster-info --context kind-kind
+          kubectl get nodes
+
+      - name: Build and test
+        run: |
+          make build
+          make test
+
+      - name: Run full conformance test
+        run: |
+          bin/hydrophone --focus '[Conformance]'
