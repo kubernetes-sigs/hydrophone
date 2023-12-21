@@ -105,7 +105,7 @@ func (c *Client) podExitCode(pod *v1.Pod) {
 		if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
 			log.Println("Pod terminated.")
 			for _, containerStatus := range pod.Status.ContainerStatuses {
-				if containerStatus.Name == "conformance-container" && containerStatus.State.Terminated != nil {
+				if containerStatus.Name == service.ConformanceContainer && containerStatus.State.Terminated != nil {
 					c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
 				}
 			}
@@ -116,7 +116,7 @@ func (c *Client) podExitCode(pod *v1.Pod) {
 				if containerStatus.State.Terminated != nil {
 					terminated = true
 					log.Printf("container %s terminated.\n", containerStatus.Name)
-					if containerStatus.Name == "conformance-container" {
+					if containerStatus.Name == service.ConformanceContainer {
 						c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
 					}
 				}

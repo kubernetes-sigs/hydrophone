@@ -23,4 +23,6 @@ const (
 	ClusterRoleBindingName = "conformance-serviceaccount-role"
 	ClusterRoleName        = "conformance-serviceaccount"
 	ServiceAccountName     = "conformance-serviceaccount"
+	ConformanceContainer   = "conformance-container"
+	OutputContainer        = "output-container"
 )
