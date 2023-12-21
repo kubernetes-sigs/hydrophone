@@ -140,7 +140,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
-					Name:            "conformance-container",
+					Name:            ConformanceContainer,
 					Image:           cfg.Image,
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
@@ -177,7 +177,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 					},
 				},
 				{
-					Name:    "output-container",
+					Name:    OutputContainer,
 					Image:   "busybox",
 					Command: []string{"/bin/sh", "-c", "sleep infinity"},
 					VolumeMounts: []v1.VolumeMount{

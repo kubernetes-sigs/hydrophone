@@ -27,7 +27,7 @@ import (
 // List pod resource with the given namespace
 func getPodLogs(clientset *kubernetes.Clientset, stream streamLogs) {
 	podLogOpts := v1.PodLogOptions{
-		Container: "conformance-container",
+		Container: service.ConformanceContainer,
 		Follow:    true,
 	}
 
