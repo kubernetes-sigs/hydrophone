@@ -176,14 +176,23 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 						},
 					},
 				},
+				{
+					Name:    "output-container",
+					Image:   "busybox",
+					Command: []string{"/bin/sh", "-c", "sleep infinity"},
+					VolumeMounts: []v1.VolumeMount{
+						{
+							Name:      "output-volume",
+							MountPath: "/tmp/results",
+						},
+					},
+				},
 			},
 			Volumes: []v1.Volume{
 				{
 					Name: "output-volume",
 					VolumeSource: v1.VolumeSource{
-						HostPath: &v1.HostPathVolumeSource{
-							Path: "/tmp/results",
-						},
+						EmptyDir: &v1.EmptyDirVolumeSource{},
 					},
 				},
 			},

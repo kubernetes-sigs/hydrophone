@@ -20,8 +20,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/dims/hydrophone/pkg/service"
@@ -107,26 +105,25 @@ func (c *Client) podExitCode(pod *v1.Pod) {
 		if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
 			log.Println("Pod terminated.")
 			for _, containerStatus := range pod.Status.ContainerStatuses {
-				if containerStatus.State.Terminated != nil {
+				if containerStatus.Name == "conformance-container" && containerStatus.State.Terminated != nil {
 					c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
 				}
 			}
 			break
+		} else if pod.Status.Phase == v1.PodRunning {
+			terminated := false
+			for _, containerStatus := range pod.Status.ContainerStatuses {
+				if containerStatus.State.Terminated != nil {
+					terminated = true
+					log.Printf("container %s terminated.\n", containerStatus.Name)
+					if containerStatus.Name == "conformance-container" {
+						c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
+					}
+				}
+			}
+			if terminated {
+				break
+			}
 		}
 	}
-}
-
-// createLogDirAndFile create a directory and create a file of name same as pod
-func createLogDirAndFile(output string) (*os.File, error) {
-	if err := os.Mkdir(output, os.ModePerm); err != nil {
-		return nil, err
-	}
-
-	path := filepath.Join(output, service.PodName)
-
-	file, err := os.Create(path)
-	if err != nil {
-		return nil, err
-	}
-	return file, nil
 }
