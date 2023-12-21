@@ -46,7 +46,7 @@ func InitArgs() (*ArgConfig, error) {
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
 	flag.StringVar(&cfg.Image, "image", containerImage,
 		"image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0'")
-	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file")
+	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 
 	flag.Parse()
 
