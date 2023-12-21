@@ -27,13 +27,15 @@ Usage of bin/hydrophone:
         focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
   -image string
         image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0' (default "registry.k8s.io/conformance:v1.28.0")
+  -kubeconfig string
+        path to the kubeconfig file
   -skip string
         skip specific tests. allows regular expressions.
 ```
 
 ## Run
 
-Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone`
+Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone` Alternatively, you can specify the path to the kubeconfig file with the `--kubeconfig` option.
 
 To run conformance tests use:
 ```
