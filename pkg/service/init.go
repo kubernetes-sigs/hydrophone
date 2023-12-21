@@ -164,6 +164,10 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 							Name:  "E2E_VERBOSITY",
 							Value: fmt.Sprintf("%d", cfg.Verbosity),
 						},
+						{
+							Name:  "E2E_USE_GO_RUNNER",
+							Value: "true",
+						},
 					},
 					VolumeMounts: []v1.VolumeMount{
 						{
