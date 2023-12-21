@@ -26,11 +26,15 @@ Usage of bin/hydrophone:
   -focus string
         focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
   -image string
-        image let's you select your conformance container image of your choice. for example, for v1.28.0 version of tests, use - 'registry.k8s.io/conformance-amd64:v1.25.0' (default "registry.k8s.io/conformance:v1.28.0")
+        image let's you select your conformance container image of your choice. (default "registry.k8s.io/conformance:v1.28.0")
   -kubeconfig string
-        path to the kubeconfig file
+        path to the kubeconfig file.
+  -parallel int
+        number of parallel threads in test framework. (default 1)
   -skip string
         skip specific tests. allows regular expressions.
+  -verbosity int
+        verbosity of test framework. (default 4)
 ```
 
 ## Run

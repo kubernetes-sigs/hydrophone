@@ -158,11 +158,11 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 						},
 						{
 							Name:  "E2E_PARALLEL",
-							Value: "false",
+							Value: fmt.Sprintf("%d", cfg.Parallel),
 						},
 						{
 							Name:  "E2E_VERBOSITY",
-							Value: "4",
+							Value: fmt.Sprintf("%d", cfg.Verbosity),
 						},
 					},
 					VolumeMounts: []v1.VolumeMount{
