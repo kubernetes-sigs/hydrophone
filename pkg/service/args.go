@@ -30,10 +30,13 @@ type ArgConfig struct {
 	// Skip set the E2E_SKIP env var to skip specified tests
 	Skip string
 
-	// Image let's people use the conformance container image of their own choice
+	// ConformanceImage let's people use the conformance container image of their own choice
 	// Get the list of images from https://console.cloud.google.com/gcr/images/k8s-artifacts-prod/us/conformance
 	// default registry.k8s.io/conformance:v1.28.0
-	Image string
+	ConformanceImage string
+
+	// BusyboxImage lets folks use an appropriate busybox image from their own registry
+	BusyboxImage string
 
 	// Kubeconfig is the path to the kubeconfig file
 	Kubeconfig string
@@ -50,8 +53,10 @@ func InitArgs() (*ArgConfig, error) {
 
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
-	flag.StringVar(&cfg.Image, "image", containerImage,
+	flag.StringVar(&cfg.ConformanceImage, "conformance-image", containerImage,
 		"image let's you select your conformance container image of your choice.")
+	flag.StringVar(&cfg.BusyboxImage, "busybox-image", busyboxImage,
+		"image let's you select an alternate busybox container image.")
 	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 	flag.IntVar(&cfg.Parallel, "parallel", 1, "number of parallel threads in test framework.")
 	flag.IntVar(&cfg.Verbosity, "verbosity", 4, "verbosity of test framework.")
