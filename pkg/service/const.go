@@ -18,6 +18,7 @@ package service
 
 const (
 	containerImage         = "registry.k8s.io/conformance:v1.28.0"
+	busyboxImage           = "registry.k8s.io/e2e-test-images/busybox:1.36.1-1"
 	Namespace              = "conformance"
 	PodName                = "e2e-conformance-test"
 	ClusterRoleBindingName = "conformance-serviceaccount-role"

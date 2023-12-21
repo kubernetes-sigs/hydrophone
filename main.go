@@ -45,7 +45,8 @@ func main() {
 	if cfg.Skip != "" {
 		log.Printf("Skipping tests : '%s'", cfg.Skip)
 	}
-	log.Printf("Using image : '%s'", cfg.Image)
+	log.Printf("Using conformance image : '%s'", cfg.ConformanceImage)
+	log.Printf("Using busybox image : '%s'", cfg.BusyboxImage)
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
 		cfg.Parallel, cfg.Verbosity)
 
