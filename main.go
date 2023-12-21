@@ -18,6 +18,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/dims/hydrophone/pkg/client"
 	"github.com/dims/hydrophone/pkg/service"
@@ -51,4 +52,6 @@ func main() {
 	service.RunE2E(client.ClientSet, cfg)
 	client.PrintE2ELogs()
 	service.Cleanup(client.ClientSet)
+	log.Println("Exiting with code: ", client.ExitCode)
+	os.Exit(client.ExitCode)
 }

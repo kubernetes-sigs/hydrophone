@@ -17,6 +17,7 @@ limitations under the License.
 package client
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/dims/hydrophone/pkg/service"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
@@ -75,6 +77,38 @@ func (c *Client) PrintE2ELogs() {
 					}
 				case <-stream.doneCh:
 					break loop
+				}
+			}
+			c.podExitCode(pod)
+			break
+		}
+	}
+}
+
+// Wait for pod to be in terminated state and get the exit code
+func (c *Client) podExitCode(pod *v1.Pod) {
+	// Watching the pod's status
+	watchInterface, err := c.ClientSet.CoreV1().Pods(service.Namespace).Watch(context.TODO(), metav1.ListOptions{
+		FieldSelector: fmt.Sprintf("metadata.name=%s", pod.Name),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Waiting for pod to terminate...")
+	for event := range watchInterface.ResultChan() {
+		pod, ok := event.Object.(*v1.Pod)
+		if !ok {
+			log.Println("unexpected type")
+			c.ExitCode = -1
+			return
+		}
+
+		if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
+			log.Println("Pod terminated.")
+			for _, containerStatus := range pod.Status.ContainerStatuses {
+				if containerStatus.State.Terminated != nil {
+					c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
 				}
 			}
 			break

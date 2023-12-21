@@ -28,6 +28,7 @@ var (
 
 type Client struct {
 	ClientSet *kubernetes.Clientset
+	ExitCode  int
 }
 
 // Return a new Client
