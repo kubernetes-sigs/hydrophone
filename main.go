@@ -36,31 +36,13 @@ func main() {
 	config, clientSet := service.Init(cfg)
 	client.ClientSet = clientSet
 
-	serverVersion, err := client.ClientSet.ServerVersion()
-	if err != nil {
-		log.Fatal("Error fetching server version: ", err)
-	}
-	log.Printf("API endpoint : %s", config.Host)
-	log.Printf("Server version : %#v", *serverVersion)
-	log.Printf("Running tests : '%s'", cfg.Focus)
-	if cfg.Skip != "" {
-		log.Printf("Skipping tests : '%s'", cfg.Skip)
-	}
-	log.Printf("Using conformance image : '%s'", cfg.ConformanceImage)
-	log.Printf("Using busybox image : '%s'", cfg.BusyboxImage)
-	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
-		cfg.Parallel, cfg.Verbosity)
-
-	if _, err := os.Stat(cfg.OutputDir); os.IsNotExist(err) {
-		if err = os.MkdirAll(cfg.OutputDir, 0755); err != nil {
-			log.Fatalf("Error creating output directory [%s] : %v", cfg.OutputDir, err)
-		}
-	}
+	common.ValidateArgs(err, client, config, cfg)
 
 	service.RunE2E(client.ClientSet, cfg)
 	client.PrintE2ELogs()
 	client.FetchFiles(config, clientSet, cfg.OutputDir)
 	service.Cleanup(client.ClientSet)
+
 	log.Println("Exiting with code: ", client.ExitCode)
 	os.Exit(client.ExitCode)
 }
