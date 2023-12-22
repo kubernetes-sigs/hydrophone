@@ -38,7 +38,7 @@ type ArgConfig struct {
 
 	// ConformanceImage let's people use the conformance container image of their own choice
 	// Get the list of images from https://console.cloud.google.com/gcr/images/k8s-artifacts-prod/us/conformance
-	// default registry.k8s.io/conformance:v1.28.0
+	// default registry.k8s.io/conformance:v1.29.0
 	ConformanceImage string
 
 	// BusyboxImage lets folks use an appropriate busybox image from their own registry
