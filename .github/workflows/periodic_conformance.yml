@@ -49,4 +49,11 @@ jobs:
 
       - name: Run full conformance test
         run: |
-          bin/hydrophone --conformance
+          bin/hydrophone --conformance --output-dir ./results
+
+      - name: Archive conformance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: conformance-results
+          path: |
+            ./results/*
