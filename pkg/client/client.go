@@ -22,6 +22,7 @@ import (
 	"k8s.io/client-go/rest"
 	"log"
 	"os"
+	"path/filepath"
 
 	"k8s.io/client-go/kubernetes"
 )
@@ -35,9 +36,9 @@ type Client struct {
 	ExitCode  int
 }
 
-func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset) {
-	log.Println("downloading e2e.log")
-	e2eLogFile, err := os.OpenFile("e2e.log", os.O_WRONLY|os.O_CREATE, 0600)
+func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset, outputDir string) {
+	log.Println("downloading e2e.log to ", filepath.Join(outputDir, "e2e.log"))
+	e2eLogFile, err := os.OpenFile(filepath.Join(outputDir, "e2e.log"), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		log.Fatalf("unable to create e2e.log: %v\n", err)
 	}
@@ -46,8 +47,8 @@ func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset
 	if err != nil {
 		log.Fatalf("unable to download e2e.log: %v\n", err)
 	}
-	log.Println("downloading junit_01.xml")
-	junitXMLFile, err := os.OpenFile("junit_01.xml", os.O_WRONLY|os.O_CREATE, 0600)
+	log.Println("downloading junit_01.xml to", filepath.Join(outputDir, "junit_01.xml"))
+	junitXMLFile, err := os.OpenFile(filepath.Join(outputDir, "junit_01.xml"), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		log.Fatalf("unable to create junit_01.xml: %v\n", err)
 	}
