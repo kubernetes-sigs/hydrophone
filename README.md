@@ -24,11 +24,11 @@ go install github.com/dims/hydrophone@latest
 $ bin/hydrophone --help
 Usage of bin/hydrophone:
   -busybox-image string
-        image let's you select an alternate busybox container image. (default "registry.k8s.io/e2e-test-images/busybox:1.36.1-1")
+        specify an alternate busybox container image. (default "registry.k8s.io/e2e-test-images/busybox:1.36.1-1")
   -conformance
         run conformance tests.
   -conformance-image string
-        image let's you select your conformance container image of your choice. (default "registry.k8s.io/conformance:v1.28.0")
+        specify a conformance container image of your choice. (default "registry.k8s.io/conformance:v1.28.0")
   -focus string
         focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
   -kubeconfig string
@@ -49,7 +49,7 @@ Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/co
 
 To run conformance tests use:
 ```
-bin/hydrophone --focus '[Conformance]'
+bin/hydrophone --conformance
 ```
 
 To run a specific test use:
