@@ -17,6 +17,11 @@ jobs:
         with:
           go-version: 1.21
 
+      - name: Lint
+        run: |
+          gofmt -l -s $(find . -type f -name '*.go')
+          if [[ -n $(gofmt -l -s $(find . -type f -name '*.go')) ]]; then exit 1; fi
+
       - name: Install kind
         run: |
           curl -Lo ./kind https://kind.sigs.k8s.io/dl/${{ env.KIND_VERSION }}/kind-linux-amd64
