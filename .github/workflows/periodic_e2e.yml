@@ -48,4 +48,4 @@ jobs:
 
       - name: Run full conformance test
         run: |
-          bin/hydrophone --focus '[Conformance]'
+          bin/hydrophone --focus "\[Conformance\]"
