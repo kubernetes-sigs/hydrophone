@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/dims/hydrophone/pkg/common"
 	"log"
 	"os"
 	"path/filepath"
@@ -32,13 +31,15 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/dims/hydrophone/pkg/common"
 )
 
 var (
 	ctx = context.Background()
 )
 
-// Initializes the kube config clientset
+// Init Initializes the kube config clientset
 func Init(cfg *common.ArgConfig) (*rest.Config, *kubernetes.Clientset) {
 	config, err := rest.InClusterConfig()
 	if err != nil {

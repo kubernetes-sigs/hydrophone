@@ -17,11 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"github.com/dims/hydrophone/pkg/common"
 	"log"
 	"os"
 
 	"github.com/dims/hydrophone/pkg/client"
+	"github.com/dims/hydrophone/pkg/common"
 	"github.com/dims/hydrophone/pkg/service"
 )
 
