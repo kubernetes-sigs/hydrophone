@@ -34,7 +34,7 @@ Usage of bin/hydrophone:
   -kubeconfig string
         path to the kubeconfig file.
   -output-dir string
-        directory for logs. (default "/Users/davanum/go/src/github.com/dims/hydrophone")
+        directory for logs. (defaults to current directory)
   -parallel int
         number of parallel threads in test framework. (default 1)
   -skip string
