@@ -3,7 +3,7 @@ name: Periodic Test with Kind
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */6 * * *"
 
 env:
   KIND_VERSION: v0.20.0
