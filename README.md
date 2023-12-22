@@ -25,6 +25,8 @@ $ bin/hydrophone --help
 Usage of bin/hydrophone:
   -busybox-image string
         image let's you select an alternate busybox container image. (default "registry.k8s.io/e2e-test-images/busybox:1.36.1-1")
+  -conformance
+        run conformance tests.
   -conformance-image string
         image let's you select your conformance container image of your choice. (default "registry.k8s.io/conformance:v1.28.0")
   -focus string

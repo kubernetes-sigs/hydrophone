@@ -36,7 +36,7 @@ func main() {
 	config, clientSet := service.Init(cfg)
 	client.ClientSet = clientSet
 
-	common.ValidateArgs(err, client, config, cfg)
+	common.ValidateArgs(client.ClientSet, config, cfg)
 
 	service.RunE2E(client.ClientSet, cfg)
 	client.PrintE2ELogs()
