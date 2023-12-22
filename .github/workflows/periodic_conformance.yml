@@ -1,4 +1,4 @@
-name: Periodic e2e Tests with Kind
+name: Periodic Conformance Tests with Kind
 
 on:
   workflow_dispatch:
@@ -42,11 +42,11 @@ jobs:
           kubectl cluster-info --context kind-kind
           kubectl get nodes
 
-      - name: Build
+      - name: Build and test
         run: |
           make build
+          make test
 
-      # Same tests as in https://testgrid.k8s.io/presubmits-kubernetes-blocking#pull-kubernetes-e2e-kind&width=20
-      - name: Run e2e tests
+      - name: Run full conformance test
         run: |
-          bin/hydrophone --parallel 25 --skip '\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist'
+          bin/hydrophone --conformance
