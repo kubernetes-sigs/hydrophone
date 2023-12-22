@@ -18,8 +18,8 @@ package client
 
 import (
 	"bufio"
+	"github.com/dims/hydrophone/pkg/common"
 
-	"github.com/dims/hydrophone/pkg/service"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -27,11 +27,11 @@ import (
 // List pod resource with the given namespace
 func getPodLogs(clientset *kubernetes.Clientset, stream streamLogs) {
 	podLogOpts := v1.PodLogOptions{
-		Container: service.ConformanceContainer,
+		Container: common.ConformanceContainer,
 		Follow:    true,
 	}
 
-	req := clientset.CoreV1().Pods(service.Namespace).GetLogs(service.PodName, &podLogOpts)
+	req := clientset.CoreV1().Pods(common.Namespace).GetLogs(common.PodName, &podLogOpts)
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		stream.errCh <- err

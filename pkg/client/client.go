@@ -18,7 +18,7 @@ package client
 
 import (
 	"context"
-	"github.com/dims/hydrophone/pkg/service"
+	"github.com/dims/hydrophone/pkg/common"
 	"k8s.io/client-go/rest"
 	"log"
 	"os"
@@ -43,7 +43,7 @@ func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset
 		log.Fatalf("unable to create e2e.log: %v\n", err)
 	}
 	defer e2eLogFile.Close()
-	err = downloadFile(config, clientset, service.PodName, service.OutputContainer, "/tmp/results/e2e.log", e2eLogFile)
+	err = downloadFile(config, clientset, common.PodName, common.OutputContainer, "/tmp/results/e2e.log", e2eLogFile)
 	if err != nil {
 		log.Fatalf("unable to download e2e.log: %v\n", err)
 	}
@@ -53,7 +53,7 @@ func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset
 		log.Fatalf("unable to create junit_01.xml: %v\n", err)
 	}
 	defer junitXMLFile.Close()
-	err = downloadFile(config, clientset, service.PodName, service.OutputContainer, "/tmp/results/junit_01.xml", junitXMLFile)
+	err = downloadFile(config, clientset, common.PodName, common.OutputContainer, "/tmp/results/junit_01.xml", junitXMLFile)
 	if err != nil {
 		log.Fatalf("unable to download junit_01.xml: %v\n", err)
 	}

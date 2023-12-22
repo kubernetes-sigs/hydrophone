@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/dims/hydrophone/pkg/common"
 	"log"
 	"os"
 	"path/filepath"
@@ -38,7 +39,7 @@ var (
 )
 
 // Initializes the kube config clientset
-func Init(cfg *ArgConfig) (*rest.Config, *kubernetes.Clientset) {
+func Init(cfg *common.ArgConfig) (*rest.Config, *kubernetes.Clientset) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		kubeconfig := getKubeConfig(cfg.Kubeconfig)
@@ -74,10 +75,10 @@ func getKubeConfig(kubeconfig string) string {
 	return kubeconfig
 }
 
-func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
+func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: Namespace,
+			Name: common.Namespace,
 		},
 	}
 
@@ -86,7 +87,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name:      ServiceAccountName,
+			Name:      common.ServiceAccountName,
 			Namespace: "conformance",
 		},
 	}
@@ -96,7 +97,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name: ClusterRoleName,
+			Name: common.ClusterRoleName,
 		},
 		Rules: []rbac.PolicyRule{
 			{
@@ -116,7 +117,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name: ClusterRoleBindingName,
+			Name: common.ClusterRoleBindingName,
 		},
 		RoleRef: rbac.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
@@ -140,7 +141,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
-					Name:            ConformanceContainer,
+					Name:            common.ConformanceContainer,
 					Image:           cfg.ConformanceImage,
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
@@ -177,7 +178,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 					},
 				},
 				{
-					Name:    OutputContainer,
+					Name:    common.OutputContainer,
 					Image:   cfg.BusyboxImage,
 					Command: []string{"/bin/sh", "-c", "sleep infinity"},
 					VolumeMounts: []v1.VolumeMount{
@@ -204,7 +205,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("namespace already exist %s", PodName)
+			log.Printf("namespace already exist %s", common.PodName)
 		} else {
 			log.Fatal(err)
 		}
@@ -214,7 +215,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("serviceaccount already exist %s", PodName)
+			log.Printf("serviceaccount already exist %s", common.PodName)
 		} else {
 			log.Fatal(err)
 		}
@@ -224,7 +225,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrole already exist %s", PodName)
+			log.Printf("clusterrole already exist %s", common.PodName)
 		} else {
 			log.Fatal(err)
 		}
@@ -234,7 +235,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrolebinding already exist %s", PodName)
+			log.Printf("clusterrolebinding already exist %s", common.PodName)
 		} else {
 			log.Fatal(err)
 		}
@@ -244,7 +245,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("pod already exist %s", PodName)
+			log.Printf("pod already exist %s", common.PodName)
 		} else {
 			log.Fatal(err)
 		}
@@ -253,53 +254,53 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *ArgConfig) {
 }
 
 func Cleanup(clientset *kubernetes.Clientset) {
-	err := clientset.CoreV1().Pods(Namespace).Delete(ctx, PodName, metav1.DeleteOptions{})
+	err := clientset.CoreV1().Pods(common.Namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("pod %s doesn't exist\n", PodName)
+			log.Printf("pod %s doesn't exist\n", common.PodName)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("pod deleted %s\n", PodName)
+	log.Printf("pod deleted %s\n", common.PodName)
 
-	err = clientset.RbacV1().ClusterRoleBindings().Delete(ctx, ClusterRoleBindingName, metav1.DeleteOptions{})
+	err = clientset.RbacV1().ClusterRoleBindings().Delete(ctx, common.ClusterRoleBindingName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("clusterrolebinding %s doesn't exist\n", ClusterRoleBindingName)
+			log.Printf("clusterrolebinding %s doesn't exist\n", common.ClusterRoleBindingName)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("clusterrolebinding deleted %s\n", ClusterRoleBindingName)
+	log.Printf("clusterrolebinding deleted %s\n", common.ClusterRoleBindingName)
 
-	err = clientset.RbacV1().ClusterRoles().Delete(ctx, ClusterRoleName, metav1.DeleteOptions{})
+	err = clientset.RbacV1().ClusterRoles().Delete(ctx, common.ClusterRoleName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("clusterrole %s doesn't exist\n", ClusterRoleName)
+			log.Printf("clusterrole %s doesn't exist\n", common.ClusterRoleName)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("clusterrole deleted %s\n", ClusterRoleName)
+	log.Printf("clusterrole deleted %s\n", common.ClusterRoleName)
 
-	err = clientset.CoreV1().ServiceAccounts(Namespace).Delete(ctx, ServiceAccountName, metav1.DeleteOptions{})
+	err = clientset.CoreV1().ServiceAccounts(common.Namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("serviceaccount %s doesn't exist\n", ServiceAccountName)
+			log.Printf("serviceaccount %s doesn't exist\n", common.ServiceAccountName)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("serviceaccount deleted %s\n", ServiceAccountName)
+	log.Printf("serviceaccount deleted %s\n", common.ServiceAccountName)
 
-	err = clientset.CoreV1().Namespaces().Delete(ctx, Namespace, metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(ctx, common.Namespace, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("namespace %s doesn't exist\n", Namespace)
+			log.Printf("namespace %s doesn't exist\n", common.Namespace)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("namespace deleted %s\n", Namespace)
+	log.Printf("namespace deleted %s\n", common.Namespace)
 }

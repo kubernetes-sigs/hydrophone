@@ -19,10 +19,10 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/dims/hydrophone/pkg/common"
 	"log"
 	"time"
 
-	"github.com/dims/hydrophone/pkg/service"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -49,7 +49,7 @@ func (c *Client) PrintE2ELogs() {
 	informerFactory.WaitForCacheSync(wait.NeverStop)
 
 	for {
-		pod, _ := podInformer.Lister().Pods(service.Namespace).Get(service.PodName)
+		pod, _ := podInformer.Lister().Pods(common.Namespace).Get(common.PodName)
 		if pod.Status.Phase == v1.PodRunning {
 			var err error
 			stream := streamLogs{
@@ -86,7 +86,7 @@ func (c *Client) PrintE2ELogs() {
 // Wait for pod to be in terminated state and get the exit code
 func (c *Client) podExitCode(pod *v1.Pod) {
 	// Watching the pod's status
-	watchInterface, err := c.ClientSet.CoreV1().Pods(service.Namespace).Watch(context.TODO(), metav1.ListOptions{
+	watchInterface, err := c.ClientSet.CoreV1().Pods(common.Namespace).Watch(context.TODO(), metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("metadata.name=%s", pod.Name),
 	})
 	if err != nil {
@@ -105,7 +105,7 @@ func (c *Client) podExitCode(pod *v1.Pod) {
 		if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
 			log.Println("Pod terminated.")
 			for _, containerStatus := range pod.Status.ContainerStatuses {
-				if containerStatus.Name == service.ConformanceContainer && containerStatus.State.Terminated != nil {
+				if containerStatus.Name == common.ConformanceContainer && containerStatus.State.Terminated != nil {
 					c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
 				}
 			}
@@ -116,7 +116,7 @@ func (c *Client) podExitCode(pod *v1.Pod) {
 				if containerStatus.State.Terminated != nil {
 					terminated = true
 					log.Printf("container %s terminated.\n", containerStatus.Name)
-					if containerStatus.Name == service.ConformanceContainer {
+					if containerStatus.Name == common.ConformanceContainer {
 						c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
 					}
 				}

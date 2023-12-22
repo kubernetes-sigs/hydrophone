@@ -18,6 +18,7 @@ package client
 
 import (
 	"context"
+	"github.com/dims/hydrophone/pkg/common"
 	"io"
 
 	corev1 "k8s.io/api/core/v1"
@@ -25,8 +26,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-
-	"github.com/dims/hydrophone/pkg/service"
 )
 
 func downloadFile(config *rest.Config, clientset *kubernetes.Clientset,
@@ -36,7 +35,7 @@ func downloadFile(config *rest.Config, clientset *kubernetes.Clientset,
 	req := clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
-		Namespace(service.Namespace).
+		Namespace(common.Namespace).
 		SubResource("exec").
 		Param("container", containerName)
 
