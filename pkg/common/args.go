@@ -19,6 +19,9 @@ package common
 import (
 	"flag"
 	"fmt"
+	"github.com/dims/hydrophone/pkg/client"
+	"k8s.io/client-go/rest"
+	"log"
 	"os"
 )
 
@@ -78,4 +81,27 @@ func InitArgs() (*ArgConfig, error) {
 	}
 
 	return &cfg, nil
+}
+
+func ValidateArgs(err error, client *client.Client, config *rest.Config, cfg *ArgConfig) {
+	serverVersion, err := client.ClientSet.ServerVersion()
+	if err != nil {
+		log.Fatal("Error fetching server version: ", err)
+	}
+	log.Printf("API endpoint : %s", config.Host)
+	log.Printf("Server version : %#v", *serverVersion)
+	log.Printf("Running tests : '%s'", cfg.Focus)
+	if cfg.Skip != "" {
+		log.Printf("Skipping tests : '%s'", cfg.Skip)
+	}
+	log.Printf("Using conformance image : '%s'", cfg.ConformanceImage)
+	log.Printf("Using busybox image : '%s'", cfg.BusyboxImage)
+	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
+		cfg.Parallel, cfg.Verbosity)
+
+	if _, err := os.Stat(cfg.OutputDir); os.IsNotExist(err) {
+		if err = os.MkdirAll(cfg.OutputDir, 0755); err != nil {
+			log.Fatalf("Error creating output directory [%s] : %v", cfg.OutputDir, err)
+		}
+	}
 }
