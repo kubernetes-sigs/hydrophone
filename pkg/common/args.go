@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -81,7 +82,18 @@ func InitArgs() (*ArgConfig, error) {
 
 	flag.Parse()
 
-	if cfg.ConformanceTests == (cfg.Focus != "") {
+	conformance := false
+	focus := false
+	for _, keyValue := range os.Args {
+		arg := strings.Split(keyValue, "=")[0]
+		if arg == "--focus" {
+			focus = true
+		}
+		if arg == "--conformance" {
+			conformance = true
+		}
+	}
+	if conformance && focus {
 		return nil, fmt.Errorf("specify either --conformance or --focus arguments, not both")
 	}
 
