@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"github.com/dims/hydrophone/pkg/common"
 	"log"
 	"os"
 
@@ -27,7 +28,7 @@ import (
 func main() {
 	client := client.NewClient()
 
-	cfg, err := service.InitArgs()
+	cfg, err := common.InitArgs()
 	if err != nil {
 		log.Fatal("Error parsing arguments: ", err)
 	}
