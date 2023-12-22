@@ -50,9 +50,15 @@ func main() {
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
 		cfg.Parallel, cfg.Verbosity)
 
+	if _, err := os.Stat(cfg.OutputDir); os.IsNotExist(err) {
+		if err = os.MkdirAll(cfg.OutputDir, 0755); err != nil {
+			log.Fatalf("Error creating output directory [%s] : %v", cfg.OutputDir, err)
+		}
+	}
+
 	service.RunE2E(client.ClientSet, cfg)
 	client.PrintE2ELogs()
-	client.FetchFiles(config, clientSet)
+	client.FetchFiles(config, clientSet, cfg.OutputDir)
 	service.Cleanup(client.ClientSet)
 	log.Println("Exiting with code: ", client.ExitCode)
 	os.Exit(client.ExitCode)

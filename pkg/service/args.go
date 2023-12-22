@@ -19,6 +19,7 @@ package service
 import (
 	"flag"
 	"fmt"
+	"os"
 )
 
 // ArgConfig stores the argument passed when running the program
@@ -46,10 +47,18 @@ type ArgConfig struct {
 
 	// Verbosity sets the E2E_VERBOSITY env var for tests
 	Verbosity int
+
+	// OutputDir is where the e2e.log and junit_01.xml is saved
+	OutputDir string
 }
 
 func InitArgs() (*ArgConfig, error) {
 	var cfg ArgConfig
+
+	outputDir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
@@ -60,6 +69,7 @@ func InitArgs() (*ArgConfig, error) {
 	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 	flag.IntVar(&cfg.Parallel, "parallel", 1, "number of parallel threads in test framework.")
 	flag.IntVar(&cfg.Verbosity, "verbosity", 4, "verbosity of test framework.")
+	flag.StringVar(&cfg.OutputDir, "output-dir", outputDir, "directory for logs.")
 
 	flag.Parse()
 

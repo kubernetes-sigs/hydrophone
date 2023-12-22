@@ -31,6 +31,8 @@ Usage of bin/hydrophone:
         focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
   -kubeconfig string
         path to the kubeconfig file.
+  -output-dir string
+        directory for logs. (default "/Users/davanum/go/src/github.com/dims/hydrophone")
   -parallel int
         number of parallel threads in test framework. (default 1)
   -skip string
