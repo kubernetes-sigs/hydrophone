@@ -19,10 +19,11 @@ package common
 import (
 	"flag"
 	"fmt"
-	"github.com/dims/hydrophone/pkg/client"
-	"k8s.io/client-go/rest"
 	"log"
 	"os"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // ArgConfig stores the argument passed when running the program
@@ -53,6 +54,9 @@ type ArgConfig struct {
 
 	// OutputDir is where the e2e.log and junit_01.xml is saved
 	OutputDir string
+
+	// Conformance to indicate whether we want to run conformance tests
+	ConformanceTests bool
 }
 
 func InitArgs() (*ArgConfig, error) {
@@ -73,21 +77,27 @@ func InitArgs() (*ArgConfig, error) {
 	flag.IntVar(&cfg.Parallel, "parallel", 1, "number of parallel threads in test framework.")
 	flag.IntVar(&cfg.Verbosity, "verbosity", 4, "verbosity of test framework.")
 	flag.StringVar(&cfg.OutputDir, "output-dir", outputDir, "directory for logs.")
+	flag.BoolVar(&cfg.ConformanceTests, "conformance", false, "run conformance tests.")
 
 	flag.Parse()
 
-	if cfg.Focus == "" {
-		return nil, fmt.Errorf("missing --focus argument (use '[Conformance]' to run all conformance tests)")
+	if cfg.ConformanceTests == (cfg.Focus != "") {
+		return nil, fmt.Errorf("specify either --conformance or --focus arguments, not both")
 	}
 
 	return &cfg, nil
 }
 
-func ValidateArgs(err error, client *client.Client, config *rest.Config, cfg *ArgConfig) {
-	serverVersion, err := client.ClientSet.ServerVersion()
+func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config, cfg *ArgConfig) {
+	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
 	}
+
+	if cfg.ConformanceTests {
+		cfg.Focus = "\\[Conformance\\]"
+	}
+
 	log.Printf("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
 	log.Printf("Running tests : '%s'", cfg.Focus)
