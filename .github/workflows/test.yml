@@ -44,4 +44,10 @@ jobs:
 
       - name: Run a single focused test
         run: |
-          bin/hydrophone --focus 'Simple pod should contain last line of the log'
+          bin/hydrophone --focus 'Simple pod should contain last line of the log' --output-dir ${{ github.workspace }}/results/
+
+      - name: Archive conformance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: conformance-results
+          path: ${{ github.workspace }}/results/
