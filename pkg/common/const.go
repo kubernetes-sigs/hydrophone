@@ -17,7 +17,7 @@ limitations under the License.
 package common
 
 const (
-	containerImage         = "registry.k8s.io/conformance:v1.28.0"
+	containerImage         = "registry.k8s.io/conformance:v1.29.0"
 	busyboxImage           = "registry.k8s.io/e2e-test-images/busybox:1.36.1-1"
 	Namespace              = "conformance"
 	PodName                = "e2e-conformance-test"
