@@ -18,13 +18,14 @@ package client
 
 import (
 	"context"
-	"github.com/dims/hydrophone/pkg/common"
-	"k8s.io/client-go/rest"
 	"log"
 	"os"
 	"path/filepath"
 
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
+	"github.com/dims/hydrophone/pkg/common"
 )
 
 var (

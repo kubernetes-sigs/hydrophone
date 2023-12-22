@@ -18,10 +18,11 @@ package client
 
 import (
 	"bufio"
-	"github.com/dims/hydrophone/pkg/common"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/dims/hydrophone/pkg/common"
 )
 
 // List pod resource with the given namespace

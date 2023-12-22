@@ -26,5 +26,4 @@ const (
 	ServiceAccountName     = "conformance-serviceaccount"
 	ConformanceContainer   = "conformance-container"
 	OutputContainer        = "output-container"
-	conformanceTest        = "\\[Conformance\\]"
 )

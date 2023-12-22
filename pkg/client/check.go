@@ -19,7 +19,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/dims/hydrophone/pkg/common"
 	"log"
 	"time"
 
@@ -28,6 +27,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
+
+	"github.com/dims/hydrophone/pkg/common"
 )
 
 // Contains all the necessary channels to transfer data
