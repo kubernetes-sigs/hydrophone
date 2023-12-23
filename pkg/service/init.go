@@ -170,6 +170,10 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 							Name:  "E2E_USE_GO_RUNNER",
 							Value: "true",
 						},
+						{
+							Name:  "E2E_DRYRUN",
+							Value: fmt.Sprintf("%t", cfg.DryRun),
+						},
 					},
 					VolumeMounts: []v1.VolumeMount{
 						{

@@ -58,6 +58,9 @@ type ArgConfig struct {
 
 	// Conformance to indicate whether we want to run conformance tests
 	ConformanceTests bool
+
+	// DryRun to indicate whether to run ginkgo in dry run mode
+	DryRun bool
 }
 
 func InitArgs() (*ArgConfig, error) {
@@ -79,6 +82,7 @@ func InitArgs() (*ArgConfig, error) {
 	flag.IntVar(&cfg.Verbosity, "verbosity", 4, "verbosity of test framework.")
 	flag.StringVar(&cfg.OutputDir, "output-dir", outputDir, "directory for logs.")
 	flag.BoolVar(&cfg.ConformanceTests, "conformance", false, "run conformance tests.")
+	flag.BoolVar(&cfg.DryRun, "dry-run", false, "run in dry run mode.")
 
 	flag.Parse()
 
