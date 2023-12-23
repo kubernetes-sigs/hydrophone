@@ -50,8 +50,10 @@ jobs:
       # Same tests as in https://testgrid.k8s.io/presubmits-kubernetes-blocking#pull-kubernetes-e2e-kind&width=20
       - name: Run e2e tests
         run: |
-          bin/hydrophone --parallel 25 --skip '\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist' --output-dir ${{ github.workspace }}/results/
-
+          bin/hydrophone --parallel 25 \
+          --skip '\[Serial\]|\[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist' \
+          --output-dir ${{ github.workspace }}/results/ \
+          --conformance-image registry.k8s.io/conformance:${K8S_VERSION}
       - name: Archive conformance results
         uses: actions/upload-artifact@v3
         with:

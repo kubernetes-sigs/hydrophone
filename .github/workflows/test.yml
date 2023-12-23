@@ -45,7 +45,9 @@ jobs:
 
       - name: Run a single focused test
         run: |
-          bin/hydrophone --focus 'Simple pod should contain last line of the log' --output-dir ${{ github.workspace }}/results/
+          bin/hydrophone --focus 'Simple pod should contain last line of the log' \
+          --output-dir ${{ github.workspace }}/results/ \
+          --conformance-image registry.k8s.io/conformance:${K8S_VERSION}
 
       - name: Archive conformance results
         uses: actions/upload-artifact@v3
