@@ -4,6 +4,7 @@ on: push
 
 env:
   KIND_VERSION: v0.20.0
+  K8S_VERSION: v1.29.0
 
 jobs:
   test:
@@ -30,7 +31,7 @@ jobs:
 
       - name: Create kind cluster
         run: |
-          kind create cluster
+          kind create cluster --image kindest/node:${K8S_VERSION}
 
       - name: Set up kubectl
         run: |

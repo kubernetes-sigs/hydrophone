@@ -7,6 +7,7 @@ on:
 
 env:
   KIND_VERSION: v0.20.0
+  K8S_VERSION: v1.29.0
 
 jobs:
   test:
@@ -28,7 +29,7 @@ jobs:
 
       - name: Create kind cluster with three nodes
         run: |
-          cat <<EOF | kind create cluster --config=-
+          cat <<EOF | kind create cluster --image kindest/node:${K8S_VERSION} --config=-
           kind: Cluster
           apiVersion: kind.x-k8s.io/v1alpha4
           nodes:
