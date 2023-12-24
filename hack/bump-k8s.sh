@@ -2,9 +2,8 @@
 
 set -xeuo pipefail
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-HYDROPHONE_ROOT=${SCRIPTDIR}/../
+HYDROPHONE_ROOT=$(git rev-parse --show-toplevel)
+echo "HYDROPHONE_ROOT: $HYDROPHONE_ROOT"
 
 pushd "${HYDROPHONE_ROOT}" >/dev/null
   go mod edit -json | jq -r ".Require[] | .Path | select(contains(\"k8s.io/\"))" | xargs xargs -L1 go get -d
