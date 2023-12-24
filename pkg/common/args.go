@@ -61,6 +61,9 @@ type ArgConfig struct {
 
 	// DryRun to indicate whether to run ginkgo in dry run mode
 	DryRun bool
+
+	// Cleanup indicates we should just cleanup the resources
+	Cleanup bool
 }
 
 func InitArgs() (*ArgConfig, error) {
@@ -83,6 +86,7 @@ func InitArgs() (*ArgConfig, error) {
 	flag.StringVar(&cfg.OutputDir, "output-dir", outputDir, "directory for logs.")
 	flag.BoolVar(&cfg.ConformanceTests, "conformance", false, "run conformance tests.")
 	flag.BoolVar(&cfg.DryRun, "dry-run", false, "run in dry run mode.")
+	flag.BoolVar(&cfg.Cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
 
 	flag.Parse()
 
@@ -104,19 +108,21 @@ func InitArgs() (*ArgConfig, error) {
 	return &cfg, nil
 }
 
-func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config, cfg *ArgConfig) {
+func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
 	}
 
+	log.Printf("API endpoint : %s", config.Host)
+	log.Printf("Server version : %#v", *serverVersion)
+}
+
+func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config, cfg *ArgConfig) {
 	if cfg.ConformanceTests {
 		cfg.Focus = "\\[Conformance\\]"
 	}
 
-	log.Printf("API endpoint : %s", config.Host)
-	log.Printf("Server version : %#v", *serverVersion)
-	log.Printf("Running tests : '%s'", cfg.Focus)
 	if cfg.Skip != "" {
 		log.Printf("Skipping tests : '%s'", cfg.Skip)
 	}
