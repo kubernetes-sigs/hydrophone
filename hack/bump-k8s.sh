@@ -12,8 +12,7 @@ pushd "${HYDROPHONE_ROOT}" >/dev/null
 
   K8S_VERSION=$(curl https://cdn.dl.k8s.io/release/stable.txt -s)
   sed -i "s|K8S_VERSION: .*|K8S_VERSION: $K8S_VERSION|" .github/workflows/*.yml
-  sed -i "s|conformance:v(\d+\.)?(\d+\.)?(\d+)|conformance:$K8S_VERSION|" pkg/common/*.go
-  sed -i "s|conformance:v(\d+\.)?(\d+\.)?(\d+)|conformance:$K8S_VERSION|" README.md
+  sed -i -r "s/conformance:v[0-9]+\.[0-9]+\.[0-9]+/conformance:$K8S_VERSION/g" README.md pkg/common/*.go
 
 popd >/dev/null
 git status
