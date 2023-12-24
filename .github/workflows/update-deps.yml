@@ -1,0 +1,47 @@
+name: 'Update Dependencies'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+env:
+  GOPROXY: https://proxy.golang.org
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-deps:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout hydrophone
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.5'
+
+      - name: Update Dependencies
+        id: update_deps
+        run: |
+          hack/bump-k8s.sh
+          echo 'changes<<EOF' >> $GITHUB_OUTPUT
+          git status --porcelain >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: Create PR
+        if: ${{ steps.update_deps.outputs.changes != '' }}
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: 'Update to latest Kubernetes dependencies'
+          commit-message: Update to latest Kubernetes dependencies
+          committer: github-actions <actions@github.com>
+          author: github-actions <actions@github.com>
+          branch: dependencies/update
+          base: main
+          delete-branch: true
+          labels: ok-to-test
+          body: |
+            Updating go.mod with latest kubernetes related dependencies...
