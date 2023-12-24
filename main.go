@@ -36,13 +36,18 @@ func main() {
 	config, clientSet := service.Init(cfg)
 	client.ClientSet = clientSet
 
-	common.ValidateArgs(client.ClientSet, config, cfg)
+	common.PrintInfo(client.ClientSet, config)
 
-	service.RunE2E(client.ClientSet, cfg)
-	client.PrintE2ELogs()
-	client.FetchFiles(config, clientSet, cfg.OutputDir)
-	service.Cleanup(client.ClientSet)
+	if cfg.Cleanup {
+		service.Cleanup(client.ClientSet)
+	} else {
+		common.ValidateArgs(client.ClientSet, config, cfg)
 
+		service.RunE2E(client.ClientSet, cfg)
+		client.PrintE2ELogs()
+		client.FetchFiles(config, clientSet, cfg.OutputDir)
+		service.Cleanup(client.ClientSet)
+	}
 	log.Println("Exiting with code: ", client.ExitCode)
 	os.Exit(client.ExitCode)
 }

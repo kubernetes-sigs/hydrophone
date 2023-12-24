@@ -25,6 +25,8 @@ $ bin/hydrophone --help
 Usage of bin/hydrophone:
   -busybox-image string
         specify an alternate busybox container image. (default "registry.k8s.io/e2e-test-images/busybox:1.36.1-1")
+  -cleanup
+        cleanup resources (pods, namespaces etc).
   -conformance
         run conformance tests.
   -conformance-image string
