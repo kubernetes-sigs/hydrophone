@@ -73,7 +73,7 @@ jobs:
           bin/hydrophone --focus 'Simple pod should contain last line of the log' \
           --output-dir ${{ github.workspace }}/results/ \
           --conformance-image registry.k8s.io/conformance:${K8S_VERSION} | tee /tmp/test.log
-          echo "DURATION=$(grep -oP 'Ran 1 of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/dryrun.log | cut -d. -f1)" >> $GITHUB_ENV
+          echo "DURATION=$(grep -oP 'Ran 1 of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/test.log | cut -d. -f1)" >> $GITHUB_ENV
 
       - name: Check duration
         run: |
