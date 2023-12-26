@@ -5,6 +5,8 @@ on: push
 env:
   KIND_VERSION: v0.20.0
   K8S_VERSION: v1.29.0
+  # Maximum time a dry run test should take to run in seconds
+  DRYRUN_THRESHOLD: 5
 
 jobs:
   test:
@@ -43,11 +45,42 @@ jobs:
           make build
           make test
 
+      - name: Dry run single focused test
+        run: |
+          bin/hydrophone --focus 'Simple pod should contain last line of the log' \
+          --output-dir ${{ github.workspace }}/dryrun_results/ \
+          --conformance-image registry.k8s.io/conformance:${K8S_VERSION} \
+          --dry-run | tee /tmp/dryrun.log
+          echo "DRYRUN_DURATION=$(grep -oP 'Ran 1 of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/dryrun.log | cut -d. -f1)" >> $GITHUB_ENV
+
+      - name: Check dry run duration
+        run: |
+          if [[ ${{ env.DRYRUN_DURATION }} -gt ${{ env.DRYRUN_THRESHOLD }} ]]; then 
+            echo "Focused test took too long to run. Expected less than ${{ env.DRYRUN_THRESHOLD }} seconds, got ${{ env.DRYRUN_DURATION }} seconds"
+            exit 1
+          fi
+
+      - name: Wait for cleanup
+        timeout-minutes: 5
+        run: |
+          while kubectl get namespace conformance 2>/dev/null; do
+            echo "Waiting for conformance namespace to be deleted"
+            sleep 5
+          done
+
       - name: Run a single focused test
         run: |
           bin/hydrophone --focus 'Simple pod should contain last line of the log' \
           --output-dir ${{ github.workspace }}/results/ \
-          --conformance-image registry.k8s.io/conformance:${K8S_VERSION}
+          --conformance-image registry.k8s.io/conformance:${K8S_VERSION} | tee /tmp/test.log
+          echo "DURATION=$(grep -oP 'Ran 1 of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/dryrun.log | cut -d. -f1)" >> $GITHUB_ENV
+
+      - name: Check duration
+        run: |
+          if [[ ${{ env.DURATION }} -lt ${{ env.DRYRUN_THRESHOLD }} ]]; then 
+            echo "Focused test exited too quickly, check if dry-run is enabled. Expected more than ${{ env.DRYRUN_THRESHOLD }} seconds, got ${{ env.DURATION }} seconds"
+            exit 1
+          fi
 
       - name: Archive conformance results
         uses: actions/upload-artifact@v3
