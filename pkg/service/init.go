@@ -170,10 +170,6 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 							Name:  "E2E_USE_GO_RUNNER",
 							Value: "true",
 						},
-						{
-							Name:  "E2E_DRYRUN",
-							Value: fmt.Sprintf("%t", cfg.DryRun),
-						},
 					},
 					VolumeMounts: []v1.VolumeMount{
 						{
@@ -205,6 +201,10 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 			RestartPolicy:      v1.RestartPolicyNever,
 			ServiceAccountName: "conformance-serviceaccount",
 		},
+	}
+
+	if cfg.DryRun {
+		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, DryRun())
 	}
 
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
@@ -308,4 +308,11 @@ func Cleanup(clientset *kubernetes.Clientset) {
 		}
 	}
 	log.Printf("namespace deleted %s\n", common.Namespace)
+}
+
+func DryRun() v1.EnvVar {
+	return v1.EnvVar{
+		Name:  "E2E_DRYRUN",
+		Value: "true",
+	}
 }
