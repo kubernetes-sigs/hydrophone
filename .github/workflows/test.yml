@@ -31,9 +31,23 @@ jobs:
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
 
+      - name: Create tmpfs for etcd
+        run: |
+          sudo mkdir -p /tmp/etcd
+          sudo mount -t tmpfs tmpfs /tmp/etcd
+
       - name: Create kind cluster
         run: |
-          kind create cluster --image kindest/node:${K8S_VERSION}
+          cat <<EOF | kind create cluster --image kindest/node:${K8S_VERSION} --config=-
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            extraMounts:
+            - containerPath: /var/lib/etcd
+              hostPath: /tmp/etcd
+          - role: worker
+          EOF
 
       - name: Set up kubectl
         run: |
