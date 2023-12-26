@@ -78,23 +78,22 @@ func (c *Client) PrintE2ELogs() {
 					break loop
 				}
 			}
-			c.podExitCode(pod)
 			break
 		}
 	}
 }
 
 // Wait for pod to be in terminated state and get the exit code
-func (c *Client) podExitCode(pod *v1.Pod) {
+func (c *Client) FetchExitCode() {
 	// Watching the pod's status
 	watchInterface, err := c.ClientSet.CoreV1().Pods(common.Namespace).Watch(context.TODO(), metav1.ListOptions{
-		FieldSelector: fmt.Sprintf("metadata.name=%s", pod.Name),
+		FieldSelector: fmt.Sprintf("metadata.name=%s", common.PodName),
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Waiting for pod to terminate...")
+	log.Println("Waiting for pod to terminate...")
 	for event := range watchInterface.ResultChan() {
 		pod, ok := event.Object.(*v1.Pod)
 		if !ok {

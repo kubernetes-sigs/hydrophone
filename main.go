@@ -46,6 +46,7 @@ func main() {
 		service.RunE2E(client.ClientSet, cfg)
 		client.PrintE2ELogs()
 		client.FetchFiles(config, clientSet, cfg.OutputDir)
+		client.FetchExitCode()
 		service.Cleanup(client.ClientSet)
 	}
 	log.Println("Exiting with code: ", client.ExitCode)
