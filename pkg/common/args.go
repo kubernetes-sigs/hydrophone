@@ -64,6 +64,12 @@ type ArgConfig struct {
 
 	// Cleanup indicates we should just cleanup the resources
 	Cleanup bool
+
+	// TestRepoList points to the file that has mapping of repositories for test images (KUBE_TEST_REPO_LIST)
+	TestRepoList string
+
+	// TestRepo is an alternate repository for test images (KUBE_TEST_REPO)
+	TestRepo string
 }
 
 func InitArgs() (*ArgConfig, error) {
@@ -87,6 +93,8 @@ func InitArgs() (*ArgConfig, error) {
 	flag.BoolVar(&cfg.ConformanceTests, "conformance", false, "run conformance tests.")
 	flag.BoolVar(&cfg.DryRun, "dry-run", false, "run in dry run mode.")
 	flag.BoolVar(&cfg.Cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
+	flag.StringVar(&cfg.TestRepoList, "test-repo-list", "", "yaml file to override registries for test images")
+	flag.StringVar(&cfg.TestRepo, "test-repo", "", "alternate registry for test images")
 
 	flag.Parse()
 
