@@ -247,6 +247,63 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	}
 	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
 
+	if cfg.TestRepoList != "" {
+		RepoListData, err := os.ReadFile(cfg.TestRepoList)
+		if err != nil {
+			log.Fatal(err)
+		}
+		configMap := &v1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "repo-list-config",
+				Namespace: common.Namespace,
+			},
+			Data: map[string]string{
+				"repo-list.yaml": string(RepoListData),
+			},
+		}
+
+		conformancePod.Spec.Volumes = append(conformancePod.Spec.Volumes,
+			v1.Volume{
+				Name: "repo-list-volume",
+				VolumeSource: v1.VolumeSource{
+					ConfigMap: &v1.ConfigMapVolumeSource{
+						LocalObjectReference: v1.LocalObjectReference{
+							Name: "repo-list-config",
+						},
+					},
+				},
+			})
+
+		conformancePod.Spec.Containers[0].VolumeMounts = append(conformancePod.Spec.Containers[0].VolumeMounts,
+			v1.VolumeMount{
+				Name:      "repo-list-volume",
+				MountPath: "/tmp/repo-list",
+				ReadOnly:  true,
+			})
+
+		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
+			Name:  "KUBE_TEST_REPO_LIST",
+			Value: "/tmp/repo-list/repo-list.yaml",
+		})
+
+		cm, err := clientset.CoreV1().ConfigMaps(common.Namespace).Create(ctx, configMap, metav1.CreateOptions{})
+		if err != nil {
+			if errors.IsAlreadyExists(err) {
+				log.Printf("configmap already exists %s", configMap.ObjectMeta.Name)
+			} else {
+				log.Fatal(err)
+			}
+		}
+		log.Printf("configmap created %s\n", cm.Name)
+	}
+
+	if cfg.TestRepo != "" {
+		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
+			Name:  "KUBE_TEST_REPO",
+			Value: cfg.TestRepo,
+		})
+	}
+
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {

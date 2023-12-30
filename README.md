@@ -43,6 +43,10 @@ Usage of bin/hydrophone:
         number of parallel threads in test framework. (default 1)
   -skip string
         skip specific tests. allows regular expressions.
+  -test-repo string
+        alternate registry for test images
+  -test-repo-list string
+        yaml file to override registries for test images
   -verbosity int
         verbosity of test framework. (default 4)
 ```
