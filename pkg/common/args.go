@@ -70,6 +70,9 @@ type ArgConfig struct {
 
 	// TestRepo is an alternate repository for test images (KUBE_TEST_REPO)
 	TestRepo string
+
+	// ListImages lists images that will be used for conformance tests
+	ListImages bool
 }
 
 func InitArgs() (*ArgConfig, error) {
@@ -93,8 +96,9 @@ func InitArgs() (*ArgConfig, error) {
 	flag.BoolVar(&cfg.ConformanceTests, "conformance", false, "run conformance tests.")
 	flag.BoolVar(&cfg.DryRun, "dry-run", false, "run in dry run mode.")
 	flag.BoolVar(&cfg.Cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
-	flag.StringVar(&cfg.TestRepoList, "test-repo-list", "", "yaml file to override registries for test images")
-	flag.StringVar(&cfg.TestRepo, "test-repo", "", "alternate registry for test images")
+	flag.StringVar(&cfg.TestRepoList, "test-repo-list", "", "yaml file to override registries for test images.")
+	flag.StringVar(&cfg.TestRepo, "test-repo", "", "alternate registry for test images.")
+	flag.BoolVar(&cfg.ListImages, "list-images", false, "list all images that will be used during conformance tests.")
 
 	flag.Parse()
 
