@@ -37,6 +37,8 @@ Usage of bin/hydrophone:
         focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
   -kubeconfig string
         path to the kubeconfig file.
+  -list-images
+        list all images that will be used during conformance tests.
   -output-dir string
         directory for logs. (defaults to current directory)
   -parallel int
