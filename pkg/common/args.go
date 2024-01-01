@@ -19,12 +19,13 @@ package common
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"github.com/dims/hydrophone/pkg/log"
 )
 
 // ArgConfig stores the argument passed when running the program

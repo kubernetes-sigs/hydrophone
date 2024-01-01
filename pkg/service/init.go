@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,6 +32,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/dims/hydrophone/pkg/common"
+	"github.com/dims/hydrophone/pkg/log"
 )
 
 var (
