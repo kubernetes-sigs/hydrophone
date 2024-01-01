@@ -31,7 +31,7 @@ func init() {
 	slog.SetDefault(slog.New(
 		tint.NewHandler(os.Stderr, &tint.Options{
 			Level:      slog.LevelDebug,
-			TimeFormat: time.Kitchen,
+			TimeFormat: time.TimeOnly,
 			NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
 		}),
 	))
