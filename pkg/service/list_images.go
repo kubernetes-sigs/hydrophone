@@ -21,12 +21,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/dims/hydrophone/pkg/common"
+	"github.com/dims/hydrophone/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
