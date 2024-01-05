@@ -7,6 +7,18 @@ the kubernetes release team to either run individual tests or the entire [Confor
 Design is pretty simple, it starts the conformance image as a pod in the `conformance`
 namespace, waits for it to finish and then prints out the results.
 
+### Project Goals
+
+- **Simplified Kubernetes Testing**: Easy-to-use tool for running Kubernetes conformance tests.
+- **Official Conformance Images**: Utilize official conformance images from the Kubernetes Release Team.
+- **Flexible Test Execution**: Ability to run individual test, the entire Conformance Test Suite, or anything in between.
+
+### Project Non-Goals
+
+- **Replacing Kubernetes Testing Frameworks**: Not intended to replace existimg frameworks, but to complement them.
+- **Extensive Test Development**: Focus is on running existing tests, not developing new ones.
+- **Broad Tool Integration**: Limited integration with third-party tools; maintains simplicity.
+
 ## Build
 
 ```
@@ -60,16 +72,19 @@ Usage of bin/hydrophone:
 Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone` Alternatively, you can specify the path to the kubeconfig file with the `--kubeconfig` option.
 
 To run conformance tests use:
+
 ```
 bin/hydrophone --conformance
 ```
 
 To run a specific test use:
+
 ```
 bin/hydrophone --focus 'Simple pod should contain last line of the log'
 ```
 
 To specify a version of conformance image use:
+
 ```
 bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.29.0'
 ```
@@ -77,6 +92,7 @@ bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.29.0'
 ## Troubleshooting
 
 Check if the pod is running:
+
 ```
 kubectl get pods -n conformance
 ```
@@ -86,15 +102,16 @@ use `kubectl logs` or `kubectl exec` to see what is happening in the pod.
 ## Cleanup
 
 Delete the pod
+
 ```
 kubectl delete -n conformance pods/e2e-conformance-test
 ```
 
 Delete the namespace
+
 ```
 kubectl delete -n conformance pods/e2e-conformance-test && kubectl delete ns conformance
 ```
-
 
 ## Community
 
@@ -120,8 +137,8 @@ See also: our own [contributor guide] and the Kubernetes [community page].
 
 Participation in the Kubernetes community is governed by the [Kubernetes Code of Conduct].
 
-
 <!--links-->
+
 [Kubernetes Code of Conduct]: code-of-conduct.md
 [community page]: https://kubernetes.io/community/
 [contributor guide]: https://kind.sigs.k8s.io/docs/contributing/getting-started
