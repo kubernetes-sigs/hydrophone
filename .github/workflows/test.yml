@@ -1,6 +1,10 @@
 name: Test with Kind
 
-on: push
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 env:
   KIND_VERSION: v0.20.0
