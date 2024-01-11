@@ -29,7 +29,7 @@ go build -o bin/hydrophone main.go
 ## Install
 
 ```
-go install github.com/kubernetes-sigs/hydrophone@latest
+go install sigs.k8s.io/hydrophone@latest
 ```
 
 ## Command line options
@@ -141,11 +141,11 @@ Participation in the Kubernetes community is governed by the [Kubernetes Code of
 
 [Kubernetes Code of Conduct]: code-of-conduct.md
 [community page]: https://kubernetes.io/community/
-[contributor guide]: https://github.com/kubernetes-sigs/hydrophone/blob/main/CONTRIBUTING.md
+[contributor guide]: https://sigs.k8s.io/hydrophone/blob/main/CONTRIBUTING.md
 [issue tracker]: https://github.com/kubernetes-sigs/hydrophone/issues
 [@dims]: https://github.com/dims
 [@rjsadow]: https://github.com/rjsadow
-[filing an issue]: https://github.com/kubernetes-sigs/hydrophone/issues/new
+[filing an issue]: https://sigs.k8s.io/hydrophone/issues/new
 [Kubernetes Slack]: http://slack.k8s.io/
 [SIG-Testing Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-testing
 [SIG-Release Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-release

@@ -24,8 +24,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/kubernetes-sigs/hydrophone/pkg/common"
-	"github.com/kubernetes-sigs/hydrophone/pkg/log"
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 var (

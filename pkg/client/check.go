@@ -27,8 +27,8 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/kubernetes-sigs/hydrophone/pkg/common"
-	"github.com/kubernetes-sigs/hydrophone/pkg/log"
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // Contains all the necessary channels to transfer data
