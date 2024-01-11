@@ -1,4 +1,4 @@
-module github.com/kubernetes-sigs/hydrophone
+module sigs.k8s.io/hydrophone
 
 go 1.21
 

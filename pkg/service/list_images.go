@@ -25,8 +25,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kubernetes-sigs/hydrophone/pkg/common"
-	"github.com/kubernetes-sigs/hydrophone/pkg/log"
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

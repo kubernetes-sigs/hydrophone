@@ -19,10 +19,10 @@ package main
 import (
 	"os"
 
-	"github.com/kubernetes-sigs/hydrophone/pkg/client"
-	"github.com/kubernetes-sigs/hydrophone/pkg/common"
-	"github.com/kubernetes-sigs/hydrophone/pkg/log"
-	"github.com/kubernetes-sigs/hydrophone/pkg/service"
+	"sigs.k8s.io/hydrophone/pkg/client"
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
+	"sigs.k8s.io/hydrophone/pkg/service"
 )
 
 func main() {

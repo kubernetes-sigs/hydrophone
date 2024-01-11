@@ -26,7 +26,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 
-	"github.com/kubernetes-sigs/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/common"
 )
 
 func downloadFile(config *rest.Config, clientset *kubernetes.Clientset,
