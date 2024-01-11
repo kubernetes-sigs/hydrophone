@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/dims/hydrophone/pkg/log"
+	"github.com/kubernetes-sigs/hydrophone/pkg/log"
 )
 
 // ArgConfig stores the argument passed when running the program
