@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"sigs.k8s.io/hydrophone/pkg/client"
@@ -26,6 +27,7 @@ import (
 )
 
 func main() {
+	fmt.Println("TEST")
 	client := client.NewClient()
 
 	cfg, err := common.InitArgs()
