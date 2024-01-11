@@ -22,7 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/dims/hydrophone/pkg/common"
+	"github.com/kubernetes-sigs/hydrophone/pkg/common"
 )
 
 // List pod resource with the given namespace
