@@ -122,7 +122,7 @@ func InitArgs() (*ArgConfig, error) {
 	return &cfg, nil
 }
 
-// PrintInfo prints the information about the cluster
+// prints the information about the cluster
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {

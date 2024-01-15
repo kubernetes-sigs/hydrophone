@@ -23,7 +23,7 @@ set -o pipefail
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 
 if ! command -v golint &> /dev/null; then
-  go get golang.org/x/lint/golint
+  go install golang.org/x/lint/golint@latest
 fi
 
 cd "${KUBE_ROOT}"
