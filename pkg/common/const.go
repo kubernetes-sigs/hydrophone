@@ -17,13 +17,22 @@ limitations under the License.
 package common
 
 const (
-	containerImage         = "registry.k8s.io/conformance:v1.29.0"
-	busyboxImage           = "registry.k8s.io/e2e-test-images/busybox:1.36.1-1"
-	Namespace              = "conformance"
-	PodName                = "e2e-conformance-test"
+	// containerImage is the default contaimer image used to run the conformance tests
+	containerImage = "registry.k8s.io/conformance:v1.29.0"
+	// busyboxImage is the image used to extract the e2e logs
+	busyboxImage = "registry.k8s.io/e2e-test-images/busybox:1.36.1-1"
+	// Namespace is the namespace where the conformance pod is created
+	Namespace = "conformance"
+	// PodName is the name of the conformance pod
+	PodName = "e2e-conformance-test"
+	// ClusterRoleBindingName is the name of the cluster role binding
 	ClusterRoleBindingName = "conformance-serviceaccount-role"
-	ClusterRoleName        = "conformance-serviceaccount"
-	ServiceAccountName     = "conformance-serviceaccount"
-	ConformanceContainer   = "conformance-container"
-	OutputContainer        = "output-container"
+	// ClusterRoleName is the name of the cluster role
+	ClusterRoleName = "conformance-serviceaccount"
+	// ServiceAccountName is the name of the service account
+	ServiceAccountName = "conformance-serviceaccount"
+	// ConformanceContainer is the name of the conformance container
+	ConformanceContainer = "conformance-container"
+	// OutputContainer is the name of the busybox container
+	OutputContainer = "output-container"
 )

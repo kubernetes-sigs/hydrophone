@@ -76,6 +76,7 @@ type ArgConfig struct {
 	ListImages bool
 }
 
+// InitArgs initializes the arguments passed to the program
 func InitArgs() (*ArgConfig, error) {
 	var cfg ArgConfig
 
@@ -121,6 +122,7 @@ func InitArgs() (*ArgConfig, error) {
 	return &cfg, nil
 }
 
+// PrintInfo prints the information about the cluster
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
@@ -131,6 +133,8 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	log.Printf("Server version : %#v", *serverVersion)
 }
 
+// ValidateArgs validates the arguments passed to the program
+// and creates the output directory if it doesn't exist
 func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config, cfg *ArgConfig) {
 	if cfg.ConformanceTests {
 		cfg.Focus = "\\[Conformance\\]"

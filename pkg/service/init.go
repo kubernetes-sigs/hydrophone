@@ -76,6 +76,7 @@ func getKubeConfig(kubeconfig string) string {
 	return kubeconfig
 }
 
+// RunE2E sets up the necessary resources and runs E2E conformance tests.
 func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -315,6 +316,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	log.Printf("pod created %s\n", pod.Name)
 }
 
+// Cleanup removes all resources created during E2E tests.
 func Cleanup(clientset *kubernetes.Clientset) {
 	err := clientset.CoreV1().Pods(common.Namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {
@@ -367,6 +369,7 @@ func Cleanup(clientset *kubernetes.Clientset) {
 	log.Printf("namespace deleted %s\n", common.Namespace)
 }
 
+// DryRun returns an environment variable to tell the conformance test to run in dry run mode.
 func DryRun() v1.EnvVar {
 	return v1.EnvVar{
 		Name:  "E2E_DRYRUN",
