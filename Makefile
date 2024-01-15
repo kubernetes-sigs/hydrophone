@@ -23,3 +23,6 @@ fmt:
 
 test:
 	go test ./...
+
+verify:
+	@hack/verify.sh

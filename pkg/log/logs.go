@@ -18,10 +18,11 @@ package log
 
 import (
 	"fmt"
-	"github.com/mattn/go-isatty"
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/mattn/go-isatty"
 
 	"github.com/lmittmann/tint"
 )
@@ -37,20 +38,24 @@ func init() {
 	))
 }
 
+// Fatal logs an error message from the given arguments and exits the program.
 func Fatal(v ...any) {
 	slog.Error(fmt.Sprint(v...))
 	os.Exit(1)
 }
 
+// Fatalf logs an error message with formatted output and exits the program.
 func Fatalf(format string, v ...any) {
 	slog.Error(fmt.Sprintf(format, v...))
 	os.Exit(1)
 }
 
+// Printf logs an info message with formatted output.
 func Printf(format string, v ...any) {
 	slog.Info(fmt.Sprintf(format, v...))
 }
 
+// Println logs an info message from the given arguments.
 func Println(v ...any) {
 	slog.Info(fmt.Sprint(v...))
 }

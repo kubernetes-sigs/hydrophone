@@ -38,7 +38,7 @@ type streamLogs struct {
 	doneCh chan bool
 }
 
-// Check for Pod and start a go routine if new deployment added
+// PrintE2ELogs checks for Pod and start a go routine if new deployment added
 func (c *Client) PrintE2ELogs() {
 	informerFactory := informers.NewSharedInformerFactory(c.ClientSet, 10*time.Second)
 
@@ -83,7 +83,7 @@ func (c *Client) PrintE2ELogs() {
 	}
 }
 
-// Wait for pod to be in terminated state and get the exit code
+// FetchExitCode waits for pod to be in terminated state and get the exit code
 func (c *Client) FetchExitCode() {
 	// Watching the pod's status
 	watchInterface, err := c.ClientSet.CoreV1().Pods(common.Namespace).Watch(context.TODO(), metav1.ListOptions{
