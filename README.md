@@ -15,7 +15,7 @@ namespace, waits for it to finish and then prints out the results.
 
 ### Project Non-Goals
 
-- **Replacing Kubernetes Testing Frameworks**: Not intended to replace existimg frameworks, but to complement them.
+- **Replacing Kubernetes Testing Frameworks**: Not intended to replace existing frameworks, but to complement them.
 - **Extensive Test Development**: Focus is on running existing tests, not developing new ones.
 - **Broad Tool Integration**: Limited integration with third-party tools; maintains simplicity.
 
