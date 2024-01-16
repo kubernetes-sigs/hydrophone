@@ -24,6 +24,7 @@ DRYRUN_THRESHOLD=${DRYRUN_DURATION:-5}
 
 # Set the artifacts directory, defaulting to a local subdirectory
 export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
+mkdir -p "${ARTIFACTS}/dryrun-results"
 mkdir -p "${ARTIFACTS}/results"
 
 # Download and install kind
@@ -47,7 +48,7 @@ kubectl get nodes
 # Execute hydrophone with specific parameters and log output
 bin/hydrophone \
   --focus 'Simple pod should contain last line of the log' \
-  --output-dir ${ARTIFACTS}/results/ \
+  --output-dir ${ARTIFACTS}/dryrun-results/ \
   --conformance-image registry.k8s.io/conformance:${K8S_VERSION} \
   --dry-run | tee /tmp/dryrun.log
 
@@ -69,9 +70,9 @@ bin/hydrophone \
   --focus 'Simple pod should contain last line of the log' \
   --output-dir ${ARTIFACTS}/results/ \
   --conformance-image registry.k8s.io/conformance:${K8S_VERSION} | tee /tmp/test.log
-DURATION=$(grep -oP 'Ran 1 of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/test.log | cut -d. -f1)
 
 # Check duration
+DURATION=$(grep -oP 'Ran 1 of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/test.log | cut -d. -f1)
 if [[ ${DURATION} -lt ${DRYRUN_THRESHOLD} ]]; then 
   echo "Focused test exited too quickly, check if dry-run is enabled. Expected more than ${DRYRUN_THRESHOLD} seconds, got ${DURATION} seconds"
   exit 1
