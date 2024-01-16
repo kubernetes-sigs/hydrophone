@@ -28,6 +28,8 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
+var containerImage string
+
 // ArgConfig stores the argument passed when running the program
 type ArgConfig struct {
 	// Focus set the E2E_FOCUS env var to run a specific test
@@ -87,7 +89,7 @@ func InitArgs() (*ArgConfig, error) {
 
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
-	flag.StringVar(&cfg.ConformanceImage, "conformance-image", containerImage,
+	flag.StringVar(&cfg.ConformanceImage, "conformance-image", fmt.Sprintf("registry.k8s.io/conformance:%s", containerImage),
 		"specify a conformance container image of your choice.")
 	flag.StringVar(&cfg.BusyboxImage, "busybox-image", busyboxImage,
 		"specify an alternate busybox container image.")
@@ -128,6 +130,7 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
 	}
+	containerImage = serverVersion.String()
 
 	log.Printf("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
