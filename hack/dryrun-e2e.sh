@@ -57,3 +57,22 @@ if [[ ${DRYRUN_DURATION} -gt ${DRYRUN_THRESHOLD} ]]; then
   echo "Focused test took too long to run. Expected less than ${DRYRUN_THRESHOLD} seconds, got ${DRYRUN_DURATION} seconds"
   exit 1
 fi
+
+# Wait for cleanup
+while kubectl get namespace conformance 2>/dev/null; do
+  echo "Waiting for conformance namespace to be deleted"
+  sleep 5
+done
+
+# Run a single focused test
+bin/hydrophone \
+  --focus 'Simple pod should contain last line of the log' \
+  --output-dir ${ARTIFACTS}/results/ \
+  --conformance-image registry.k8s.io/conformance:${K8S_VERSION} | tee /tmp/test.log
+DURATION=$(grep -oP 'Ran 1 of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/test.log | cut -d. -f1)
+
+# Check duration
+if [[ ${DURATION} -lt ${DRYRUN_THRESHOLD} ]]; then 
+  echo "Focused test exited too quickly, check if dry-run is enabled. Expected more than ${DRYRUN_THRESHOLD} seconds, got ${DURATION} seconds"
+  exit 1
+fi
