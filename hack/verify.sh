@@ -20,13 +20,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+PROJ_ROOT=$(git rev-parse --show-toplevel)
+# Ensure that gopath is in the path
+PATH=$PATH:$GOPATH/bin
 
 if ! command -v golint &> /dev/null; then
-  go get golang.org/x/lint/golint
+  go install golang.org/x/lint/golint@latest
 fi
 
-cd "${KUBE_ROOT}"
+cd "${PROJ_ROOT}"
 
 # Run gofmt against all go files
 echo "Running gofmt..."
