@@ -87,7 +87,7 @@ EXTRA_ARGS=${EXTRA_ARGS:-""}
 export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
 mkdir -p "${ARTIFACTS}/results"
 
-# if dDRYRUN is set, add --dry-run to the EXTRA_ARGS
+# if DRYRUN is set, add --dry-run to the EXTRA_ARGS
 if [[ ${DRYRUN} == "true" ]]; then
   EXTRA_ARGS="${EXTRA_ARGS} --dry-run"
 fi
