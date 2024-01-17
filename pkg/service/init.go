@@ -144,7 +144,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 			Containers: []v1.Container{
 				{
 					Name:            common.ConformanceContainer,
-					Image:           cfg.ConformanceImage,
+					Image:           common.ConformanceImage,
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
 						{

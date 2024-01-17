@@ -36,7 +36,7 @@ func main() {
 	config, clientSet := service.Init(cfg)
 	client.ClientSet = clientSet
 
-	common.PrintInfo(client.ClientSet, config, cfg)
+	common.PrintInfo(client.ClientSet, config)
 
 	if cfg.ListImages {
 		service.PrintListImages(cfg, client.ClientSet, config)

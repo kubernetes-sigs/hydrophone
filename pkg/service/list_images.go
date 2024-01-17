@@ -51,7 +51,7 @@ func PrintListImages(cfg *common.ArgConfig, clientSet *kubernetes.Clientset, con
 			Containers: []corev1.Container{
 				{
 					Name:  common.ConformanceContainer,
-					Image: cfg.ConformanceImage,
+					Image: common.ConformanceImage,
 					Command: []string{
 						"/usr/local/bin/e2e.test",
 						"--list-images",
