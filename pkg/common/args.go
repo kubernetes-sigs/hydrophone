@@ -91,7 +91,7 @@ func InitArgs() (*ArgConfig, error) {
 
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
-	flag.StringVar(&cfg.ConformanceImage, "conformance-image", "","specify a conformance container image of your choice.")
+	flag.StringVar(&cfg.ConformanceImage, "conformance-image", "", "specify a conformance container image of your choice.")
 	flag.StringVar(&cfg.BusyboxImage, "busybox-image", busyboxImage,
 		"specify an alternate busybox container image.")
 	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
