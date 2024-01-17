@@ -44,8 +44,6 @@ function run_test {
   fi
 
   bin/hydrophone \
-    --focus "${FOCUS}" \
-    --skip "${SKIP}" \
     --output-dir ${ARTIFACTS}/results/ \
     --conformance-image registry.k8s.io/conformance:${K8S_VERSION} \
     $EXTRA_ARGS| tee /tmp/test.log
@@ -95,6 +93,8 @@ fi
 # If CONFORMANCE is set, add --conformance to the EXTRA_ARGS
 if [[ ${CONFORMANCE} == "true" ]]; then
   EXTRA_ARGS="${EXTRA_ARGS} --conformance"
+else 
+  EXTRA_ARGS="${EXTRA_ARGS} --focus ${FOCUS} --skip ${SKIP}"
 fi
 
 setup_kind
