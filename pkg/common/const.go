@@ -17,8 +17,6 @@ limitations under the License.
 package common
 
 const (
-	// containerImage is the default contaimer image used to run the conformance tests
-	containerImage = "registry.k8s.io/conformance:v1.29.0"
 	// busyboxImage is the image used to extract the e2e logs
 	busyboxImage = "registry.k8s.io/e2e-test-images/busybox:1.36.1-1"
 	// Namespace is the namespace where the conformance pod is created

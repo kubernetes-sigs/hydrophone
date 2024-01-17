@@ -28,6 +28,9 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
+// ConformanceImage is used to define the container image being used to run the conformance tests
+var ConformanceImage string
+
 // ArgConfig stores the argument passed when running the program
 type ArgConfig struct {
 	// Focus set the E2E_FOCUS env var to run a specific test
@@ -78,6 +81,7 @@ type ArgConfig struct {
 
 // InitArgs initializes the arguments passed to the program
 func InitArgs() (*ArgConfig, error) {
+
 	var cfg ArgConfig
 
 	outputDir, err := os.Getwd()
@@ -87,8 +91,7 @@ func InitArgs() (*ArgConfig, error) {
 
 	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
-	flag.StringVar(&cfg.ConformanceImage, "conformance-image", containerImage,
-		"specify a conformance container image of your choice.")
+	flag.StringVar(&cfg.ConformanceImage, "conformance-image", "", "specify a conformance container image of your choice.")
 	flag.StringVar(&cfg.BusyboxImage, "busybox-image", busyboxImage,
 		"specify an alternate busybox container image.")
 	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
@@ -119,6 +122,8 @@ func InitArgs() (*ArgConfig, error) {
 		return nil, fmt.Errorf("specify either --conformance or --focus arguments, not both")
 	}
 
+	ConformanceImage = cfg.ConformanceImage
+
 	return &cfg, nil
 }
 
@@ -127,6 +132,10 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
+	}
+
+	if ConformanceImage == "" {
+		ConformanceImage = fmt.Sprintf("registry.k8s.io/conformance:%s", serverVersion.String())
 	}
 
 	log.Printf("API endpoint : %s", config.Host)
@@ -143,7 +152,7 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config, cfg *Arg
 	if cfg.Skip != "" {
 		log.Printf("Skipping tests : '%s'", cfg.Skip)
 	}
-	log.Printf("Using conformance image : '%s'", cfg.ConformanceImage)
+	log.Printf("Using conformance image : '%s'", ConformanceImage)
 	log.Printf("Using busybox image : '%s'", cfg.BusyboxImage)
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
 		cfg.Parallel, cfg.Verbosity)
