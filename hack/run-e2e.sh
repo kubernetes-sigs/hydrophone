@@ -46,6 +46,8 @@ function run_test {
   bin/hydrophone \
     --output-dir ${ARTIFACTS}/results/ \
     --conformance-image registry.k8s.io/conformance:${K8S_VERSION} \
+    --focus "${FOCUS}" \
+    --skip "${SKIP}" \
     $EXTRA_ARGS| tee /tmp/test.log
   
   # Check if $CHECK_DURATION is set to true
@@ -93,9 +95,7 @@ fi
 
 # If CONFORMANCE is set, add --conformance to the EXTRA_ARGS
 if [[ ${CONFORMANCE} == "true" ]]; then
-  EXTRA_ARGS="${EXTRA_ARGS} --conformance"
-else 
-  EXTRA_ARGS="${EXTRA_ARGS} --focus ${FOCUS} --skip ${SKIP}"
+  FOCUS="\\[Conformance\\]"
 fi
 
 setup_kind
