@@ -80,6 +80,7 @@ SKIP=${SKIP:-""}
 DRYRUN=${DRYRUN:-"false"}
 CONFORMANCE=${CONFORMANCE:-"false"}
 EXTRA_ARGS=${EXTRA_ARGS:-""}
+CHECK_DURATION=${CHECK_DURATION:-"false"}
 
 # Set the artifacts directory, defaulting to a local subdirectory
 export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
