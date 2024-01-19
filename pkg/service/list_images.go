@@ -36,7 +36,7 @@ import (
 
 // PrintListImages creates and runs a conformance image with the --list-images flag
 // This will print a list of all the images used by the conformance image.
-func PrintListImages(cfg *common.ArgConfig, clientSet *kubernetes.Clientset, config *rest.Config) {
+func PrintListImages(clientSet *kubernetes.Clientset) {
 	// Create a pod object definition
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
