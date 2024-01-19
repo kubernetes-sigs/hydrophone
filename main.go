@@ -39,7 +39,7 @@ func main() {
 	common.PrintInfo(client.ClientSet, config)
 
 	if cfg.ListImages {
-		service.PrintListImages(cfg, client.ClientSet, config)
+		service.PrintListImages(client.ClientSet)
 	} else if cfg.Cleanup {
 		service.Cleanup(client.ClientSet)
 	} else {
