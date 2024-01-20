@@ -28,14 +28,6 @@ var (
 	clientSet  *kubernetes.Clientset
 )
 
-type RootCommand struct {
-	client *client.Client
-}
-
-func NewRootCommand() *RootCommand {
-	return &RootCommand{}
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "hydrohpone",
 	Short: "Hydrophone is a lightweight runner for kubernetes tests.",
@@ -89,7 +81,6 @@ func initConfig() {
 		viper.SetConfigName("hydrophone")
 
 		if err := viper.ReadInConfig(); err != nil {
-			fmt.Println(err)
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 				err := viper.SafeWriteConfig()
 				if err != nil {
