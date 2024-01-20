@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -40,11 +41,9 @@ var (
 )
 
 // Init Initializes the kube config clientset
-func Init(cfg *common.ArgConfig) (*rest.Config, *kubernetes.Clientset) {
+func Init(kubeconfig string) (*rest.Config, *kubernetes.Clientset) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		kubeconfig := getKubeConfig(cfg.Kubeconfig)
-
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
 			log.Fatalf("kubeconfig can't be loaded: %v\n", err)
@@ -59,7 +58,7 @@ func Init(cfg *common.ArgConfig) (*rest.Config, *kubernetes.Clientset) {
 	return config, clientset
 }
 
-func getKubeConfig(kubeconfig string) string {
+func GetKubeConfig(kubeconfig string) string {
 	homeDir := os.Getenv("HOME")
 	if kubeconfig == "" {
 		kubeconfig = filepath.Join(homeDir, ".kube", "config")
@@ -77,7 +76,7 @@ func getKubeConfig(kubeconfig string) string {
 }
 
 // RunE2E sets up the necessary resources and runs E2E conformance tests.
-func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
+func RunE2E(clientset *kubernetes.Clientset) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: common.Namespace,
@@ -144,16 +143,16 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 			Containers: []v1.Container{
 				{
 					Name:            common.ConformanceContainer,
-					Image:           common.ConformanceImage,
+					Image:           viper.GetString("conformance-image"),
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
 						{
 							Name:  "E2E_FOCUS",
-							Value: fmt.Sprintf("%s", cfg.Focus),
+							Value: fmt.Sprintf("%s", viper.Get("focus")),
 						},
 						{
 							Name:  "E2E_SKIP",
-							Value: fmt.Sprintf("%s", cfg.Skip),
+							Value: fmt.Sprintf("%s", viper.Get("skip")),
 						},
 						{
 							Name:  "E2E_PROVIDER",
@@ -161,11 +160,11 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 						},
 						{
 							Name:  "E2E_PARALLEL",
-							Value: fmt.Sprintf("%d", cfg.Parallel),
+							Value: fmt.Sprintf("%d", viper.Get("parallel")),
 						},
 						{
 							Name:  "E2E_VERBOSITY",
-							Value: fmt.Sprintf("%d", cfg.Verbosity),
+							Value: fmt.Sprintf("%d", viper.Get("verbosity")),
 						},
 						{
 							Name:  "E2E_USE_GO_RUNNER",
@@ -181,7 +180,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 				},
 				{
 					Name:    common.OutputContainer,
-					Image:   cfg.BusyboxImage,
+					Image:   viper.GetString("busybox-image"),
 					Command: []string{"/bin/sh", "-c", "sleep infinity"},
 					VolumeMounts: []v1.VolumeMount{
 						{
@@ -204,7 +203,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 		},
 	}
 
-	if cfg.DryRun {
+	if viper.GetBool("dry-run") {
 		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, DryRun())
 	}
 
@@ -248,8 +247,8 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	}
 	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
 
-	if cfg.TestRepoList != "" {
-		RepoListData, err := os.ReadFile(cfg.TestRepoList)
+	if viper.GetString("test-repo-list") != "" {
+		RepoListData, err := os.ReadFile(viper.GetString("test-repo-list"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -298,10 +297,10 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 		log.Printf("configmap created %s\n", cm.Name)
 	}
 
-	if cfg.TestRepo != "" {
+	if viper.GetString("test-repo") != "" {
 		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
 			Name:  "KUBE_TEST_REPO",
-			Value: cfg.TestRepo,
+			Value: viper.GetString("test-repo"),
 		})
 	}
 

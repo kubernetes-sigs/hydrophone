@@ -17,40 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"os"
-
-	"sigs.k8s.io/hydrophone/pkg/client"
-	"sigs.k8s.io/hydrophone/pkg/common"
-	"sigs.k8s.io/hydrophone/pkg/log"
-	"sigs.k8s.io/hydrophone/pkg/service"
+	"sigs.k8s.io/hydrophone/cmd"
 )
 
 func main() {
-	client := client.NewClient()
-
-	cfg, err := common.InitArgs()
-	if err != nil {
-		log.Fatal("Error parsing arguments: ", err)
-	}
-
-	config, clientSet := service.Init(cfg)
-	client.ClientSet = clientSet
-
-	common.PrintInfo(client.ClientSet, config)
-
-	if cfg.ListImages {
-		service.PrintListImages(client.ClientSet)
-	} else if cfg.Cleanup {
-		service.Cleanup(client.ClientSet)
-	} else {
-		common.ValidateArgs(client.ClientSet, config, cfg)
-
-		service.RunE2E(client.ClientSet, cfg)
-		client.PrintE2ELogs()
-		client.FetchFiles(config, clientSet, cfg.OutputDir)
-		client.FetchExitCode()
-		service.Cleanup(client.ClientSet)
-	}
-	log.Println("Exiting with code: ", client.ExitCode)
-	os.Exit(client.ExitCode)
+	cmd.Execute()
 }
