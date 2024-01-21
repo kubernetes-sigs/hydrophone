@@ -56,7 +56,10 @@ func init() {
 	viper.BindPFlag("skip", RunCommand.Flags().Lookup("skip"))
 
 	RunCommand.Flags().StringVar(&conformanceImage, "conformance-image", "", "specify a conformance container image of your choice.")
+	viper.BindPFlag("conformance-image", RunCommand.Flags().Lookup("conformance-image"))
+
 	RunCommand.Flags().StringVar(&busyboxImage, "busybox-image", "", "specify an alternate busybox container image.")
+	viper.BindPFlag("busybox-image", RunCommand.Flags().Lookup("busybox-image"))
 
 	RunCommand.Flags().BoolVar(&dryRun, "dry-run", false, "run in dry run mode.")
 	viper.BindPFlag("dry-run", RunCommand.Flags().Lookup("dry-run"))

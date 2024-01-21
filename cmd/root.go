@@ -8,12 +8,9 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"sigs.k8s.io/hydrophone/cmd/cleanup"
-	"sigs.k8s.io/hydrophone/cmd/listimages"
 	"sigs.k8s.io/hydrophone/cmd/run"
 	"sigs.k8s.io/hydrophone/pkg/client"
+	"sigs.k8s.io/hydrophone/pkg/common"
 	"sigs.k8s.io/hydrophone/pkg/service"
 )
 
@@ -23,15 +20,36 @@ var (
 	parallel   int
 	verbosity  int
 	outputDir  string
-	Config     *rest.Config
-	Client     *client.Client
-	clientSet  *kubernetes.Clientset
+	cleanup    bool
+	listImages bool
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "hydrohpone",
 	Short: "Hydrophone is a lightweight runner for kubernetes tests.",
 	Long:  `Hydrophone is a lightweight runner for kubernetes tests.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if cleanup {
+			client := client.NewClient()
+			config, clientSet := service.Init(viper.GetString("kubeconfig"))
+			client.ClientSet = clientSet
+			common.PrintInfo(client.ClientSet, config)
+			service.Cleanup(client.ClientSet)
+
+			log.Println("Exiting with code: ", client.ExitCode)
+			os.Exit(client.ExitCode)
+		}
+		if listImages {
+			client := client.NewClient()
+			config, clientSet := service.Init(viper.GetString("kubeconfig"))
+			client.ClientSet = clientSet
+			common.PrintInfo(client.ClientSet, config)
+			service.PrintListImages(client.ClientSet)
+
+			log.Println("Exiting with code: ", client.ExitCode)
+			os.Exit(client.ExitCode)
+		}
+	},
 }
 
 func Execute() {
@@ -48,13 +66,9 @@ func init() {
 	}
 
 	cobra.OnInitialize(initConfig)
+	rootCmd.AddCommand(run.RunCommand)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("Default config file (%s/hydrophone/hydrophone.yaml)", xdg.ConfigHome))
-
-	rootCmd.AddCommand(run.RunCommand)
-	rootCmd.AddCommand(cleanup.CleanupCommand)
-	rootCmd.AddCommand(listimages.ListImagesCommand)
-
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 
 	rootCmd.PersistentFlags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework.")
@@ -66,6 +80,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&outputDir, "output-dir", workingDir, "directory for logs.")
 	viper.BindPFlag("output-dir", rootCmd.PersistentFlags().Lookup("output-dir"))
 
+	rootCmd.Flags().BoolVar(&cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
+	viper.BindPFlag("cleanup", rootCmd.Flags().Lookup("cleanup"))
+
+	rootCmd.Flags().BoolVar(&listImages, "list-images", false, "list all images that will be used during conformance tests.")
+	viper.BindPFlag("list-images", rootCmd.Flags().Lookup("list-images"))
 }
 
 func initConfig() {
