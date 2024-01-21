@@ -81,17 +81,17 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("Default config file (%s/hydrophone/hydrophone.yaml)", xdg.ConfigHome))
-	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
+	rootCmd.Flags().StringVar(&cfgFile, "config", "", fmt.Sprintf("Default config file (%s/hydrophone/hydrophone.yaml)", xdg.ConfigHome))
+	rootCmd.Flags().StringVar(&kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 
-	rootCmd.PersistentFlags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework.")
-	viper.BindPFlag("parallel", rootCmd.PersistentFlags().Lookup("parallel"))
+	rootCmd.Flags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework.")
+	viper.BindPFlag("parallel", rootCmd.Flags().Lookup("parallel"))
 
-	rootCmd.PersistentFlags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework.")
-	viper.BindPFlag("verbosity", rootCmd.PersistentFlags().Lookup("verbosity"))
+	rootCmd.Flags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework.")
+	viper.BindPFlag("verbosity", rootCmd.Flags().Lookup("verbosity"))
 
-	rootCmd.PersistentFlags().StringVar(&outputDir, "output-dir", workingDir, "directory for logs.")
-	viper.BindPFlag("output-dir", rootCmd.PersistentFlags().Lookup("output-dir"))
+	rootCmd.Flags().StringVar(&outputDir, "output-dir", workingDir, "directory for logs.")
+	viper.BindPFlag("output-dir", rootCmd.Flags().Lookup("output-dir"))
 
 	rootCmd.Flags().BoolVar(&cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
 
