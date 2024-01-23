@@ -58,6 +58,7 @@ func Init(kubeconfig string) (*rest.Config, *kubernetes.Clientset) {
 	return config, clientset
 }
 
+// GetKubeConfig returns the path to the Kubernetes configuration file
 func GetKubeConfig(kubeconfig string) string {
 	homeDir := os.Getenv("HOME")
 	if kubeconfig == "" {

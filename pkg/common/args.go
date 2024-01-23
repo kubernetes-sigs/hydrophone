@@ -48,7 +48,7 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 // and creates the output directory if it doesn't exist
 func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if viper.Get("focus") == "" {
-		viper.Set("focus", viper.Get("conformance-image"))
+		viper.Set("focus", "\\[Conformance\\]")
 	}
 
 	if viper.Get("skip") != "" {

@@ -35,14 +35,6 @@ var rootCmd = &cobra.Command{
 	Use:   "hydrohpone",
 	Short: "Hydrophone is a lightweight runner for kubernetes tests.",
 	Long:  `Hydrophone is a lightweight runner for kubernetes tests.`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		if conformance && focus != "" {
-			conformance = false
-			focus = ""
-			log.Fatal("specify either --conformance or --focus arguments, not both")
-			os.Exit(1)
-		}
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		client := client.NewClient()
 		config, clientSet := service.Init(viper.GetString("kubeconfig"))
@@ -66,9 +58,11 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 }
@@ -100,6 +94,7 @@ func init() {
 	rootCmd.Flags().BoolVar(&conformance, "conformance", false, "run conformance tests.")
 
 	rootCmd.Flags().StringVar(&focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
+	viper.BindPFlag("focus", rootCmd.Flags().Lookup("focus"))
 
 	rootCmd.Flags().StringVar(&skip, "skip", "", "skip specific tests. allows regular expressions.")
 	viper.BindPFlag("skip", rootCmd.Flags().Lookup("skip"))
@@ -118,6 +113,8 @@ func init() {
 
 	rootCmd.Flags().StringVar(&testRepo, "test-repo", "", "skip specific tests. allows regular expressions.")
 	viper.BindPFlag("test-repo", rootCmd.Flags().Lookup("test-repo"))
+
+	rootCmd.MarkFlagsMutuallyExclusive("conformance", "focus", "cleanup", "list-images")
 }
 
 func initConfig() {
@@ -136,10 +133,10 @@ func initConfig() {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 				err := viper.SafeWriteConfig()
 				if err != nil {
-					fmt.Println("Error:", err)
+					log.Println("Error:", err)
 				}
 			} else {
-				fmt.Println(err)
+				log.Println(err)
 			}
 		}
 	}
