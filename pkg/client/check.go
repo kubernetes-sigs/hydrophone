@@ -60,9 +60,6 @@ func (c *Client) PrintE2ELogs() {
 			}
 
 			go getPodLogs(c.ClientSet, stream)
-			if err != nil {
-				log.Fatal(err)
-			}
 
 		loop:
 			for {
