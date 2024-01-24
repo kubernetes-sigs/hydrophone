@@ -80,7 +80,7 @@ func getKubeConfig(kubeconfig string) string {
 func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: common.Namespace,
+			Name: cfg.Namespace,
 		},
 	}
 
@@ -256,7 +256,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 		configMap := &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "repo-list-config",
-				Namespace: common.Namespace,
+				Namespace: cfg.Namespace,
 			},
 			Data: map[string]string{
 				"repo-list.yaml": string(RepoListData),
@@ -287,7 +287,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 			Value: "/tmp/repo-list/repo-list.yaml",
 		})
 
-		cm, err := clientset.CoreV1().ConfigMaps(common.Namespace).Create(ctx, configMap, metav1.CreateOptions{})
+		cm, err := clientset.CoreV1().ConfigMaps(cfg.Namespace).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
 				log.Printf("configmap already exists %s", configMap.ObjectMeta.Name)
@@ -317,8 +317,8 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 }
 
 // Cleanup removes all resources created during E2E tests.
-func Cleanup(clientset *kubernetes.Clientset) {
-	err := clientset.CoreV1().Pods(common.Namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
+func Cleanup(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
+	err := clientset.CoreV1().Pods(cfg.Namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			log.Printf("pod %s doesn't exist\n", common.PodName)
@@ -348,7 +348,7 @@ func Cleanup(clientset *kubernetes.Clientset) {
 	}
 	log.Printf("clusterrole deleted %s\n", common.ClusterRoleName)
 
-	err = clientset.CoreV1().ServiceAccounts(common.Namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
+	err = clientset.CoreV1().ServiceAccounts(cfg.Namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			log.Printf("serviceaccount %s doesn't exist\n", common.ServiceAccountName)
@@ -358,15 +358,15 @@ func Cleanup(clientset *kubernetes.Clientset) {
 	}
 	log.Printf("serviceaccount deleted %s\n", common.ServiceAccountName)
 
-	err = clientset.CoreV1().Namespaces().Delete(ctx, common.Namespace, metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(ctx, cfg.Namespace, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("namespace %s doesn't exist\n", common.Namespace)
+			log.Printf("namespace %s doesn't exist\n", cfg.Namespace)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("namespace deleted %s\n", common.Namespace)
+	log.Printf("namespace deleted %s\n", cfg.Namespace)
 }
 
 // DryRun returns an environment variable to tell the conformance test to run in dry run mode.

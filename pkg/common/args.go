@@ -51,6 +51,9 @@ type ArgConfig struct {
 	// Kubeconfig is the path to the kubeconfig file
 	Kubeconfig string
 
+	// Namespace is the namespace where the conformance pod is created
+	Namespace string
+
 	// Parallel sets the E2E_PARALLEL env var for tests
 	Parallel int
 
@@ -95,6 +98,7 @@ func InitArgs() (*ArgConfig, error) {
 	flag.StringVar(&cfg.BusyboxImage, "busybox-image", busyboxImage,
 		"specify an alternate busybox container image.")
 	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
+	flag.StringVar(&cfg.Namespace, "namespace", namespace, "namespace where the conformance pod is created.")
 	flag.IntVar(&cfg.Parallel, "parallel", 1, "number of parallel threads in test framework.")
 	flag.IntVar(&cfg.Verbosity, "verbosity", 4, "verbosity of test framework.")
 	flag.StringVar(&cfg.OutputDir, "output-dir", outputDir, "directory for logs.")

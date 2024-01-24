@@ -26,13 +26,13 @@ import (
 )
 
 // List pod resource with the given namespace
-func getPodLogs(clientset *kubernetes.Clientset, stream streamLogs) {
+func getPodLogs(clientset *kubernetes.Clientset, namespace string, stream streamLogs) {
 	podLogOpts := v1.PodLogOptions{
 		Container: common.ConformanceContainer,
 		Follow:    true,
 	}
 
-	req := clientset.CoreV1().Pods(common.Namespace).GetLogs(common.PodName, &podLogOpts)
+	req := clientset.CoreV1().Pods(namespace).GetLogs(common.PodName, &podLogOpts)
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		stream.errCh <- err

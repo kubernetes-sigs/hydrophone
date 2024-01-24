@@ -39,7 +39,7 @@ type streamLogs struct {
 }
 
 // PrintE2ELogs checks for Pod and start a go routine if new deployment added
-func (c *Client) PrintE2ELogs() {
+func (c *Client) PrintE2ELogs(cfg *common.ArgConfig) {
 	informerFactory := informers.NewSharedInformerFactory(c.ClientSet, 10*time.Second)
 
 	podInformer := informerFactory.Core().V1().Pods()
@@ -50,7 +50,7 @@ func (c *Client) PrintE2ELogs() {
 	informerFactory.WaitForCacheSync(wait.NeverStop)
 
 	for {
-		pod, _ := podInformer.Lister().Pods(common.Namespace).Get(common.PodName)
+		pod, _ := podInformer.Lister().Pods(cfg.Namespace).Get(common.PodName)
 		if pod.Status.Phase == v1.PodRunning {
 			var err error
 			stream := streamLogs{
@@ -59,7 +59,7 @@ func (c *Client) PrintE2ELogs() {
 				doneCh: make(chan bool),
 			}
 
-			go getPodLogs(c.ClientSet, stream)
+			go getPodLogs(c.ClientSet, cfg.Namespace, stream)
 
 		loop:
 			for {
@@ -81,9 +81,9 @@ func (c *Client) PrintE2ELogs() {
 }
 
 // FetchExitCode waits for pod to be in terminated state and get the exit code
-func (c *Client) FetchExitCode() {
+func (c *Client) FetchExitCode(cfg *common.ArgConfig) {
 	// Watching the pod's status
-	watchInterface, err := c.ClientSet.CoreV1().Pods(common.Namespace).Watch(context.TODO(), metav1.ListOptions{
+	watchInterface, err := c.ClientSet.CoreV1().Pods(cfg.Namespace).Watch(context.TODO(), metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("metadata.name=%s", common.PodName),
 	})
 	if err != nil {

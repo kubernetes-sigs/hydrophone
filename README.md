@@ -53,6 +53,8 @@ Usage of bin/hydrophone:
         path to the kubeconfig file.
   -list-images
         list all images that will be used during conformance tests.
+  -namespace string
+        namespace where the conformance pod is created. (default "conformance")
   -output-dir string
         directory for logs. (defaults to current directory)
   -parallel int
@@ -60,9 +62,9 @@ Usage of bin/hydrophone:
   -skip string
         skip specific tests. allows regular expressions.
   -test-repo string
-        alternate registry for test images
+        alternate registry for test images.
   -test-repo-list string
-        yaml file to override registries for test images
+        yaml file to override registries for test images.
   -verbosity int
         verbosity of test framework. (default 4)
 ```

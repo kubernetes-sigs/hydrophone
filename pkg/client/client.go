@@ -40,24 +40,24 @@ type Client struct {
 
 // FetchFiles downloads the e2e.log and junit_01.xml files from the pod
 // and writes them to the output directory
-func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset, outputDir string) {
-	log.Println("downloading e2e.log to ", filepath.Join(outputDir, "e2e.log"))
-	e2eLogFile, err := os.OpenFile(filepath.Join(outputDir, "e2e.log"), os.O_WRONLY|os.O_CREATE, 0600)
+func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
+	log.Println("downloading e2e.log to ", filepath.Join(cfg.OutputDir, "e2e.log"))
+	e2eLogFile, err := os.OpenFile(filepath.Join(cfg.OutputDir, "e2e.log"), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		log.Fatalf("unable to create e2e.log: %v\n", err)
 	}
 	defer e2eLogFile.Close()
-	err = downloadFile(config, clientset, common.PodName, common.OutputContainer, "/tmp/results/e2e.log", e2eLogFile)
+	err = downloadFile(config, clientset, cfg.Namespace, common.PodName, common.OutputContainer, "/tmp/results/e2e.log", e2eLogFile)
 	if err != nil {
 		log.Fatalf("unable to download e2e.log: %v\n", err)
 	}
-	log.Println("downloading junit_01.xml to", filepath.Join(outputDir, "junit_01.xml"))
-	junitXMLFile, err := os.OpenFile(filepath.Join(outputDir, "junit_01.xml"), os.O_WRONLY|os.O_CREATE, 0600)
+	log.Println("downloading junit_01.xml to", filepath.Join(cfg.OutputDir, "junit_01.xml"))
+	junitXMLFile, err := os.OpenFile(filepath.Join(cfg.OutputDir, "junit_01.xml"), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		log.Fatalf("unable to create junit_01.xml: %v\n", err)
 	}
 	defer junitXMLFile.Close()
-	err = downloadFile(config, clientset, common.PodName, common.OutputContainer, "/tmp/results/junit_01.xml", junitXMLFile)
+	err = downloadFile(config, clientset, cfg.Namespace, common.PodName, common.OutputContainer, "/tmp/results/junit_01.xml", junitXMLFile)
 	if err != nil {
 		log.Fatalf("unable to download junit_01.xml: %v\n", err)
 	}

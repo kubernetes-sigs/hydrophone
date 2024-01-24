@@ -41,15 +41,15 @@ func main() {
 	if cfg.ListImages {
 		service.PrintListImages(client.ClientSet)
 	} else if cfg.Cleanup {
-		service.Cleanup(client.ClientSet)
+		service.Cleanup(client.ClientSet, cfg)
 	} else {
 		common.ValidateArgs(client.ClientSet, config, cfg)
 
 		service.RunE2E(client.ClientSet, cfg)
-		client.PrintE2ELogs()
-		client.FetchFiles(config, clientSet, cfg.OutputDir)
-		client.FetchExitCode()
-		service.Cleanup(client.ClientSet)
+		client.PrintE2ELogs(cfg)
+		client.FetchFiles(config, clientSet, cfg)
+		client.FetchExitCode(cfg)
+		service.Cleanup(client.ClientSet, cfg)
 	}
 	log.Println("Exiting with code: ", client.ExitCode)
 	os.Exit(client.ExitCode)
