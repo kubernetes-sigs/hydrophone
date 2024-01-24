@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/adrg/xdg"
@@ -10,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"sigs.k8s.io/hydrophone/pkg/client"
 	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
 	"sigs.k8s.io/hydrophone/pkg/service"
 )
 
@@ -62,8 +62,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
 
@@ -133,10 +132,10 @@ func initConfig() {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 				err := viper.SafeWriteConfig()
 				if err != nil {
-					log.Println("Error:", err)
+					log.Fatal("Error:", err)
 				}
 			} else {
-				log.Println(err)
+				log.Fatal(err)
 			}
 		}
 	}
