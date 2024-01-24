@@ -6,8 +6,7 @@
 
 
 
-### Get Started with Development 
-#
+### Getting Started
 ##  Prerequisites
 - [go](https://go.dev/dl/)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
