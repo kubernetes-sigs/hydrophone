@@ -32,7 +32,7 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "hydrohpone",
+	Use:   "hydrophone",
 	Short: "Hydrophone is a lightweight runner for kubernetes tests.",
 	Long:  `Hydrophone is a lightweight runner for kubernetes tests.`,
 	Run: func(cmd *cobra.Command, args []string) {
