@@ -17,115 +17,15 @@ limitations under the License.
 package common
 
 import (
-	"flag"
 	"fmt"
 	"os"
-	"strings"
 
+	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
-
-// ConformanceImage is used to define the container image being used to run the conformance tests
-var ConformanceImage string
-
-// ArgConfig stores the argument passed when running the program
-type ArgConfig struct {
-	// Focus set the E2E_FOCUS env var to run a specific test
-	// e.g. - sig-auth, sig-apps
-	Focus string
-
-	// Skip set the E2E_SKIP env var to skip specified tests
-	Skip string
-
-	// ConformanceImage let's people use the conformance container image of their own choice
-	// Get the list of images from https://console.cloud.google.com/gcr/images/k8s-artifacts-prod/us/conformance
-	// default registry.k8s.io/conformance:v1.29.1
-	ConformanceImage string
-
-	// BusyboxImage lets folks use an appropriate busybox image from their own registry
-	BusyboxImage string
-
-	// Kubeconfig is the path to the kubeconfig file
-	Kubeconfig string
-
-	// Parallel sets the E2E_PARALLEL env var for tests
-	Parallel int
-
-	// Verbosity sets the E2E_VERBOSITY env var for tests
-	Verbosity int
-
-	// OutputDir is where the e2e.log and junit_01.xml is saved
-	OutputDir string
-
-	// Conformance to indicate whether we want to run conformance tests
-	ConformanceTests bool
-
-	// DryRun to indicate whether to run ginkgo in dry run mode
-	DryRun bool
-
-	// Cleanup indicates we should just cleanup the resources
-	Cleanup bool
-
-	// TestRepoList points to the file that has mapping of repositories for test images (KUBE_TEST_REPO_LIST)
-	TestRepoList string
-
-	// TestRepo is an alternate repository for test images (KUBE_TEST_REPO)
-	TestRepo string
-
-	// ListImages lists images that will be used for conformance tests
-	ListImages bool
-}
-
-// InitArgs initializes the arguments passed to the program
-func InitArgs() (*ArgConfig, error) {
-
-	var cfg ArgConfig
-
-	outputDir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	flag.StringVar(&cfg.Focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
-	flag.StringVar(&cfg.Skip, "skip", "", "skip specific tests. allows regular expressions.")
-	flag.StringVar(&cfg.ConformanceImage, "conformance-image", "", "specify a conformance container image of your choice.")
-	flag.StringVar(&cfg.BusyboxImage, "busybox-image", busyboxImage,
-		"specify an alternate busybox container image.")
-	flag.StringVar(&cfg.Kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
-	flag.IntVar(&cfg.Parallel, "parallel", 1, "number of parallel threads in test framework.")
-	flag.IntVar(&cfg.Verbosity, "verbosity", 4, "verbosity of test framework.")
-	flag.StringVar(&cfg.OutputDir, "output-dir", outputDir, "directory for logs.")
-	flag.BoolVar(&cfg.ConformanceTests, "conformance", false, "run conformance tests.")
-	flag.BoolVar(&cfg.DryRun, "dry-run", false, "run in dry run mode.")
-	flag.BoolVar(&cfg.Cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
-	flag.StringVar(&cfg.TestRepoList, "test-repo-list", "", "yaml file to override registries for test images.")
-	flag.StringVar(&cfg.TestRepo, "test-repo", "", "alternate registry for test images.")
-	flag.BoolVar(&cfg.ListImages, "list-images", false, "list all images that will be used during conformance tests.")
-
-	flag.Parse()
-
-	conformance := false
-	focus := false
-	for _, keyValue := range os.Args {
-		arg := strings.Split(keyValue, "=")[0]
-		if arg == "--focus" {
-			focus = true
-		}
-		if arg == "--conformance" {
-			conformance = true
-		}
-	}
-	if conformance && focus {
-		return nil, fmt.Errorf("specify either --conformance or --focus arguments, not both")
-	}
-
-	ConformanceImage = cfg.ConformanceImage
-
-	return &cfg, nil
-}
 
 // PrintInfo prints the information about the cluster
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
@@ -133,9 +33,11 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
 	}
-
-	if ConformanceImage == "" {
-		ConformanceImage = fmt.Sprintf("registry.k8s.io/conformance:%s", serverVersion.String())
+	if viper.Get("conformance-image") == "" {
+		viper.Set("conformance-image", fmt.Sprintf("registry.k8s.io/conformance:%s", serverVersion.String()))
+	}
+	if viper.Get("busybox-image") == "" {
+		viper.Set("busybox-image", busyboxImage)
 	}
 
 	log.Printf("API endpoint : %s", config.Host)
@@ -144,22 +46,23 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 
 // ValidateArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
-func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config, cfg *ArgConfig) {
-	if cfg.ConformanceTests {
-		cfg.Focus = "\\[Conformance\\]"
+func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
+	if viper.Get("focus") == "" {
+		viper.Set("focus", "\\[Conformance\\]")
 	}
 
-	if cfg.Skip != "" {
-		log.Printf("Skipping tests : '%s'", cfg.Skip)
+	if viper.Get("skip") != "" {
+		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
-	log.Printf("Using conformance image : '%s'", ConformanceImage)
-	log.Printf("Using busybox image : '%s'", cfg.BusyboxImage)
+	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
+	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
-		cfg.Parallel, cfg.Verbosity)
+		viper.Get("parallel"), viper.Get("verbosity"))
 
-	if _, err := os.Stat(cfg.OutputDir); os.IsNotExist(err) {
-		if err = os.MkdirAll(cfg.OutputDir, 0755); err != nil {
-			log.Fatalf("Error creating output directory [%s] : %v", cfg.OutputDir, err)
+	outputDir := viper.GetString("output-dir")
+	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
+		if err = os.MkdirAll(outputDir, 0755); err != nil {
+			log.Fatalf("Error creating output directory [%s] : %v", outputDir, err)
 		}
 	}
 }
