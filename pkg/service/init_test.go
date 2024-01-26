@@ -26,7 +26,7 @@ func TestGetKubeConfig(t *testing.T) {
 	// Test case 1: kubeconfig is empty
 	kubeconfig := ""
 	expected := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-	actual := getKubeConfig(kubeconfig)
+	actual := GetKubeConfig(kubeconfig)
 	if actual != expected {
 		t.Errorf("Expected %s, but got %s", expected, actual)
 	}
@@ -35,7 +35,7 @@ func TestGetKubeConfig(t *testing.T) {
 	kubeconfig = "/path/to/kubeconfig"
 	os.Setenv("KUBECONFIG", kubeconfig)
 	expected = kubeconfig
-	actual = getKubeConfig("")
+	actual = GetKubeConfig("")
 	if actual != expected {
 		t.Errorf("Expected %s, but got %s", expected, actual)
 	}
@@ -43,7 +43,7 @@ func TestGetKubeConfig(t *testing.T) {
 	// Test case 3: kubeconfig starts with "~"
 	kubeconfig = "~/custom/kubeconfig"
 	expected = filepath.Join(os.Getenv("HOME"), "custom/kubeconfig")
-	actual = getKubeConfig(kubeconfig)
+	actual = GetKubeConfig(kubeconfig)
 	if actual != expected {
 		t.Errorf("Expected %s, but got %s", expected, actual)
 	}

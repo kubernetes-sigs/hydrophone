@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
 	"sigs.k8s.io/hydrophone/pkg/common"
 	"sigs.k8s.io/hydrophone/pkg/log"
 
@@ -50,7 +51,7 @@ func PrintListImages(clientSet *kubernetes.Clientset) {
 			Containers: []corev1.Container{
 				{
 					Name:  common.ConformanceContainer,
-					Image: common.ConformanceImage,
+					Image: viper.GetString("conformance-image"),
 					Command: []string{
 						"/usr/local/bin/e2e.test",
 						"--list-images",
