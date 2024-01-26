@@ -14,18 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -xeuo pipefail
+# GoFmt apparently is changing @ head...
 
-HYDROPHONE_ROOT=$(git rev-parse --show-toplevel)
-echo "HYDROPHONE_ROOT: $HYDROPHONE_ROOT"
+set -o errexit
+set -o nounset
+set -o pipefail
 
-pushd "${HYDROPHONE_ROOT}" >/dev/null
-  go mod edit -json | jq -r ".Require[] | .Path | select(contains(\"k8s.io/\"))" | xargs xargs -L1 go get -d
-  go mod tidy
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 
-  K8S_VERSION=$(curl https://cdn.dl.k8s.io/release/stable.txt -s)
-  sed -i "s|K8S_VERSION: .*|K8S_VERSION: $K8S_VERSION|" .github/workflows/*.yml
-  sed -i -r "s/conformance:v[0-9]+\.[0-9]+\.[0-9]+/conformance:$K8S_VERSION/g" README.md pkg/common/*.go
+cd "${KUBE_ROOT}"
 
-popd >/dev/null
-git status
+find_files() {
+  find . -not \( \
+      \( \
+        -wholename './.git' \
+        -o -wholename '*/vendor/*' \
+        -o -wholename '*bindata.go' \
+      \) -prune \
+    \) -name '*.go'
+}
+
+GOFMT="gofmt -s"
+bad_files=$(find_files | xargs $GOFMT -l)
+if [[ -n "${bad_files}" ]]; then
+  echo "!!! '$GOFMT' needs to be run on the following files: "
+  echo "${bad_files}"
+  exit 1
+fi

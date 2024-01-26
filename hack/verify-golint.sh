@@ -1,4 +1,6 @@
-# Copyright 2023 The Kubernetes Authors.
+#!/bin/bash
+
+# Copyright 2024 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-build:
-	go build -o bin/hydrophone main.go
+set -o errexit
+set -o nounset
+set -o pipefail
 
-run:
-	go run main.go
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 
-fmt:
-	go fmt ./...
+cd "${KUBE_ROOT}"
 
-test:
-	go test ./...
+LINT=${LINT:-golint}
 
-verify:
-	@hack/verify-all.sh -v
+if [[ -z "$(command -v ${LINT})" ]]; then
+  echo "${LINT} is missing. Installing it now."
+  go install golang.org/x/lint/golint@latest
+  LINT=$(go env GOPATH)/bin/golint
+fi
 
-test-e2e: build
-	@hack/run-e2e.sh
+${LINT} run
