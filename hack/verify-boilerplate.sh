@@ -1,4 +1,6 @@
-# Copyright 2023 The Kubernetes Authors.
+#!/bin/bash
+
+# Copyright 2024 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-build:
-	go build -o bin/hydrophone main.go
+set -o errexit
+set -o nounset
+set -o pipefail
 
-run:
-	go run main.go
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 
-fmt:
-	go fmt ./...
+boilerDir="${KUBE_ROOT}/hack/boilerplate"
+boiler="${boilerDir}/boilerplate.py"
 
-test:
-	go test ./...
+files_need_boilerplate=($(${boiler} "$@"))
 
-verify:
-	@hack/verify-all.sh -v
+# Run boilerplate check
+if [[ ${#files_need_boilerplate[@]} -gt 0 ]]; then
+  for file in "${files_need_boilerplate[@]}"; do
+    echo "Boilerplate header is wrong for: ${file}"
+  done
 
-test-e2e: build
-	@hack/run-e2e.sh
+  exit 1
+fi
