@@ -19,6 +19,7 @@ package common
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
@@ -64,5 +65,22 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 		if err = os.MkdirAll(outputDir, 0755); err != nil {
 			log.Fatalf("Error creating output directory [%s] : %v", outputDir, err)
 		}
+	}
+
+	if extraArgs := viper.GetString("extra-args"); extraArgs != "" {
+		args := strings.Split(extraArgs, ",")
+		updatedArgs := ""
+		for _, kv := range args {
+			keyValuePair := strings.SplitN(kv, "=", 2)
+			if len(keyValuePair) != 2 {
+				log.Fatalf("Expected [%s] in %s to be of --key=value format", keyValuePair, extraArgs)
+			}
+			key := keyValuePair[0]
+			if !strings.HasPrefix(key, "--") && strings.Count(key, "--") != 1 {
+				log.Fatalf("Expected key [%s] in %s to start with prefix --", keyValuePair[0], extraArgs)
+			}
+			updatedArgs = updatedArgs + kv + " "
+		}
+		viper.Set("extra-args", updatedArgs)
 	}
 }
