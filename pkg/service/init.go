@@ -287,7 +287,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			Value: "/tmp/repo-list/repo-list.yaml",
 		})
 
-		configmap, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
+		cm, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
 				log.Fatalf("configmap already exists %s. Please run cleanup to start a fresh run", configMap.ObjectMeta.Name)
@@ -295,7 +295,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 				log.Fatal(err)
 			}
 		}
-		log.Printf("configmap created %s\n", configmap.Name)
+		log.Printf("configmap created %s\n", cm.Name)
 	}
 
 	if viper.GetString("test-repo") != "" {
@@ -305,7 +305,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		})
 	}
 
-	_, err = clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
+	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
 			log.Fatalf("pod already exist %s. Please run cleanup to start a fresh run", conformancePod.ObjectMeta.Name)
@@ -313,7 +313,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("pod created %s\n", conformancePod.ObjectMeta.Name)
+	log.Printf("pod created %s\n", pod.Name)
 }
 
 // Cleanup removes all resources created during E2E tests.
