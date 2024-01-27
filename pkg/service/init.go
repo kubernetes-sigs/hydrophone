@@ -208,27 +208,27 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, DryRun())
 	}
 
-	_, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
+	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("namespace already exist %s", conformanceNS.ObjectMeta.Name)
+			log.Fatalf("namespace already exist %s. Please run cleanup to start a fresh run", conformanceNS.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("namespace created %s\n", conformanceNS.ObjectMeta.Name)
+	log.Printf("namespace created %s\n", ns.Name)
 
-	_, err = clientset.CoreV1().ServiceAccounts(conformanceNS.ObjectMeta.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
+	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("serviceaccount already exist %s", conformanceSA.ObjectMeta.Name)
+			log.Fatalf("serviceaccount already exist %s. Please run cleanup to start a fresh run", conformanceSA.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("serviceaccount created %s\n", conformanceSA.ObjectMeta.Name)
+	log.Printf("serviceaccount created %s\n", sa.Name)
 
-	_, err = clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
+	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
 			log.Printf("clusterrole already exist %s", conformanceClusterRole.ObjectMeta.Name)
@@ -236,9 +236,9 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("clusterrole created %s\n", conformanceClusterRole.ObjectMeta.Name)
+	log.Printf("clusterrole created %s\n", clusterRole.Name)
 
-	_, err = clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
+	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
 			log.Printf("clusterrolebinding already exist %s", conformanceClusterRoleBinding.ObjectMeta.Name)
@@ -246,7 +246,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("clusterrolebinding created %s\n", conformanceClusterRoleBinding.ObjectMeta.Name)
+	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
 
 	if viper.GetString("test-repo-list") != "" {
 		RepoListData, err := os.ReadFile(viper.GetString("test-repo-list"))
@@ -287,15 +287,15 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			Value: "/tmp/repo-list/repo-list.yaml",
 		})
 
-		_, err = clientset.CoreV1().ConfigMaps(conformanceNS.ObjectMeta.Name).Create(ctx, configMap, metav1.CreateOptions{})
+		configmap, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				log.Printf("configmap already exists %s", configMap.ObjectMeta.Name)
+				log.Fatalf("configmap already exists %s. Please run cleanup to start a fresh run", configMap.ObjectMeta.Name)
 			} else {
 				log.Fatal(err)
 			}
 		}
-		log.Printf("configmap created %s\n", configMap.ObjectMeta.Name)
+		log.Printf("configmap created %s\n", configmap.Name)
 	}
 
 	if viper.GetString("test-repo") != "" {
@@ -305,10 +305,10 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		})
 	}
 
-	_, err = clientset.CoreV1().Pods(conformanceNS.ObjectMeta.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
+	_, err = clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("pod already exist %s", conformancePod.ObjectMeta.Name)
+			log.Fatalf("pod already exist %s. Please run cleanup to start a fresh run", conformancePod.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
