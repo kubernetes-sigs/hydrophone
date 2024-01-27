@@ -118,6 +118,7 @@ kubectl delete -n conformance pods/e2e-conformance-test && kubectl delete ns con
 Please reach out for bugs, feature requests, and other issues!
 The maintainers of this project are reachable via:
 
+- [Kubernetes Slack] in the [#sig-testing] and [#k8s-conformance] channels
 - [Hydrophone Slack] in the [#sig-testing] and [#k8s-conformance] channels
 - [filing an issue] against this repo
 - The Kubernetes [SIG-Testing Mailing List] and [SIG-Release Mailing List]
@@ -146,7 +147,8 @@ Participation in the Kubernetes community is governed by the [Kubernetes Code of
 [@dims]: https://github.com/dims
 [@rjsadow]: https://github.com/rjsadow
 [filing an issue]: https://sigs.k8s.io/hydrophone/issues/new
-[Kubernetes Slack]: https://kubernetes.slack.com/archives/C06E3NPR4A3
+[Kubernetes Slack]: http://slack.k8s.io/
+[Hydrophone Slack]: https://kubernetes.slack.com/archives/C06E3NPR4A3
 [SIG-Testing Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-testing
 [SIG-Release Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-release
 [Conformance suite]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md
