@@ -212,45 +212,45 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, DryRun())
 	}
 
-	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
+	_, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("namespace already exist %s", common.PodName)
+			log.Printf("namespace already exist %s", conformanceNS.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("namespace created %s\n", ns.Name)
+	log.Printf("namespace created %s\n", conformanceNS.ObjectMeta.Name)
 
-	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
+	_, err = clientset.CoreV1().ServiceAccounts(conformanceNS.ObjectMeta.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("serviceaccount already exist %s", common.PodName)
+			log.Printf("serviceaccount already exist %s", conformanceSA.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("serviceaccount created %s\n", sa.Name)
+	log.Printf("serviceaccount created %s\n", conformanceSA.ObjectMeta.Name)
 
-	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
+	_, err = clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrole already exist %s", common.PodName)
+			log.Printf("clusterrole already exist %s", conformanceClusterRole.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("clusterrole created %s\n", clusterRole.Name)
+	log.Printf("clusterrole created %s\n", conformanceClusterRole.ObjectMeta.Name)
 
-	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
+	_, err = clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrolebinding already exist %s", common.PodName)
+			log.Printf("clusterrolebinding already exist %s", conformanceClusterRoleBinding.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
+	log.Printf("clusterrolebinding created %s\n", conformanceClusterRoleBinding.ObjectMeta.Name)
 
 	if viper.GetString("test-repo-list") != "" {
 		RepoListData, err := os.ReadFile(viper.GetString("test-repo-list"))
@@ -291,7 +291,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			Value: "/tmp/repo-list/repo-list.yaml",
 		})
 
-		cm, err := clientset.CoreV1().ConfigMaps(common.Namespace).Create(ctx, configMap, metav1.CreateOptions{})
+		_, err = clientset.CoreV1().ConfigMaps(conformanceNS.ObjectMeta.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
 				log.Printf("configmap already exists %s", configMap.ObjectMeta.Name)
@@ -299,7 +299,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 				log.Fatal(err)
 			}
 		}
-		log.Printf("configmap created %s\n", cm.Name)
+		log.Printf("configmap created %s\n", configMap.ObjectMeta.Name)
 	}
 
 	if viper.GetString("test-repo") != "" {
@@ -309,15 +309,15 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		})
 	}
 
-	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
+	_, err = clientset.CoreV1().Pods(conformanceNS.ObjectMeta.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("pod already exist %s", common.PodName)
+			log.Printf("pod already exist %s", conformancePod.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("pod created %s\n", pod.Name)
+	log.Printf("pod created %s\n", conformancePod.ObjectMeta.Name)
 }
 
 // Cleanup removes all resources created during E2E tests.

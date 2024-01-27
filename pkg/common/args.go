@@ -55,17 +55,6 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if viper.Get("skip") != "" {
 		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
-	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
-	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
-	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
-		viper.Get("parallel"), viper.Get("verbosity"))
-
-	outputDir := viper.GetString("output-dir")
-	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-		if err = os.MkdirAll(outputDir, 0755); err != nil {
-			log.Fatalf("Error creating output directory [%s] : %v", outputDir, err)
-		}
-	}
 
 	if extraArgs := viper.GetString("extra-args"); extraArgs != "" {
 		args := strings.Split(extraArgs, ",")
@@ -85,4 +74,16 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 		}
 		viper.Set("extra-args", updatedExtraArgs)
 	}
+	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
+	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
+	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
+		viper.Get("parallel"), viper.Get("verbosity"))
+
+	outputDir := viper.GetString("output-dir")
+	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
+		if err = os.MkdirAll(outputDir, 0755); err != nil {
+			log.Fatalf("Error creating output directory [%s] : %v", outputDir, err)
+		}
+	}
+
 }
