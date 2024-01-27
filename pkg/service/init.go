@@ -171,10 +171,6 @@ func RunE2E(clientset *kubernetes.Clientset) {
 							Name:  "E2E_USE_GO_RUNNER",
 							Value: "true",
 						},
-						{
-							Name:  "E2E_EXTRA_ARGS",
-							Value: fmt.Sprintf("%s", viper.Get("E2E_EXTRA_ARGS")),
-						},
 					},
 					VolumeMounts: []v1.VolumeMount{
 						{
