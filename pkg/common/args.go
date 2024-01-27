@@ -69,18 +69,20 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 
 	if extraArgs := viper.GetString("extra-args"); extraArgs != "" {
 		args := strings.Split(extraArgs, ",")
-		updatedArgs := ""
+		updatedExtraArgs := ""
+		// using space as seperator for extra args
+		extraArgsSeperator := " "
 		for _, kv := range args {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
-				log.Fatalf("Expected [%s] in %s to be of --key=value format", keyValuePair, extraArgs)
+				log.Fatalf("Expected [%s] in [%s] to be of --key=value format", keyValuePair, extraArgs)
 			}
 			key := keyValuePair[0]
 			if !strings.HasPrefix(key, "--") && strings.Count(key, "--") != 1 {
-				log.Fatalf("Expected key [%s] in %s to start with prefix --", keyValuePair[0], extraArgs)
+				log.Fatalf("Expected key [%s] in [%s] to start with prefix --", key, extraArgs)
 			}
-			updatedArgs = updatedArgs + kv + " "
+			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeperator, kv)
 		}
-		viper.Set("extra-args", updatedArgs)
+		viper.Set("extra-args", updatedExtraArgs)
 	}
 }
