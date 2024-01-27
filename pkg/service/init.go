@@ -211,7 +211,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Fatalf("namespace already exist %s. Please run cleanup to start a fresh run", conformanceNS.ObjectMeta.Name)
+			log.Fatalf("namespace already exist %s. Please run cleanup first", conformanceNS.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -221,7 +221,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Fatalf("serviceaccount already exist %s. Please run cleanup to start a fresh run", conformanceSA.ObjectMeta.Name)
+			log.Fatalf("serviceaccount already exist %s. Please run cleanup first", conformanceSA.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -290,7 +290,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		cm, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				log.Fatalf("configmap already exists %s. Please run cleanup to start a fresh run", configMap.ObjectMeta.Name)
+				log.Fatalf("configmap already exists %s. Please run cleanup first", configMap.ObjectMeta.Name)
 			} else {
 				log.Fatal(err)
 			}
@@ -308,7 +308,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Fatalf("pod already exist %s. Please run cleanup to start a fresh run", conformancePod.ObjectMeta.Name)
+			log.Fatalf("pod already exist %s. Please run cleanup first", conformancePod.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
