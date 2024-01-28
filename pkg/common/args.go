@@ -56,7 +56,7 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
 
-	if extraArgs := viper.Get("extra-conformance-test-args"); extraArgs != "" {
+	if extraArgs := viper.Get("extra-args"); extraArgs != "" {
 		updatedExtraArgs := ""
 		extraArgsSeperator := " "
 		for _, kv := range extraArgs.([]string) {
@@ -71,7 +71,7 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeperator, kv)
 		}
 		updatedExtraArgs = strings.TrimPrefix(updatedExtraArgs, extraArgsSeperator)
-		viper.Set("extra-conformance-test-args", updatedExtraArgs)
+		viper.Set("extra-args", updatedExtraArgs)
 	}
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
 	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))

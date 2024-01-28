@@ -129,8 +129,8 @@ func init() {
 	rootCmd.Flags().StringVar(&testRepo, "test-repo", "", "skip specific tests. allows regular expressions.")
 	viper.BindPFlag("test-repo", rootCmd.Flags().Lookup("test-repo"))
 
-	rootCmd.Flags().StringSlice("extra-conformance-test-args", []string{}, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --list-labels=true,--allowed-not-ready-nodes=2)")
-	viper.BindPFlag("extra-conformance-test-args", rootCmd.Flags().Lookup("extra-conformance-test-args"))
+	rootCmd.Flags().StringSlice("extra-args", []string{}, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)")
+	viper.BindPFlag("extra-args", rootCmd.Flags().Lookup("extra-args"))
 
 	rootCmd.MarkFlagsMutuallyExclusive("conformance", "focus", "cleanup", "list-images")
 }
