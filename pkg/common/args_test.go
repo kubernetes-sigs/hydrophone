@@ -71,20 +71,18 @@ func TestValidateArgs(t *testing.T) {
 			// Set up the test environment
 			viper.Set("focus", tc.focus)
 			viper.Set("skip", tc.skip)
-			viper.Set("extra-args", tc.extraArgs)
+			viper.Set("extra-conformance-test-args", tc.extraArgs)
 
 			// Call the function under test
 			ValidateArgs(nil, nil)
-
-			// TODO: Add assertions for the expected log output and other side effects
 			if viper.GetString("skip") != tc.expectedSkip {
 				t.Errorf("expected skip to be [%s], got [%s]", tc.expectedSkip, viper.GetString("skip"))
 			}
 			if viper.GetString("focus") != tc.expectedFocus {
 				t.Errorf("expected focus to be [%s], got [%s]", tc.expectedFocus, viper.GetString("focus"))
 			}
-			if viper.GetString("extra-args") != tc.expectedArgs {
-				t.Errorf("expected extra-args to be [%s], got [%s]", tc.expectedArgs, viper.GetString("extra-args"))
+			if viper.GetString("extra-conformance-test-args") != tc.expectedArgs {
+				t.Errorf("expected extra-conformance-test-args to be [%s], got [%s]", tc.expectedArgs, viper.GetString("extra-conformance-test-args"))
 			}
 		})
 	}
