@@ -56,10 +56,8 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
 
-	log.Printf("extra-args : '%s'", viper.Get("extra-args"))
 	if extraArgs := viper.Get("extra-args"); extraArgs != "" {
 		updatedExtraArgs := ""
-		// using space as seperator for extra args
 		extraArgsSeperator := " "
 		for _, kv := range extraArgs.([]string) {
 			keyValuePair := strings.SplitN(kv, "=", 2)
