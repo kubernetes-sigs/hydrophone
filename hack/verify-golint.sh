@@ -26,7 +26,7 @@ LINT=${LINT:-golint}
 
 if [[ -z "$(command -v ${LINT})" ]]; then
   echo "${LINT} is missing. Installing it now."
-  go install golang.org/x/lint/golint@latest
+  go install golang.org/x/lint/golint@latest >/dev/null 2>&1
   LINT=$(go env GOPATH)/bin/golint
 fi
 
