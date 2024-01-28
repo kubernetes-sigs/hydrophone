@@ -56,12 +56,12 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
 
-	if extraArgs := viper.GetString("extra-args"); extraArgs != "" {
-		args := strings.Split(extraArgs, ",")
+	log.Printf("extra-args : '%s'", viper.Get("extra-args"))
+	if extraArgs := viper.Get("extra-args"); extraArgs != "" {
 		updatedExtraArgs := ""
 		// using space as seperator for extra args
 		extraArgsSeperator := " "
-		for _, kv := range args {
+		for _, kv := range extraArgs.([]string) {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
 				log.Fatalf("Expected [%s] in [%s] to be of --key=value format", keyValuePair, extraArgs)
@@ -72,7 +72,9 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 			}
 			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeperator, kv)
 		}
+		updatedExtraArgs = strings.TrimPrefix(updatedExtraArgs, extraArgsSeperator)
 		viper.Set("extra-args", updatedExtraArgs)
+		log.Printf("extra-args : '%s'", viper.Get("extra-args"))
 	}
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
 	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
