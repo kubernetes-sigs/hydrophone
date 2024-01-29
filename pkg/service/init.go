@@ -90,7 +90,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 				"component": "conformance",
 			},
 			Name:      common.ServiceAccountName,
-			Namespace: "conformance",
+			Namespace: conformanceNS.Name,
 		},
 	}
 
@@ -130,7 +130,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			{
 				Kind:      "ServiceAccount",
 				Name:      "conformance-serviceaccount",
-				Namespace: "conformance",
+				Namespace: conformanceNS.Name,
 			},
 		},
 	}
@@ -138,7 +138,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	conformancePod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "e2e-conformance-test",
-			Namespace: "conformance",
+			Namespace: conformanceNS.Name,
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
