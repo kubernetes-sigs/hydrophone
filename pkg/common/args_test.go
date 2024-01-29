@@ -75,7 +75,7 @@ func TestValidateArgs(t *testing.T) {
 			viper.Set("extra-args", tc.extraArgs)
 
 			// Call the function under test
-			ValidateArgs(nil, nil)
+			ValidateArgs()
 			if viper.GetString("skip") != tc.expectedSkip {
 				t.Errorf("expected skip to be [%s], got [%s]", tc.expectedSkip, viper.GetString("skip"))
 			}

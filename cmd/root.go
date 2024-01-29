@@ -61,7 +61,7 @@ var rootCmd = &cobra.Command{
 		} else if listImages {
 			service.PrintListImages(client.ClientSet)
 		} else {
-			common.ValidateArgs(client.ClientSet, config)
+			common.ValidateArgs()
 
 			service.RunE2E(client.ClientSet)
 			client.PrintE2ELogs()
