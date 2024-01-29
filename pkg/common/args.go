@@ -49,7 +49,7 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 // and creates the output directory if it doesn't exist
 func ValidateArgs() {
 	if viper.Get("namespace") == "" {
-		viper.Set("namespace", namespace)
+		viper.Set("namespace", DefaultNamespace)
 	}
 	if viper.Get("focus") == "" {
 		viper.Set("focus", "\\[Conformance\\]")
