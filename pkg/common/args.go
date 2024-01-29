@@ -57,8 +57,6 @@ func ValidateArgs() {
 	}
 
 	if extraArgs := viper.GetStringSlice("extra-args"); len(extraArgs) != 0 {
-		updatedExtraArgs := ""
-		extraArgsSeperator := " "
 		for _, kv := range extraArgs {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
@@ -68,10 +66,7 @@ func ValidateArgs() {
 			if !strings.HasPrefix(key, "--") && strings.Count(key, "--") != 1 {
 				log.Fatalf("Expected key [%s] in [%s] to start with prefix --", key, extraArgs)
 			}
-			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeperator, kv)
 		}
-		updatedExtraArgs = strings.TrimPrefix(updatedExtraArgs, extraArgsSeperator)
-		viper.Set("extra-args", updatedExtraArgs)
 	}
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
 	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
