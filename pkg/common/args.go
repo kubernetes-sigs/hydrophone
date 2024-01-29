@@ -58,7 +58,7 @@ func ValidateArgs() error {
 
 	if extraArgs := viper.Get("extra-args"); extraArgs != "" {
 		updatedExtraArgs := ""
-		extraArgsSeperator := " "
+		extraArgsSeparator := " "
 		for _, kv := range extraArgs.([]string) {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
@@ -68,9 +68,9 @@ func ValidateArgs() error {
 			if !strings.HasPrefix(key, "--") && strings.Count(key, "--") != 1 {
 				return fmt.Errorf("expected key [%s] in [%s] to start with prefix --", key, extraArgs)
 			}
-			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeperator, kv)
+			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeparator, kv)
 		}
-		updatedExtraArgs = strings.TrimPrefix(updatedExtraArgs, extraArgsSeperator)
+		updatedExtraArgs = strings.TrimPrefix(updatedExtraArgs, extraArgsSeparator)
 		viper.Set("extra-args", updatedExtraArgs)
 	}
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
