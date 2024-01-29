@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -50,7 +51,7 @@ func (c *Client) PrintE2ELogs() {
 	informerFactory.WaitForCacheSync(wait.NeverStop)
 
 	for {
-		pod, _ := podInformer.Lister().Pods(common.Namespace).Get(common.PodName)
+		pod, _ := podInformer.Lister().Pods(viper.GetString("namespace")).Get(common.PodName)
 		if pod.Status.Phase == v1.PodRunning {
 			var err error
 			stream := streamLogs{
@@ -83,7 +84,7 @@ func (c *Client) PrintE2ELogs() {
 // FetchExitCode waits for pod to be in terminated state and get the exit code
 func (c *Client) FetchExitCode() {
 	// Watching the pod's status
-	watchInterface, err := c.ClientSet.CoreV1().Pods(common.Namespace).Watch(context.TODO(), metav1.ListOptions{
+	watchInterface, err := c.ClientSet.CoreV1().Pods(viper.GetString("namespace")).Watch(context.TODO(), metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("metadata.name=%s", common.PodName),
 	})
 	if err != nil {

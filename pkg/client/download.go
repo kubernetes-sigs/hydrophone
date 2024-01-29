@@ -25,18 +25,16 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-
-	"sigs.k8s.io/hydrophone/pkg/common"
 )
 
 func downloadFile(config *rest.Config, clientset *kubernetes.Clientset,
-	podName, containerName, filePath string,
+	namespace, podName, containerName, filePath string,
 	writer io.Writer) error {
 	// Create an exec request
 	req := clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
-		Namespace(common.Namespace).
+		Namespace(namespace).
 		SubResource("exec").
 		Param("container", containerName)
 

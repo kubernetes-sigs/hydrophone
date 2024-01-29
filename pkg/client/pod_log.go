@@ -19,6 +19,7 @@ package client
 import (
 	"bufio"
 
+	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -32,7 +33,7 @@ func getPodLogs(clientset *kubernetes.Clientset, stream streamLogs) {
 		Follow:    true,
 	}
 
-	req := clientset.CoreV1().Pods(common.Namespace).GetLogs(common.PodName, &podLogOpts)
+	req := clientset.CoreV1().Pods(viper.GetString("namespace")).GetLogs(common.PodName, &podLogOpts)
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		stream.errCh <- err
