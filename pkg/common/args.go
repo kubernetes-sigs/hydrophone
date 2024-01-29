@@ -56,10 +56,10 @@ func ValidateArgs() {
 		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
 
-	if extraArgs := viper.Get("extra-args"); extraArgs != "" {
+	if extraArgs := viper.GetStringSlice("extra-args"); len(extraArgs) != 0 {
 		updatedExtraArgs := ""
 		extraArgsSeperator := " "
-		for _, kv := range extraArgs.([]string) {
+		for _, kv := range extraArgs {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
 				log.Fatalf("Expected [%s] in [%s] to be of --key=value format", keyValuePair, extraArgs)
