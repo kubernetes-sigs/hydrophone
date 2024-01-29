@@ -61,7 +61,9 @@ var rootCmd = &cobra.Command{
 		} else if listImages {
 			service.PrintListImages(client.ClientSet)
 		} else {
-			common.ValidateArgs(client.ClientSet, config)
+			if err := common.ValidateArgs(client.ClientSet, config); err != nil {
+				log.Fatal(err)
+			}
 
 			service.RunE2E(client.ClientSet)
 			client.PrintE2ELogs()
