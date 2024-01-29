@@ -211,7 +211,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("namespace already exist %s", common.PodName)
+			log.Fatalf("namespace already exist %s. Please run cleanup first", conformanceNS.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -221,7 +221,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("serviceaccount already exist %s", common.PodName)
+			log.Fatalf("serviceaccount already exist %s. Please run cleanup first", conformanceSA.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -231,7 +231,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrole already exist %s", common.PodName)
+			log.Printf("clusterrole already exist %s", conformanceClusterRole.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -241,7 +241,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrolebinding already exist %s", common.PodName)
+			log.Printf("clusterrolebinding already exist %s", conformanceClusterRoleBinding.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -287,10 +287,10 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			Value: "/tmp/repo-list/repo-list.yaml",
 		})
 
-		cm, err := clientset.CoreV1().ConfigMaps(common.Namespace).Create(ctx, configMap, metav1.CreateOptions{})
+		cm, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				log.Printf("configmap already exists %s", configMap.ObjectMeta.Name)
+				log.Fatalf("configmap already exists %s. Please run cleanup first", configMap.ObjectMeta.Name)
 			} else {
 				log.Fatal(err)
 			}
@@ -308,7 +308,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("pod already exist %s", common.PodName)
+			log.Fatalf("pod already exist %s. Please run cleanup first", conformancePod.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
