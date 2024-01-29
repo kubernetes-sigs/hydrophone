@@ -19,6 +19,7 @@ package common
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
@@ -54,6 +55,24 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if viper.Get("skip") != "" {
 		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
+
+	if extraArgs := viper.Get("extra-args"); extraArgs != "" {
+		updatedExtraArgs := ""
+		extraArgsSeperator := " "
+		for _, kv := range extraArgs.([]string) {
+			keyValuePair := strings.SplitN(kv, "=", 2)
+			if len(keyValuePair) != 2 {
+				log.Fatalf("Expected [%s] in [%s] to be of --key=value format", keyValuePair, extraArgs)
+			}
+			key := keyValuePair[0]
+			if !strings.HasPrefix(key, "--") && strings.Count(key, "--") != 1 {
+				log.Fatalf("Expected key [%s] in [%s] to start with prefix --", key, extraArgs)
+			}
+			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeperator, kv)
+		}
+		updatedExtraArgs = strings.TrimPrefix(updatedExtraArgs, extraArgsSeperator)
+		viper.Set("extra-args", updatedExtraArgs)
+	}
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
 	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
@@ -65,4 +84,5 @@ func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
 			log.Fatalf("Error creating output directory [%s] : %v", outputDir, err)
 		}
 	}
+
 }
