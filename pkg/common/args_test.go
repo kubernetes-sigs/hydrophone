@@ -122,15 +122,9 @@ func TestValidateArgs(t *testing.T) {
 				assert.EqualError(t, err, tc.expectedErr)
 			} else {
 				assert.Nil(t, err)
-				if viper.GetString("skip") != tc.expectedSkip {
-					t.Errorf("expected skip to be [%s], got [%s]", tc.expectedSkip, viper.GetString("skip"))
-				}
-				if viper.GetString("focus") != tc.expectedFocus {
-					t.Errorf("expected focus to be [%s], got [%s]", tc.expectedFocus, viper.GetString("focus"))
-				}
-				if viper.GetString("extra-args") != tc.expectedArgs {
-					t.Errorf("expected extra-args to be [%s], got [%s]", tc.expectedArgs, viper.GetString("extra-args"))
-				}
+				assert.Equal(t, viper.GetString("skip"), tc.expectedSkip)
+				assert.Equal(t, viper.GetString("focus"), tc.expectedFocus)
+				assert.Equal(t, viper.GetString("extra-args"), tc.expectedArgs)
 			}
 		})
 	}
