@@ -117,7 +117,7 @@ func TestValidateArgs(t *testing.T) {
 			viper.Set("extra-args", tc.extraArgs)
 
 			// Call the function under test
-			err := ValidateArgs(nil, nil)
+			err := ValidateArgs()
 			if tc.wantErr {
 				assert.EqualError(t, err, tc.expectedErr)
 			} else {

@@ -61,7 +61,7 @@ var rootCmd = &cobra.Command{
 		} else if listImages {
 			service.PrintListImages(client.ClientSet)
 		} else {
-			if err := common.ValidateArgs(client.ClientSet, config); err != nil {
+			if err := common.ValidateArgs(); err != nil {
 				log.Fatal(err)
 			}
 
