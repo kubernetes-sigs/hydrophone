@@ -77,6 +77,12 @@ func TestValidateArgs(t *testing.T) {
 
 			// Call the function under test
 			ValidateArgs()
+			if viper.GetString("skip") != tc.expectedSkip {
+				t.Errorf("expected skip to be [%s], got [%s]", tc.expectedSkip, viper.GetString("skip"))
+			}
+			if viper.GetString("focus") != tc.expectedFocus {
+				t.Errorf("expected focus to be [%s], got [%s]", tc.expectedFocus, viper.GetString("focus"))
+			}
 			if !reflect.DeepEqual(viper.GetStringSlice("extra-args"), tc.expectedArgs) {
 				t.Errorf("expected extra-args to be [%v], got [%v]", tc.expectedArgs, viper.GetStringSlice("extra-args"))
 			}
