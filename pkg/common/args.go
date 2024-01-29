@@ -47,7 +47,7 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 
 // ValidateArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
-func ValidateArgs(clientSet *kubernetes.Clientset, config *rest.Config) {
+func ValidateArgs() {
 	if viper.Get("namespace") == "" {
 		viper.Set("namespace", namespace)
 	}
