@@ -42,6 +42,7 @@ var (
 	skip             string
 	conformanceImage string
 	busyboxImage     string
+	namespace        string
 	dryRun           bool
 	testRepoList     string
 	testRepo         string
@@ -121,6 +122,9 @@ func init() {
 
 	rootCmd.Flags().StringVar(&busyboxImage, "busybox-image", "", "specify an alternate busybox container image.")
 	viper.BindPFlag("busybox-image", rootCmd.Flags().Lookup("busybox-image"))
+
+	rootCmd.Flags().StringVar(&namespace, "namespace", "", "the namespace where the conformance pod is created.")
+	viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace"))
 
 	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "run in dry run mode.")
 	viper.BindPFlag("dry-run", rootCmd.Flags().Lookup("dry-run"))

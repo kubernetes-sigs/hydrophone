@@ -47,7 +47,11 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 
 // ValidateArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
+
 func ValidateArgs() error {
+	if viper.Get("namespace") == "" {
+		viper.Set("namespace", DefaultNamespace)
+	}
 	if viper.Get("focus") == "" {
 		viper.Set("focus", "\\[Conformance\\]")
 	}
@@ -56,10 +60,8 @@ func ValidateArgs() error {
 		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
 	}
 
-	if extraArgs := viper.Get("extra-args"); extraArgs != "" {
-		updatedExtraArgs := ""
-		extraArgsSeparator := " "
-		for _, kv := range extraArgs.([]string) {
+	if extraArgs := viper.GetStringSlice("extra-args"); len(extraArgs) != 0 {
+		for _, kv := range extraArgs {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
 				return fmt.Errorf("expected [%s] in [%s] to be of --key=value format", keyValuePair, extraArgs)
@@ -68,11 +70,10 @@ func ValidateArgs() error {
 			if !strings.HasPrefix(key, "--") && strings.Count(key, "--") != 1 {
 				return fmt.Errorf("expected key [%s] in [%s] to start with prefix --", key, extraArgs)
 			}
-			updatedExtraArgs = fmt.Sprintf("%s%s%s", updatedExtraArgs, extraArgsSeparator, kv)
 		}
-		updatedExtraArgs = strings.TrimPrefix(updatedExtraArgs, extraArgsSeparator)
-		viper.Set("extra-args", updatedExtraArgs)
 	}
+
+	log.Printf("Using namespace : '%s'", viper.Get("namespace"))
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
 	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",

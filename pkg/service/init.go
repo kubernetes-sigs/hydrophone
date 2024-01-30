@@ -80,7 +80,7 @@ func GetKubeConfig(kubeconfig string) string {
 func RunE2E(clientset *kubernetes.Clientset) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: common.Namespace,
+			Name: viper.GetString("namespace"),
 		},
 	}
 
@@ -90,7 +90,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 				"component": "conformance",
 			},
 			Name:      common.ServiceAccountName,
-			Namespace: "conformance",
+			Namespace: conformanceNS.Name,
 		},
 	}
 
@@ -130,7 +130,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			{
 				Kind:      "ServiceAccount",
 				Name:      "conformance-serviceaccount",
-				Namespace: "conformance",
+				Namespace: conformanceNS.Name,
 			},
 		},
 	}
@@ -138,7 +138,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 	conformancePod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "e2e-conformance-test",
-			Namespace: "conformance",
+			Namespace: conformanceNS.Name,
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
@@ -173,7 +173,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 						},
 						{
 							Name:  "E2E_EXTRA_ARGS",
-							Value: fmt.Sprintf("%s", viper.Get("extra-args")),
+							Value: fmt.Sprintf("%s", strings.Join(viper.GetStringSlice("extra-args"), " ")),
 						},
 					},
 					VolumeMounts: []v1.VolumeMount{
@@ -260,7 +260,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		configMap := &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "repo-list-config",
-				Namespace: common.Namespace,
+				Namespace: ns.Name,
 			},
 			Data: map[string]string{
 				"repo-list.yaml": string(RepoListData),
@@ -322,7 +322,9 @@ func RunE2E(clientset *kubernetes.Clientset) {
 
 // Cleanup removes all resources created during E2E tests.
 func Cleanup(clientset *kubernetes.Clientset) {
-	err := clientset.CoreV1().Pods(common.Namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
+	namespace := viper.GetString("namespace")
+
+	err := clientset.CoreV1().Pods(namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			log.Printf("pod %s doesn't exist\n", common.PodName)
@@ -352,7 +354,7 @@ func Cleanup(clientset *kubernetes.Clientset) {
 	}
 	log.Printf("clusterrole deleted %s\n", common.ClusterRoleName)
 
-	err = clientset.CoreV1().ServiceAccounts(common.Namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
+	err = clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			log.Printf("serviceaccount %s doesn't exist\n", common.ServiceAccountName)
@@ -362,15 +364,15 @@ func Cleanup(clientset *kubernetes.Clientset) {
 	}
 	log.Printf("serviceaccount deleted %s\n", common.ServiceAccountName)
 
-	err = clientset.CoreV1().Namespaces().Delete(ctx, common.Namespace, metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(ctx, namespace, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("namespace %s doesn't exist\n", common.Namespace)
+			log.Printf("namespace %s doesn't exist\n", namespace)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("namespace deleted %s\n", common.Namespace)
+	log.Printf("namespace deleted %s\n", namespace)
 }
 
 // DryRun returns an environment variable to tell the conformance test to run in dry run mode.

@@ -36,35 +36,30 @@ go install sigs.k8s.io/hydrophone@latest
 
 ```
 $ bin/hydrophone --help
-Usage of bin/hydrophone:
-  -busybox-image string
-        specify an alternate busybox container image. (default "registry.k8s.io/e2e-test-images/busybox:1.36.1-1")
-  -cleanup
-        cleanup resources (pods, namespaces etc).
-  -conformance
-        run conformance tests.
-  -conformance-image string
-        specify a conformance container image of your choice. (default "registry.k8s.io/conformance:v1.29.1")
-  -dry-run
-        run in dry run mode.
-  -focus string
-        focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
-  -kubeconfig string
-        path to the kubeconfig file.
-  -list-images
-        list all images that will be used during conformance tests.
-  -output-dir string
-        directory for logs. (defaults to current directory)
-  -parallel int
-        number of parallel threads in test framework. (default 1)
-  -skip string
-        skip specific tests. allows regular expressions.
-  -test-repo string
-        alternate registry for test images
-  -test-repo-list string
-        yaml file to override registries for test images
-  -verbosity int
-        verbosity of test framework. (default 4)
+Hydrophone is a lightweight runner for kubernetes tests.
+
+Usage:
+  hydrophone [flags]
+
+Flags:
+      --busybox-image string       specify an alternate busybox container image. (default "registry.k8s.io/e2e-test-images/busybox:1.36.1-1")
+      --cleanup                    cleanup resources (pods, namespaces etc).
+      --config string              Default config file.
+      --conformance                run conformance tests.
+      --conformance-image string   specify a conformance container image of your choice. (default "registry.k8s.io/conformance:v1.29.1")
+      --dry-run                    run in dry run mode.
+      --extra-args strings         Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)
+      --focus string               focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.
+  -h, --help                       help for hydrophone
+      --kubeconfig string          path to the kubeconfig file.
+      --list-images                list all images that will be used during conformance tests.
+      --namespace string           the namespace where the conformance pod is created. (default "conformance")
+      --output-dir string          directory for logs. (defaults to current directory)
+      --parallel int               number of parallel threads in test framework. (default 1)
+      --skip string                skip specific tests. allows regular expressions.
+      --test-repo string           skip specific tests. allows regular expressions.
+      --test-repo-list string      yaml file to override registries for test images.
+      --verbosity int              verbosity of test framework. (default 4)
 ```
 
 ## Run
