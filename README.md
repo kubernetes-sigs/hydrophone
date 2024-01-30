@@ -119,7 +119,6 @@ Please reach out for bugs, feature requests, and other issues!
 The maintainers of this project are reachable via:
 
 - [Kubernetes Slack] in the [#hydrophone], [#sig-testing] and [#k8s-conformance] channels
-
 - [filing an issue] against this repo
 - The Kubernetes [SIG-Testing Mailing List] and [SIG-Release Mailing List]
 
