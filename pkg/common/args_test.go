@@ -17,7 +17,6 @@ limitations under the License.
 package common
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/spf13/viper"
@@ -35,7 +34,7 @@ func TestValidateArgs(t *testing.T) {
 		focus         string
 		expectedFocus string
 		extraArgs     []string
-		expectedArgs  string
+		expectedArgs  []string
 		wantErr       bool
 		expectedErr   string
 	}{
@@ -44,7 +43,7 @@ func TestValidateArgs(t *testing.T) {
 			focus:         "\\[E2E\\]",
 			expectedFocus: "\\[E2E\\]",
 			extraArgs:     []string{},
-      expectedArgs:  []string{},
+			expectedArgs:  []string{},
 			wantErr:       false,
 			expectedErr:   "",
 		},
