@@ -48,6 +48,9 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 // ValidateArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
 func ValidateArgs() {
+	if viper.Get("namespace") == "" {
+		viper.Set("namespace", DefaultNamespace)
+	}
 	if viper.Get("focus") == "" {
 		viper.Set("focus", "\\[Conformance\\]")
 	}
@@ -68,6 +71,8 @@ func ValidateArgs() {
 			}
 		}
 	}
+
+	log.Printf("Using namespace : '%s'", viper.Get("namespace"))
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
 	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
