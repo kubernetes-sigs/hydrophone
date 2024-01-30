@@ -17,6 +17,7 @@ limitations under the License.
 package common
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/spf13/viper"
@@ -35,34 +36,21 @@ func TestValidateArgs(t *testing.T) {
 		skip          string
 		expectedSkip  string
 		extraArgs     []string
-		expectedArgs  string
+		expectedArgs  []string
 	}{
 		{
 			name:          "With focus",
 			focus:         "\\[E2E\\]",
 			expectedFocus: "\\[E2E\\]",
-			skip:          "",
-			expectedSkip:  "",
 			extraArgs:     []string{},
-			expectedArgs:  "",
-		},
-		{
-			name:          "With skip",
-			focus:         "",
-			expectedFocus: "\\[Conformance\\]",
-			skip:          "some tests",
-			expectedSkip:  "some tests",
-			extraArgs:     []string{},
-			expectedArgs:  "",
+			expectedArgs:  []string{},
 		},
 		{
 			name:          "With extra args",
 			focus:         "",
 			expectedFocus: "\\[Conformance\\]",
-			skip:          "",
-			expectedSkip:  "",
 			extraArgs:     []string{"--key1=value1", "--key2=value2"},
-			expectedArgs:  "--key1=value1 --key2=value2",
+			expectedArgs:  []string{"--key1=value1", "--key2=value2"},
 		},
 	}
 
@@ -82,8 +70,8 @@ func TestValidateArgs(t *testing.T) {
 			if viper.GetString("focus") != tc.expectedFocus {
 				t.Errorf("expected focus to be [%s], got [%s]", tc.expectedFocus, viper.GetString("focus"))
 			}
-			if viper.GetString("extra-args") != tc.expectedArgs {
-				t.Errorf("expected extra-args to be [%s], got [%s]", tc.expectedArgs, viper.GetString("extra-args"))
+			if !reflect.DeepEqual(viper.GetStringSlice("extra-args"), tc.expectedArgs) {
+				t.Errorf("expected extra-args to be [%v], got [%v]", tc.expectedArgs, viper.GetStringSlice("extra-args"))
 			}
 		})
 	}
