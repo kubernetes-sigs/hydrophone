@@ -1,4 +1,6 @@
-# Copyright 2023 The Kubernetes Authors.
+#!/usr/bin/env python3
+
+# Copyright YEAR The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,21 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-build:
-	go build -o bin/hydrophone main.go
-
-run:
-	go run main.go
-
-fmt:
-	go fmt ./...
-
-test:
-	go test -v ./...
-
-verify:
-	@hack/verify-all.sh -v
-
-test-e2e: build
-	@hack/run-e2e.sh

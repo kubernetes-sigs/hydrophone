@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Copyright 2024 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,6 +68,21 @@ function run_test {
       fi
     fi
   fi  
+
+  # If EXPECTED_NUM_TESTS is set, run the evaluate_test_num function
+  if [[ ! -z ${EXPECTED_NUM_TESTS+x} ]]; then
+    evaluate_test_num
+  fi
+}
+
+function evaluate_test_num {
+  NUM_TESTS=$(grep -oP 'Ran \K\d+(?= of \d+ Specs)' /tmp/test.log)
+
+  # Check if NUM_TESTS is not equal to EXPECTED_NUM_TESTS
+  if [[ ${NUM_TESTS} -ne ${EXPECTED_NUM_TESTS} ]]; then
+    echo "Expected ${EXPECTED_NUM_TESTS} tests, got ${NUM_TESTS} tests"
+    exit 1
+  fi
 }
 
 # Default versions k8s and kind

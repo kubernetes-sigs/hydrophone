@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -40,11 +41,9 @@ var (
 )
 
 // Init Initializes the kube config clientset
-func Init(cfg *common.ArgConfig) (*rest.Config, *kubernetes.Clientset) {
+func Init(kubeconfig string) (*rest.Config, *kubernetes.Clientset) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		kubeconfig := getKubeConfig(cfg.Kubeconfig)
-
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
 			log.Fatalf("kubeconfig can't be loaded: %v\n", err)
@@ -59,7 +58,8 @@ func Init(cfg *common.ArgConfig) (*rest.Config, *kubernetes.Clientset) {
 	return config, clientset
 }
 
-func getKubeConfig(kubeconfig string) string {
+// GetKubeConfig returns the path to the Kubernetes configuration file
+func GetKubeConfig(kubeconfig string) string {
 	homeDir := os.Getenv("HOME")
 	if kubeconfig == "" {
 		kubeconfig = filepath.Join(homeDir, ".kube", "config")
@@ -77,10 +77,10 @@ func getKubeConfig(kubeconfig string) string {
 }
 
 // RunE2E sets up the necessary resources and runs E2E conformance tests.
-func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
+func RunE2E(clientset *kubernetes.Clientset) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: common.Namespace,
+			Name: viper.GetString("namespace"),
 		},
 	}
 
@@ -90,7 +90,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 				"component": "conformance",
 			},
 			Name:      common.ServiceAccountName,
-			Namespace: "conformance",
+			Namespace: conformanceNS.Name,
 		},
 	}
 
@@ -130,7 +130,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 			{
 				Kind:      "ServiceAccount",
 				Name:      "conformance-serviceaccount",
-				Namespace: "conformance",
+				Namespace: conformanceNS.Name,
 			},
 		},
 	}
@@ -138,22 +138,22 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	conformancePod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "e2e-conformance-test",
-			Namespace: "conformance",
+			Namespace: conformanceNS.Name,
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
 					Name:            common.ConformanceContainer,
-					Image:           common.ConformanceImage,
+					Image:           viper.GetString("conformance-image"),
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
 						{
 							Name:  "E2E_FOCUS",
-							Value: fmt.Sprintf("%s", cfg.Focus),
+							Value: fmt.Sprintf("%s", viper.Get("focus")),
 						},
 						{
 							Name:  "E2E_SKIP",
-							Value: fmt.Sprintf("%s", cfg.Skip),
+							Value: fmt.Sprintf("%s", viper.Get("skip")),
 						},
 						{
 							Name:  "E2E_PROVIDER",
@@ -161,15 +161,19 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 						},
 						{
 							Name:  "E2E_PARALLEL",
-							Value: fmt.Sprintf("%d", cfg.Parallel),
+							Value: fmt.Sprintf("%d", viper.Get("parallel")),
 						},
 						{
 							Name:  "E2E_VERBOSITY",
-							Value: fmt.Sprintf("%d", cfg.Verbosity),
+							Value: fmt.Sprintf("%d", viper.Get("verbosity")),
 						},
 						{
 							Name:  "E2E_USE_GO_RUNNER",
 							Value: "true",
+						},
+						{
+							Name:  "E2E_EXTRA_ARGS",
+							Value: fmt.Sprintf("%s", strings.Join(viper.GetStringSlice("extra-args"), " ")),
 						},
 					},
 					VolumeMounts: []v1.VolumeMount{
@@ -181,7 +185,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 				},
 				{
 					Name:    common.OutputContainer,
-					Image:   cfg.BusyboxImage,
+					Image:   viper.GetString("busybox-image"),
 					Command: []string{"/bin/sh", "-c", "sleep infinity"},
 					VolumeMounts: []v1.VolumeMount{
 						{
@@ -204,14 +208,14 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 		},
 	}
 
-	if cfg.DryRun {
+	if viper.GetBool("dry-run") {
 		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, DryRun())
 	}
 
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("namespace already exist %s", common.PodName)
+			log.Fatalf("namespace already exist %s. Please run cleanup first", conformanceNS.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -221,7 +225,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("serviceaccount already exist %s", common.PodName)
+			log.Fatalf("serviceaccount already exist %s. Please run cleanup first", conformanceSA.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -231,7 +235,7 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrole already exist %s", common.PodName)
+			log.Printf("clusterrole already exist %s", conformanceClusterRole.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -241,22 +245,22 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrolebinding already exist %s", common.PodName)
+			log.Printf("clusterrolebinding already exist %s", conformanceClusterRoleBinding.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
 	}
 	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
 
-	if cfg.TestRepoList != "" {
-		RepoListData, err := os.ReadFile(cfg.TestRepoList)
+	if viper.GetString("test-repo-list") != "" {
+		RepoListData, err := os.ReadFile(viper.GetString("test-repo-list"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		configMap := &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "repo-list-config",
-				Namespace: common.Namespace,
+				Namespace: ns.Name,
 			},
 			Data: map[string]string{
 				"repo-list.yaml": string(RepoListData),
@@ -287,10 +291,10 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 			Value: "/tmp/repo-list/repo-list.yaml",
 		})
 
-		cm, err := clientset.CoreV1().ConfigMaps(common.Namespace).Create(ctx, configMap, metav1.CreateOptions{})
+		cm, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				log.Printf("configmap already exists %s", configMap.ObjectMeta.Name)
+				log.Fatalf("configmap already exists %s. Please run cleanup first", configMap.ObjectMeta.Name)
 			} else {
 				log.Fatal(err)
 			}
@@ -298,17 +302,17 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 		log.Printf("configmap created %s\n", cm.Name)
 	}
 
-	if cfg.TestRepo != "" {
+	if viper.GetString("test-repo") != "" {
 		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
 			Name:  "KUBE_TEST_REPO",
-			Value: cfg.TestRepo,
+			Value: viper.GetString("test-repo"),
 		})
 	}
 
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("pod already exist %s", common.PodName)
+			log.Fatalf("pod already exist %s. Please run cleanup first", conformancePod.ObjectMeta.Name)
 		} else {
 			log.Fatal(err)
 		}
@@ -318,7 +322,9 @@ func RunE2E(clientset *kubernetes.Clientset, cfg *common.ArgConfig) {
 
 // Cleanup removes all resources created during E2E tests.
 func Cleanup(clientset *kubernetes.Clientset) {
-	err := clientset.CoreV1().Pods(common.Namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
+	namespace := viper.GetString("namespace")
+
+	err := clientset.CoreV1().Pods(namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			log.Printf("pod %s doesn't exist\n", common.PodName)
@@ -348,7 +354,7 @@ func Cleanup(clientset *kubernetes.Clientset) {
 	}
 	log.Printf("clusterrole deleted %s\n", common.ClusterRoleName)
 
-	err = clientset.CoreV1().ServiceAccounts(common.Namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
+	err = clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			log.Printf("serviceaccount %s doesn't exist\n", common.ServiceAccountName)
@@ -358,15 +364,15 @@ func Cleanup(clientset *kubernetes.Clientset) {
 	}
 	log.Printf("serviceaccount deleted %s\n", common.ServiceAccountName)
 
-	err = clientset.CoreV1().Namespaces().Delete(ctx, common.Namespace, metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(ctx, namespace, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
-			log.Printf("namespace %s doesn't exist\n", common.Namespace)
+			log.Printf("namespace %s doesn't exist\n", namespace)
 		} else {
 			log.Fatal(err)
 		}
 	}
-	log.Printf("namespace deleted %s\n", common.Namespace)
+	log.Printf("namespace deleted %s\n", namespace)
 }
 
 // DryRun returns an environment variable to tell the conformance test to run in dry run mode.

@@ -20,9 +20,6 @@ namespace, waits for it to finish and then prints out the results.
 - **Broad Tool Integration**: Limited integration with third-party tools; maintains simplicity.
 
 
-
-
-
 ## Community
 
 Please reach out for bugs, feature requests, and other issues!
