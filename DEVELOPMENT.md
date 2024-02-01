@@ -15,7 +15,7 @@ $ make build
 go build -o bin/hydrophone main.go
 ```
 
-## Install
+### Install
 
 ```
 go install sigs.k8s.io/hydrophone@latest
