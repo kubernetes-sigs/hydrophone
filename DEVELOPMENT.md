@@ -56,7 +56,7 @@ Usage of bin/hydrophone:
         verbosity of test framework. (default 4)
 ```
 
-## Run
+### Run
 
 Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone` Alternatively, you can specify the path to the kubeconfig file with the `--kubeconfig` option.
 
