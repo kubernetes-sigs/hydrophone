@@ -94,7 +94,7 @@ kubectl delete -n conformance pods/e2e-conformance-test && kubectl delete ns con
 ```
 
 
-## Troubleshooting
+### Troubleshooting
 
 Check if the pod is running:
 
