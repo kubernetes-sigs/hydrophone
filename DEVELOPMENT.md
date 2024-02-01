@@ -8,10 +8,7 @@
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
-
-
-
-## Build
+### Build
 
 ```
 $ make build
