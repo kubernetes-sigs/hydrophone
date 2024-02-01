@@ -21,7 +21,7 @@ go build -o bin/hydrophone main.go
 go install sigs.k8s.io/hydrophone@latest
 ```
 
-## Command line options
+### Command line options
 
 ```
 $ bin/hydrophone --help
