@@ -3,7 +3,7 @@
 ![Kubernetes Logo](https://raw.githubusercontent.com/kubernetes-sigs/kubespray/master/docs/img/kubernetes-logo.png)
 
 ## Getting Started
-##  Prerequisites
+###  Prerequisites
 - [go](https://go.dev/dl/)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
