@@ -47,7 +47,8 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 
 // ValidateArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
-func ValidateArgs() {
+
+func ValidateArgs() error {
 	if viper.Get("namespace") == "" {
 		viper.Set("namespace", DefaultNamespace)
 	}
@@ -63,11 +64,11 @@ func ValidateArgs() {
 		for _, kv := range extraArgs {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
-				log.Fatalf("Expected [%s] in [%s] to be of --key=value format", keyValuePair, extraArgs)
+				return fmt.Errorf("expected [%s] in [%s] to be of --key=value format", keyValuePair, extraArgs)
 			}
 			key := keyValuePair[0]
 			if !strings.HasPrefix(key, "--") && strings.Count(key, "--") != 1 {
-				log.Fatalf("Expected key [%s] in [%s] to start with prefix --", key, extraArgs)
+				return fmt.Errorf("expected key [%s] in [%s] to start with prefix --", key, extraArgs)
 			}
 		}
 	}
@@ -81,8 +82,8 @@ func ValidateArgs() {
 	outputDir := viper.GetString("output-dir")
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		if err = os.MkdirAll(outputDir, 0755); err != nil {
-			log.Fatalf("Error creating output directory [%s] : %v", outputDir, err)
+			return fmt.Errorf("error creating output directory [%s] : %v", outputDir, err)
 		}
 	}
-
+	return nil
 }

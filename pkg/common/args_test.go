@@ -17,10 +17,10 @@ limitations under the License.
 package common
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateArgs(t *testing.T) {
@@ -33,10 +33,10 @@ func TestValidateArgs(t *testing.T) {
 		name          string
 		focus         string
 		expectedFocus string
-		skip          string
-		expectedSkip  string
 		extraArgs     []string
 		expectedArgs  []string
+		wantErr       bool
+		expectedErr   string
 	}{
 		{
 			name:          "With focus",
@@ -44,6 +44,8 @@ func TestValidateArgs(t *testing.T) {
 			expectedFocus: "\\[E2E\\]",
 			extraArgs:     []string{},
 			expectedArgs:  []string{},
+			wantErr:       false,
+			expectedErr:   "",
 		},
 		{
 			name:          "With extra args",
@@ -51,6 +53,35 @@ func TestValidateArgs(t *testing.T) {
 			expectedFocus: "\\[Conformance\\]",
 			extraArgs:     []string{"--key1=value1", "--key2=value2"},
 			expectedArgs:  []string{"--key1=value1", "--key2=value2"},
+			wantErr:       false,
+			expectedErr:   "",
+		},
+		{
+			name:          "Invalid extra args format",
+			focus:         "",
+			expectedFocus: "\\[Conformance\\]",
+			extraArgs:     []string{"invalid-arg"},
+			expectedArgs:  []string{},
+			wantErr:       true,
+			expectedErr:   "expected [[invalid-arg]] in [[invalid-arg]] to be of --key=value format",
+		},
+		{
+			name:          "Extra args with missing values",
+			focus:         "",
+			expectedFocus: "\\[Conformance\\]",
+			extraArgs:     []string{"--key1=value1", "--key2"},
+			expectedArgs:  []string{},
+			wantErr:       true,
+			expectedErr:   "expected [[--key2]] in [[--key1=value1 --key2]] to be of --key=value format",
+		},
+		{
+			name:          "Extra args with invalid key format",
+			focus:         "",
+			expectedFocus: "\\[Conformance\\]",
+			extraArgs:     []string{"key1=value1", "--key2=value2"},
+			expectedArgs:  []string{},
+			wantErr:       true,
+			expectedErr:   "expected key [key1] in [[key1=value1 --key2=value2]] to start with prefix --",
 		},
 	}
 
@@ -59,19 +90,16 @@ func TestValidateArgs(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Set up the test environment
 			viper.Set("focus", tc.focus)
-			viper.Set("skip", tc.skip)
 			viper.Set("extra-args", tc.extraArgs)
 
 			// Call the function under test
-			ValidateArgs()
-			if viper.GetString("skip") != tc.expectedSkip {
-				t.Errorf("expected skip to be [%s], got [%s]", tc.expectedSkip, viper.GetString("skip"))
-			}
-			if viper.GetString("focus") != tc.expectedFocus {
-				t.Errorf("expected focus to be [%s], got [%s]", tc.expectedFocus, viper.GetString("focus"))
-			}
-			if !reflect.DeepEqual(viper.GetStringSlice("extra-args"), tc.expectedArgs) {
-				t.Errorf("expected extra-args to be [%v], got [%v]", tc.expectedArgs, viper.GetStringSlice("extra-args"))
+			err := ValidateArgs()
+			if tc.wantErr {
+				assert.EqualError(t, err, tc.expectedErr)
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, viper.GetString("focus"), tc.expectedFocus)
+				assert.Equal(t, viper.GetStringSlice("extra-args"), tc.expectedArgs)
 			}
 		})
 	}
