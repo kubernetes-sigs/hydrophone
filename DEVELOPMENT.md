@@ -6,7 +6,7 @@
 ###  Prerequisites
 - [Go](https://go.dev/dl/)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
 ### Build
 
