@@ -5,7 +5,7 @@ This document describes the process for running hydrophone on your local machine
 ## Getting Started
 ###  Prerequisites
 - [Go](https://go.dev/dl/)
-- [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
 ### Build
