@@ -1,6 +1,6 @@
 # hydrophone
 
-![Kubernetes Logo](https://raw.githubusercontent.com/kubernetes-sigs/kubespray/master/docs/img/kubernetes-logo.png)
+This document describes the process for running hydrophone on your local machine.
 
 ## Getting Started
 ###  Prerequisites
