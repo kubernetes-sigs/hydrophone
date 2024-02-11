@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	
+	"os"
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 

@@ -3,7 +3,6 @@ package common
 import (
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 	"sync"
 	"time"
