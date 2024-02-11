@@ -44,7 +44,7 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 		viper.Set("busybox-image", busyboxImage)
 	}
 
-	log.printf("API endpoint : %s", config.Host)
+	log.PrintfAPI("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
 }
 
