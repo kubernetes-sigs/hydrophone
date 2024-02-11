@@ -20,16 +20,23 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
+    "io"
+	"runtime"
+	"sync"
+	"time"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
+	
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // PrintInfo prints the information about the cluster
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
+	spinner := NewSpinner(os.Stdout)
+    spinner.Start()
+	 
+	time.Sleep(2 * time.Second)
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
@@ -41,7 +48,7 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 		viper.Set("busybox-image", busyboxImage)
 	}
 
-	log.Printf("API endpoint : %s", config.Host)
+	log.PrintfAPI("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
 }
 
@@ -86,4 +93,103 @@ func ValidateArgs() error {
 		}
 	}
 	return nil
+}
+
+var spinnerFrames = []string{
+	"⠈⠁", "⠈⠑", "⠈⠱", "⠈⡱", "⢀⡱", "⢄⡱", "⢄⡱", "⢆⡱", "⢎⡱", "⢎⡰",
+	"⢎⡠", "⢎⡀", "⢎⠁", "⠎⠁", "⠊⠁",
+}
+
+type Spinner struct {
+	stop        chan struct{}
+	stopped     chan struct{}
+	mu          *sync.Mutex
+	running     bool
+	writer      io.Writer
+	ticker      *time.Ticker
+	prefix      string
+	suffix      string
+	frameFormat string
+}
+
+func NewSpinner(w io.Writer) *Spinner {
+	frameFormat := "\x1b[?7l\r%s%s%s\x1b[?7h"
+	if runtime.GOOS == "windows" {
+		frameFormat = "\r%s%s%s"
+	}
+	return &Spinner{
+		stop:        make(chan struct{}, 1),
+		stopped:     make(chan struct{}),
+		mu:          &sync.Mutex{},
+		writer:      w,
+		frameFormat: frameFormat,
+	}
+}
+
+func (s *Spinner) SetPrefix(prefix string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.prefix = prefix
+}
+
+func (s *Spinner) SetSuffix(suffix string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.suffix = suffix
+}
+
+func (s *Spinner) Start() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.running {
+		return
+	}
+	s.running = true
+	s.ticker = time.NewTicker(time.Millisecond * 100)
+	go func() {
+		for {
+			for _, frame := range spinnerFrames {
+				select {
+				case <-s.stop:
+					func() {
+						s.mu.Lock()
+						defer s.mu.Unlock()
+						s.ticker.Stop()
+						s.running = false
+						s.stopped <- struct{}{}
+					}()
+					return
+				case <-s.ticker.C:
+					func() {
+						s.mu.Lock()
+						defer s.mu.Unlock()
+						fmt.Fprintf(s.writer, s.frameFormat, s.prefix, frame, s.suffix)
+					}()
+				}
+			}
+		}
+	}()
+}
+
+func (s *Spinner) Stop() {
+	s.mu.Lock()
+	if !s.running {
+		s.mu.Unlock()
+		return
+	}
+	s.stop <- struct{}{}
+	s.mu.Unlock()
+	<-s.stopped
+}
+
+func (s *Spinner) Write(p []byte) (n int, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !s.running {
+		return s.writer.Write(p)
+	}
+	if _, err := s.writer.Write([]byte("\r")); err != nil {
+		return 0, err
+	}
+	return s.writer.Write(p)
 }
