@@ -25,8 +25,8 @@ namespace, waits for it to finish and then prints out the results.
 Please reach out for bugs, feature requests, and other issues!
 The maintainers of this project are reachable via:
 
-- [Kubernetes Slack] in the [#sig-testing] and [#k8s-conformance] channels
-- [filing an issue] against this repo
+- [Kubernetes Slack] in the [#hydrophone], [#sig-testing] and [#k8s-conformance] channels
+- [Filing an issue] against this repo
 - The Kubernetes [SIG-Testing Mailing List] and [SIG-Release Mailing List]
 
 Current maintainers are [@dims] and [@rjsadow] - feel free to
@@ -53,7 +53,7 @@ Participation in the Kubernetes community is governed by the [Kubernetes Code of
 [@dims]: https://github.com/dims
 [@rjsadow]: https://github.com/rjsadow
 [filing an issue]: https://sigs.k8s.io/hydrophone/issues/new
-[Kubernetes Slack]: http://slack.k8s.io/
+[Kubernetes Slack]: http://slack.k8s.io/C06E3NPR4A3
 [SIG-Testing Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-testing
 [SIG-Release Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-release
 [Conformance suite]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md
