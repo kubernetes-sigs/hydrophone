@@ -58,6 +58,7 @@ var rootCmd = &cobra.Command{
 		client.ClientSet = clientSet
 		common.PrintInfo(client.ClientSet, config)
 		if cleanup {
+			common.SetDefaultNamespace()
 			service.Cleanup(client.ClientSet)
 		} else if listImages {
 			service.PrintListImages(client.ClientSet)

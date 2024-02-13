@@ -322,9 +322,8 @@ func RunE2E(clientset *kubernetes.Clientset) {
 
 // Cleanup removes all resources created during E2E tests.
 func Cleanup(clientset *kubernetes.Clientset) {
-	common.SetDefaultNamespace()
 	namespace := viper.GetString("namespace")
-	log.Printf("using namespace:", namespace)
+	log.Printf("using namespace", namespace)
 
 	err := clientset.CoreV1().Pods(namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {
