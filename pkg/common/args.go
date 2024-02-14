@@ -18,20 +18,20 @@ package common
 
 import (
 	"fmt"
-	"strings"
-	"time"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"os"
 	"sigs.k8s.io/hydrophone/pkg/log"
+	"strings"
+	"time"
 )
 
 // PrintInfo prints the information about the cluster
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	spinner := NewSpinner(os.Stdout)
-    spinner.Start()
-	 
+	spinner.Start()
+
 	time.Sleep(2 * time.Second)
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
