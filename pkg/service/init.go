@@ -205,6 +205,14 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			},
 			RestartPolicy:      v1.RestartPolicyNever,
 			ServiceAccountName: "conformance-serviceaccount",
+			Tolerations: []v1.Toleration{
+				{
+					// An empty key with operator Exists matches all keys,
+					// values and effects which means this will tolerate everything.
+					// As noted in https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+					Operator: "Exists",
+				},
+			},
 		},
 	}
 
@@ -323,6 +331,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 // Cleanup removes all resources created during E2E tests.
 func Cleanup(clientset *kubernetes.Clientset) {
 	namespace := viper.GetString("namespace")
+	log.Printf("using namespace: %v", namespace)
 
 	err := clientset.CoreV1().Pods(namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {

@@ -20,17 +20,22 @@ import (
 	"fmt"
 	"os"
 	"strings"
+  "time"
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
+  
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // PrintInfo prints the information about the cluster
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
+	spinner := NewSpinner(os.Stdout)
+	spinner.Start()
+
+	time.Sleep(2 * time.Second)
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		log.Fatalf("Error fetching server version: %v", err)
@@ -46,8 +51,14 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 		viper.Set("busybox-image", busyboxImage)
 	}
 
-	log.Printf("API endpoint : %s", config.Host)
+	log.PrintfAPI("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
+}
+
+func SetDefaultNamespace() {
+	if viper.Get("namespace") == "" {
+		viper.Set("namespace", DefaultNamespace)
+	}
 }
 
 // ValidateArgs validates the arguments passed to the program
