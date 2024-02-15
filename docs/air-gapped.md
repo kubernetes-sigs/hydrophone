@@ -4,7 +4,7 @@ In this guide we will show how to run Hydrophone in an air-gapped environment wi
 
 ## Requirements
 
-The follow are requirements for this guide:
+Following are the requirements for this guide:
 
 - Docker 18.03 or newer
 - Hydrophone installed on the host machine
@@ -19,7 +19,7 @@ Hydrophone provides a `--list-images` flag. This flag prints a list of images re
 To print the list of images, run:
 
 ```bash
-hydriphone --list-images
+hydrophone --list-images
 ```
 
 This list contains images required to run the tests inside the conformance image. However, it does not include the conformance image itself or the busybox image that hydrophone uses to pull test results. The images identified will need to be pulled from the public registry and transfered to the internal registry.
