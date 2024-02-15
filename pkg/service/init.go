@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -135,6 +136,23 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		},
 	}
 
+	conformancePVC := v1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      common.PVCName,
+			Namespace: conformanceNS.Name,
+		},
+		Spec: v1.PersistentVolumeClaimSpec{
+			AccessModes: []v1.PersistentVolumeAccessMode{
+				v1.ReadWriteOnce,
+			},
+			Resources: v1.VolumeResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceStorage: *resource.NewQuantity(1*1024*1024*1024, resource.BinarySI),
+				},
+			},
+		},
+	}
+
 	conformancePod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "e2e-conformance-test",
@@ -183,23 +201,14 @@ func RunE2E(clientset *kubernetes.Clientset) {
 						},
 					},
 				},
-				{
-					Name:    common.OutputContainer,
-					Image:   viper.GetString("busybox-image"),
-					Command: []string{"/bin/sh", "-c", "sleep infinity"},
-					VolumeMounts: []v1.VolumeMount{
-						{
-							Name:      "output-volume",
-							MountPath: "/tmp/results",
-						},
-					},
-				},
 			},
 			Volumes: []v1.Volume{
 				{
 					Name: "output-volume",
 					VolumeSource: v1.VolumeSource{
-						EmptyDir: &v1.EmptyDirVolumeSource{},
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: common.PVCName,
+						},
 					},
 				},
 			},
@@ -259,6 +268,16 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		}
 	}
 	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
+
+	pvc, err := clientset.CoreV1().PersistentVolumeClaims(ns.Name).Create(ctx, &conformancePVC, metav1.CreateOptions{})
+	if err != nil {
+		if errors.IsAlreadyExists(err) {
+			log.Printf("pvc already exist %s", conformancePVC.ObjectMeta.Name)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("pvc created %s\n", pvc.Name)
 
 	if viper.GetString("test-repo-list") != "" {
 		RepoListData, err := os.ReadFile(viper.GetString("test-repo-list"))
@@ -342,6 +361,16 @@ func Cleanup(clientset *kubernetes.Clientset) {
 		}
 	}
 	log.Printf("pod deleted %s\n", common.PodName)
+
+	err = clientset.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, common.PVCName, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			log.Printf("pvc %s doesn't exist\n", common.PVCName)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	log.Printf("pvc deleted %s\n", common.PVCName)
 
 	err = clientset.RbacV1().ClusterRoleBindings().Delete(ctx, common.ClusterRoleBindingName, metav1.DeleteOptions{})
 	if err != nil {

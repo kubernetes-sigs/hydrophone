@@ -69,6 +69,7 @@ var rootCmd = &cobra.Command{
 
 			service.RunE2E(client.ClientSet)
 			client.PrintE2ELogs()
+			service.PullFiles(client.ClientSet)
 			client.FetchFiles(config, clientSet, viper.GetString("output-dir"))
 			client.FetchExitCode()
 			service.Cleanup(client.ClientSet)

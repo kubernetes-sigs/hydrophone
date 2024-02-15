@@ -23,6 +23,8 @@ const (
 	DefaultNamespace = "conformance"
 	// PodName is the name of the conformance pod
 	PodName = "e2e-conformance-test"
+	// RetrievalPodName is the name of the pod used to retrieve the e2e logs
+	RetrievalPodName = "e2e-retrieval-pod"
 	// ClusterRoleBindingName is the name of the cluster role binding
 	ClusterRoleBindingName = "conformance-serviceaccount-role"
 	// ClusterRoleName is the name of the cluster role
@@ -33,4 +35,6 @@ const (
 	ConformanceContainer = "conformance-container"
 	// OutputContainer is the name of the busybox container
 	OutputContainer = "output-container"
+	// PVCName is the name of the PVC
+	PVCName = "conformance-pvc"
 )
