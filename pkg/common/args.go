@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
-  "time"
+	"time"
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-  
+
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
