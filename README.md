@@ -48,11 +48,11 @@ Participation in the Kubernetes community is governed by the [Kubernetes Code of
 
 [Kubernetes Code of Conduct]: code-of-conduct.md
 [community page]: https://kubernetes.io/community/
-[contributor guide]: https://sigs.k8s.io/hydrophone/blob/main/CONTRIBUTING.md
+[contributor guide]: CONTRIBUTING.md
 [issue tracker]: https://github.com/kubernetes-sigs/hydrophone/issues
 [@dims]: https://github.com/dims
 [@rjsadow]: https://github.com/rjsadow
-[filing an issue]: https://sigs.k8s.io/hydrophone/issues/new
+[filing an issue]: https://github.com/kubernetes-sigs/hydrophone/issues/new
 [Kubernetes Slack]: http://slack.k8s.io/C06E3NPR4A3
 [SIG-Testing Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-testing
 [SIG-Release Mailing List]: https://groups.google.com/forum/#!forum/kubernetes-sig-release
