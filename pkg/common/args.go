@@ -45,6 +45,12 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	log.Printf("Server version : %#v", *serverVersion)
 }
 
+func SetDefaultNamespace() {
+	if viper.Get("namespace") == "" {
+		viper.Set("namespace", DefaultNamespace)
+	}
+}
+
 // ValidateArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
 
