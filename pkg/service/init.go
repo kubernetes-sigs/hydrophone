@@ -205,6 +205,14 @@ func RunE2E(clientset *kubernetes.Clientset) {
 			},
 			RestartPolicy:      v1.RestartPolicyNever,
 			ServiceAccountName: "conformance-serviceaccount",
+			Tolerations: []v1.Toleration{
+				{
+					// An empty key with operator Exists matches all keys,
+					// values and effects which means this will tolerate everything.
+					// As noted in https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+					Operator: "Exists",
+				},
+			},
 		},
 	}
 
