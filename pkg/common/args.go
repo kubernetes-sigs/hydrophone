@@ -21,6 +21,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/blang/semver/v4"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -32,10 +33,14 @@ import (
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
-		log.Fatal("Error fetching server version: ", err)
+		log.Fatalf("Error fetching server version: %v", err)
+	}
+	trimmedVersion, err := trimVersion(serverVersion.String())
+	if err != nil {
+		log.Fatalf("Error trimming server version: %v", err)
 	}
 	if viper.Get("conformance-image") == "" {
-		viper.Set("conformance-image", fmt.Sprintf("registry.k8s.io/conformance:%s", serverVersion.String()))
+		viper.Set("conformance-image", fmt.Sprintf("registry.k8s.io/conformance:%s", trimmedVersion))
 	}
 	if viper.Get("busybox-image") == "" {
 		viper.Set("busybox-image", busyboxImage)
@@ -86,4 +91,14 @@ func ValidateArgs() error {
 		}
 	}
 	return nil
+}
+
+func trimVersion(version string) (string, error) {
+	version = strings.TrimPrefix(version, "v")
+
+	parsedVersion, err := semver.Parse(version)
+	if err != nil {
+		return "", err
+	}
+	return parsedVersion.FinalizeVersion(), nil
 }

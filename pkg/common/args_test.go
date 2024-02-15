@@ -104,3 +104,31 @@ func TestValidateArgs(t *testing.T) {
 		})
 	}
 }
+
+func TestTrimVersion(t *testing.T) {
+
+	testCases := []struct {
+		name            string
+		version         string
+		expectedVersion string
+	}{
+		{
+			name:            "stable version",
+			version:         "v1.28.6",
+			expectedVersion: "1.28.6",
+		},
+		{
+			name:            "pre released version",
+			version:         "v1.28.6+0fb426",
+			expectedVersion: "1.28.6",
+		},
+	}
+
+	// Run the test cases
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			trimmedVersion, _ := trimVersion(tc.version)
+			assert.Equal(t, tc.expectedVersion, trimmedVersion)
+		})
+	}
+}
