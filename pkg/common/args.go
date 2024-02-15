@@ -18,18 +18,21 @@ package common
 
 import (
 	"fmt"
-	"os"
-	"strings"
-
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
+	"os"
 	"sigs.k8s.io/hydrophone/pkg/log"
+	"strings"
+	"time"
 )
 
 // PrintInfo prints the information about the cluster
 func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
+	spinner := NewSpinner(os.Stdout)
+	spinner.Start()
+
+	time.Sleep(2 * time.Second)
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		log.Fatal("Error fetching server version: ", err)
@@ -41,7 +44,7 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 		viper.Set("busybox-image", busyboxImage)
 	}
 
-	log.Printf("API endpoint : %s", config.Host)
+	log.PrintfAPI("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
 }
 
