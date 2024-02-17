@@ -56,7 +56,7 @@ var rootCmd = &cobra.Command{
 		client := client.NewClient()
 		config, clientSet := service.Init(viper.GetString("kubeconfig"))
 		client.ClientSet = clientSet
-		common.SetCommonDefaults(client.ClientSet, config)
+		common.SetDefaults(client.ClientSet, config)
 		if cleanup {
 			service.Cleanup(client.ClientSet)
 		} else if listImages {

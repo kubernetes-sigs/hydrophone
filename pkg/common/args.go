@@ -30,7 +30,9 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
-func SetCommonDefaults(clientSet *kubernetes.Clientset, config *rest.Config) {
+// SetDefaults sets the default values for various configuration options used in the application.
+// Finally, it logs the API endpoint, server version, namespace, conformance image, and busybox image.
+func SetDefaults(clientSet *kubernetes.Clientset, config *rest.Config) {
 	time.Sleep(2 * time.Second)
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
