@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateArgs(t *testing.T) {
+func TestValidateConformanceArgs(t *testing.T) {
 	// Create a temporary output directory
 	tempDir := t.TempDir()
 	viper.Set("output-dir", tempDir)
@@ -93,7 +93,7 @@ func TestValidateArgs(t *testing.T) {
 			viper.Set("extra-args", tc.extraArgs)
 
 			// Call the function under test
-			err := ValidateArgs()
+			err := ValidateConformanceArgs()
 			if tc.wantErr {
 				assert.EqualError(t, err, tc.expectedErr)
 			} else {
