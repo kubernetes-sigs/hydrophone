@@ -109,7 +109,8 @@ func trimVersion(version string) (string, error) {
 
 	parsedVersion, err := semver.Parse(version)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error parsing conformance image tag: %v", err)
 	}
-	return parsedVersion.FinalizeVersion(), nil
+
+	return "v" + parsedVersion.FinalizeVersion(), nil
 }

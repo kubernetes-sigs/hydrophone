@@ -111,24 +111,52 @@ func TestTrimVersion(t *testing.T) {
 		name            string
 		version         string
 		expectedVersion string
+		expectErr       bool
 	}{
 		{
 			name:            "stable version",
 			version:         "v1.28.6",
-			expectedVersion: "1.28.6",
+			expectedVersion: "v1.28.6",
 		},
 		{
 			name:            "pre released version",
 			version:         "v1.28.6+0fb426",
-			expectedVersion: "1.28.6",
+			expectedVersion: "v1.28.6",
+		},
+		{
+			name:            "pre released version with build metadata",
+			version:         "v1.28.6+0fb426.20220304",
+			expectedVersion: "v1.28.6",
+		},
+		{
+			name:            "invalid version",
+			version:         "v1.28,0",
+			expectedVersion: "",
+			expectErr:       true,
+		},
+		{
+			name:            "short version",
+			version:         "v1.28",
+			expectedVersion: "",
+			expectErr:       true,
+		},
+		{
+			name:            "no v prefix",
+			version:         "1.28.6",
+			expectedVersion: "v1.28.6",
 		},
 	}
 
 	// Run the test cases
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			trimmedVersion, _ := trimVersion(tc.version)
+			trimmedVersion, err := trimVersion(tc.version)
 			assert.Equal(t, tc.expectedVersion, trimmedVersion)
+			if tc.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }
