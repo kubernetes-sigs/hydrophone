@@ -65,11 +65,14 @@ var rootCmd = &cobra.Command{
 			if err := common.ValidateConformanceArgs(); err != nil {
 				log.Fatal(err)
 			}
+			spinner := common.NewSpinner(os.Stdout)
+			spinner.Start()
 			service.RunE2E(client.ClientSet)
 			client.PrintE2ELogs()
 			client.FetchFiles(config, clientSet, viper.GetString("output-dir"))
 			client.FetchExitCode()
 			service.Cleanup(client.ClientSet)
+			spinner.Stop()
 		}
 		log.Println("Exiting with code: ", client.ExitCode)
 		os.Exit(client.ExitCode)
