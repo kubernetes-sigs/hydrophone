@@ -46,7 +46,6 @@ function run_test {
 
   bin/hydrophone \
     --output-dir ${ARTIFACTS}/results/ \
-    --conformance-image registry.k8s.io/conformance:${K8S_VERSION} \
     --focus "${FOCUS}" \
     --skip "${SKIP}" \
     $EXTRA_ARGS| tee /tmp/test.log
@@ -99,6 +98,7 @@ DRYRUN=${DRYRUN:-"false"}
 CONFORMANCE=${CONFORMANCE:-"false"}
 EXTRA_ARGS=${EXTRA_ARGS:-""}
 CHECK_DURATION=${CHECK_DURATION:-"false"}
+SET_VERSION=${SET_VERSION:-"false"}
 
 # Set the artifacts directory, defaulting to a local subdirectory
 export ARTIFACTS="${ARTIFACTS:-${PWD}/_artifacts}"
@@ -112,6 +112,11 @@ fi
 # If CONFORMANCE is set, add --conformance to the EXTRA_ARGS
 if [[ ${CONFORMANCE} == "true" ]]; then
   FOCUS="\\[Conformance\\]"
+fi
+
+# If SET_VERSION is set, set the K8S_VERSION to the value of SET_VERSION
+if [[ ${SET_VERSION} == "true" ]]; then
+  EXTRA_ARGS="${EXTRA_ARGS} --conformance-image registry.k8s.io/conformance:${K8S_VERSION}"
 fi
 
 setup_kind
