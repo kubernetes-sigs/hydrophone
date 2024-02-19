@@ -247,8 +247,9 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		} else {
 			log.Fatal(err)
 		}
+	} else {
+		log.Printf("clusterrole created %s\n", clusterRole.Name)
 	}
-	log.Printf("clusterrole created %s\n", clusterRole.Name)
 
 	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
@@ -257,8 +258,9 @@ func RunE2E(clientset *kubernetes.Clientset) {
 		} else {
 			log.Fatal(err)
 		}
+	} else {
+		log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
 	}
-	log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
 
 	if viper.GetString("test-repo-list") != "" {
 		RepoListData, err := os.ReadFile(viper.GetString("test-repo-list"))
