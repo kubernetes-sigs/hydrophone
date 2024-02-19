@@ -69,7 +69,7 @@ var rootCmd = &cobra.Command{
 
 			service.RunE2E(client.ClientSet)
 			spinner.Start()
-			// PrintE2ELogs is the most time consuming method
+			// PrintE2ELogs is a long running method
 			client.PrintE2ELogs()
 			spinner.Stop()
 			client.FetchFiles(config, clientSet, viper.GetString("output-dir"))
