@@ -66,9 +66,12 @@ var rootCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			spinner := common.NewSpinner(os.Stdout)
-			spinner.Start()
+
 			service.RunE2E(client.ClientSet)
+			spinner.Start()
+			// PrintE2ELogs is the most time consuming method
 			client.PrintE2ELogs()
+			spinner.Stop()
 			client.FetchFiles(config, clientSet, viper.GetString("output-dir"))
 			client.FetchExitCode()
 			service.Cleanup(client.ClientSet)
