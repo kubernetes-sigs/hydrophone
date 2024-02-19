@@ -51,7 +51,7 @@ func SetDefaults(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if viper.Get("namespace") == "" {
 		viper.Set("namespace", DefaultNamespace)
 	}
-	log.PrintfAPI("API endpoint : %s", config.Host)
+	log.Printf("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
 	log.Printf("Using namespace : '%s'", viper.Get("namespace"))
 	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
