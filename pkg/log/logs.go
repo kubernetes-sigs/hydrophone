@@ -55,12 +55,6 @@ func Printf(format string, v ...any) {
 	slog.Info(fmt.Sprintf(format, v...))
 }
 
-// Print logs for API
-func PrintfAPI(format string, v ...interface{}) {
-	fmt.Print("\n")
-	slog.Info(fmt.Sprintf(format, v...))
-}
-
 // Println logs an info message from the given arguments.
 func Println(v ...any) {
 	slog.Info(fmt.Sprint(v...))
