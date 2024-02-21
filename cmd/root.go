@@ -56,22 +56,26 @@ var rootCmd = &cobra.Command{
 		client := client.NewClient()
 		config, clientSet := service.Init(viper.GetString("kubeconfig"))
 		client.ClientSet = clientSet
-		common.PrintInfo(client.ClientSet, config)
+		common.SetDefaults(client.ClientSet, config)
 		if cleanup {
-			common.SetDefaultNamespace()
 			service.Cleanup(client.ClientSet)
 		} else if listImages {
 			service.PrintListImages(client.ClientSet)
 		} else {
-			if err := common.ValidateArgs(); err != nil {
+			if err := common.ValidateConformanceArgs(); err != nil {
 				log.Fatal(err)
 			}
+			spinner := common.NewSpinner(os.Stdout)
 
 			service.RunE2E(client.ClientSet)
+			spinner.Start()
+			// PrintE2ELogs is a long running method
 			client.PrintE2ELogs()
+			spinner.Stop()
 			client.FetchFiles(config, clientSet, viper.GetString("output-dir"))
 			client.FetchExitCode()
 			service.Cleanup(client.ClientSet)
+			spinner.Stop()
 		}
 		log.Println("Exiting with code: ", client.ExitCode)
 		os.Exit(client.ExitCode)

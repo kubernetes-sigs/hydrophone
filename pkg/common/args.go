@@ -30,11 +30,9 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
-// PrintInfo prints the information about the cluster
-func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
-	spinner := NewSpinner(os.Stdout)
-	spinner.Start()
-
+// SetDefaults sets the default values for various configuration options used in the application.
+// Finally, it logs the API endpoint, server version, namespace, conformance image, and busybox image.
+func SetDefaults(clientSet *kubernetes.Clientset, config *rest.Config) {
 	time.Sleep(2 * time.Second)
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
@@ -50,24 +48,20 @@ func PrintInfo(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if viper.Get("busybox-image") == "" {
 		viper.Set("busybox-image", busyboxImage)
 	}
-
-	log.PrintfAPI("API endpoint : %s", config.Host)
+	if viper.Get("namespace") == "" {
+		viper.Set("namespace", DefaultNamespace)
+	}
+	log.Printf("API endpoint : %s", config.Host)
 	log.Printf("Server version : %#v", *serverVersion)
+	log.Printf("Using namespace : '%s'", viper.Get("namespace"))
+	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
+	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
 }
 
-func SetDefaultNamespace() {
-	if viper.Get("namespace") == "" {
-		viper.Set("namespace", DefaultNamespace)
-	}
-}
-
-// ValidateArgs validates the arguments passed to the program
+// ValidateConformanceArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
+func ValidateConformanceArgs() error {
 
-func ValidateArgs() error {
-	if viper.Get("namespace") == "" {
-		viper.Set("namespace", DefaultNamespace)
-	}
 	if viper.Get("focus") == "" {
 		viper.Set("focus", "\\[Conformance\\]")
 	}
@@ -89,9 +83,6 @@ func ValidateArgs() error {
 		}
 	}
 
-	log.Printf("Using namespace : '%s'", viper.Get("namespace"))
-	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
-	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
 	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
 		viper.Get("parallel"), viper.Get("verbosity"))
 
