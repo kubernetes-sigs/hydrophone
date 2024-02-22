@@ -342,8 +342,9 @@ func Cleanup(clientset *kubernetes.Clientset) {
 		} else {
 			log.Fatal(err)
 		}
+	} else {
+		log.Printf("pod deleted %s\n", common.PodName)
 	}
-	log.Printf("pod deleted %s\n", common.PodName)
 
 	err = clientset.RbacV1().ClusterRoleBindings().Delete(ctx, common.ClusterRoleBindingName, metav1.DeleteOptions{})
 	if err != nil {
@@ -352,8 +353,9 @@ func Cleanup(clientset *kubernetes.Clientset) {
 		} else {
 			log.Fatal(err)
 		}
+	} else {
+		log.Printf("clusterrolebinding deleted %s\n", common.ClusterRoleBindingName)
 	}
-	log.Printf("clusterrolebinding deleted %s\n", common.ClusterRoleBindingName)
 
 	err = clientset.RbacV1().ClusterRoles().Delete(ctx, common.ClusterRoleName, metav1.DeleteOptions{})
 	if err != nil {
@@ -362,8 +364,9 @@ func Cleanup(clientset *kubernetes.Clientset) {
 		} else {
 			log.Fatal(err)
 		}
+	} else {
+		log.Printf("clusterrole deleted %s\n", common.ClusterRoleName)
 	}
-	log.Printf("clusterrole deleted %s\n", common.ClusterRoleName)
 
 	err = clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
 	if err != nil {
@@ -372,8 +375,9 @@ func Cleanup(clientset *kubernetes.Clientset) {
 		} else {
 			log.Fatal(err)
 		}
+	} else {
+		log.Printf("serviceaccount deleted %s\n", common.ServiceAccountName)
 	}
-	log.Printf("serviceaccount deleted %s\n", common.ServiceAccountName)
 
 	err = clientset.CoreV1().Namespaces().Delete(ctx, namespace, metav1.DeleteOptions{})
 	if err != nil {
@@ -382,8 +386,9 @@ func Cleanup(clientset *kubernetes.Clientset) {
 		} else {
 			log.Fatal(err)
 		}
+	} else {
+		log.Printf("namespace deleted %s\n", namespace)
 	}
-	log.Printf("namespace deleted %s\n", namespace)
 }
 
 // DryRun returns an environment variable to tell the conformance test to run in dry run mode.
