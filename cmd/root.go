@@ -50,37 +50,65 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "hydrophone",
-	Short: "Hydrophone is a lightweight runner for kubernetes tests.",
-	Long:  `Hydrophone is a lightweight runner for kubernetes tests.`,
+	Short: "Hydrophone is a lightweight runner for Kubernetes tests.",
+	Long:  `Hydrophone is a lightweight runner for Kubernetes tests.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := cmd.Context()
 
 		client := client.NewClient()
-		config, clientSet := service.Init(viper.GetString("kubeconfig"))
+		config, clientSet, err := service.Init(viper.GetString("kubeconfig"))
+		if err != nil {
+			log.Fatalf("Failed to init kube client: %v.", err)
+		}
+
 		client.ClientSet = clientSet
-		common.SetDefaults(client.ClientSet, config)
+		err = common.SetDefaults(client.ClientSet, config)
+		if err != nil {
+			log.Fatalf("Failed to apply default values: %v.", err)
+		}
+
 		if cleanup {
-			service.Cleanup(ctx, client.ClientSet)
+			if err := service.Cleanup(ctx, client.ClientSet); err != nil {
+				log.Fatalf("Failed to cleanup: %v.", err)
+			}
 		} else if listImages {
-			service.PrintListImages(ctx, client.ClientSet)
+			if err := service.PrintListImages(ctx, client.ClientSet); err != nil {
+				log.Fatalf("Failed to list images: %v.", err)
+			}
 		} else {
 			if err := common.ValidateConformanceArgs(); err != nil {
-				log.Fatal(err)
+				log.Fatalf("Invalid arguments: %v.", err)
 			}
-			spinner := common.NewSpinner(os.Stdout)
 
-			service.RunE2E(ctx, client.ClientSet)
+			if err := service.RunE2E(ctx, client.ClientSet); err != nil {
+				log.Fatalf("Failed to run tests: %v.", err)
+			}
+
+			spinner := common.NewSpinner(os.Stdout)
 			spinner.Start()
 			// PrintE2ELogs is a long running method
-			client.PrintE2ELogs(ctx)
+			if err := client.PrintE2ELogs(ctx); err != nil {
+				log.Fatalf("Failed to get test logs: %v.", err)
+			}
 			spinner.Stop()
-			client.FetchFiles(ctx, config, clientSet, viper.GetString("output-dir"))
-			client.FetchExitCode(ctx)
-			service.Cleanup(ctx, client.ClientSet)
-			spinner.Stop()
+
+			if err := client.FetchFiles(ctx, config, clientSet, viper.GetString("output-dir")); err != nil {
+				log.Fatalf("Failed to download results: %v.", err)
+			}
+			if err := client.FetchExitCode(ctx); err != nil {
+				log.Fatalf("Failed to determine exit code: %v.", err)
+			}
+			if err := service.Cleanup(ctx, client.ClientSet); err != nil {
+				log.Fatalf("Failed to cleanup: %v.", err)
+			}
 		}
-		log.Println("Exiting with code: ", client.ExitCode)
-		os.Exit(client.ExitCode)
+
+		if client.ExitCode == 0 {
+			log.Println("Tests completed successfully.")
+		} else {
+			log.Printf("Tests failed (code %d).", client.ExitCode)
+			os.Exit(client.ExitCode)
+		}
 	},
 }
 

@@ -36,7 +36,7 @@ import (
 
 // PrintListImages creates and runs a conformance image with the --list-images flag
 // This will print a list of all the images used by the conformance image.
-func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) {
+func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) error {
 	// Create a pod object definition
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -64,27 +64,26 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) {
 	// Create the pod in the cluster
 	pod, err := clientSet.CoreV1().Pods("default").Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
-		panic(fmt.Errorf("failed to create pod: %w", err))
+		return fmt.Errorf("failed to create Pod: %w", err)
 	}
-
-	log.Printf("Pod created successfully")
+	log.Printf("Created Pod %s.", pod.Name)
 
 	// Watch for pod events
 	watcher, err := clientSet.CoreV1().Pods("default").Watch(ctx, metav1.ListOptions{
 		FieldSelector: "metadata.name=" + pod.Name,
 	})
 	if err != nil {
-		log.Fatal("failed to watch pod events: %w", err)
+		return fmt.Errorf("failed to watch Pod events: %w", err)
 	}
 	defer watcher.Stop()
 
-	log.Printf("Waiting for pod to complete...")
+	log.Println("Waiting for Pod to complete...")
 
 	for {
 		select {
 		case event, ok := <-watcher.ResultChan():
 			if !ok {
-				return
+				return nil
 			}
 
 			// Handle pod event
@@ -102,7 +101,7 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) {
 				req := clientSet.CoreV1().Pods("default").GetLogs(pod.Name, &corev1.PodLogOptions{})
 				podLogs, err := req.Stream(ctx)
 				if err != nil {
-					log.Fatal("failed to fetch pod logs: %w", err)
+					return fmt.Errorf("failed to fetch Pod logs: %w", err)
 				}
 				defer podLogs.Close()
 
@@ -110,7 +109,7 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) {
 				buf := new(bytes.Buffer)
 				_, err = io.Copy(buf, podLogs)
 				if err != nil {
-					log.Fatal("failed to read pod logs: %w", err)
+					return fmt.Errorf("failed to read Pod logs: %w", err)
 				}
 
 				lines := strings.Split(buf.String(), "\n")
@@ -121,9 +120,9 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) {
 
 				err = clientSet.CoreV1().Pods("default").Delete(ctx, pod.Name, metav1.DeleteOptions{})
 				if err != nil {
-					log.Fatal("unable to delet pod : %w", err)
+					return fmt.Errorf("failed to delete Pod: %w", err)
 				}
-				return
+				return nil
 			}
 
 		case <-time.After(2 * time.Second):

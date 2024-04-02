@@ -31,15 +31,16 @@ import (
 
 // SetDefaults sets the default values for various configuration options used in the application.
 // Finally, it logs the API endpoint, server version, namespace, conformance image, and busybox image.
-func SetDefaults(clientSet *kubernetes.Clientset, config *rest.Config) {
-	serverVersion, err := clientSet.ServerVersion()
+func SetDefaults(clientset *kubernetes.Clientset, config *rest.Config) error {
+	serverVersion, err := clientset.ServerVersion()
 	if err != nil {
-		log.Fatalf("Error fetching server version: %v", err)
+		return fmt.Errorf("failed fetching server version: %w", err)
 	}
 	trimmedVersion, err := trimVersion(serverVersion.String())
 	if err != nil {
-		log.Fatalf("Error trimming server version: %v", err)
+		return fmt.Errorf("failed parsing server version: %w", err)
 	}
+
 	if viper.Get("conformance-image") == "" {
 		viper.Set("conformance-image", fmt.Sprintf("registry.k8s.io/conformance:%s", trimmedVersion))
 	}
@@ -49,23 +50,29 @@ func SetDefaults(clientSet *kubernetes.Clientset, config *rest.Config) {
 	if viper.Get("namespace") == "" {
 		viper.Set("namespace", DefaultNamespace)
 	}
-	log.Printf("API endpoint : %s", config.Host)
-	log.Printf("Server version : %#v", *serverVersion)
-	log.Printf("Using namespace : '%s'", viper.Get("namespace"))
-	log.Printf("Using conformance image : '%s'", viper.Get("conformance-image"))
-	log.Printf("Using busybox image : '%s'", viper.Get("busybox-image"))
+
+	log.Printf("API endpoint: %s", config.Host)
+	log.Printf("Server version: %#v", *serverVersion)
+	log.Printf("Using namespace: %s", viper.Get("namespace"))
+	log.Printf("Using conformance image: %s", viper.Get("conformance-image"))
+	log.Printf("Using busybox image: %s", viper.Get("busybox-image"))
+
+	if viper.GetBool("dry-run") {
+		log.Println("Dry-run enabled.")
+	}
+
+	return nil
 }
 
 // ValidateConformanceArgs validates the arguments passed to the program
 // and creates the output directory if it doesn't exist
 func ValidateConformanceArgs() error {
-
 	if viper.Get("focus") == "" {
 		viper.Set("focus", "\\[Conformance\\]")
 	}
 
 	if viper.Get("skip") != "" {
-		log.Printf("Skipping tests : '%s'", viper.Get("skip"))
+		log.Printf("Skipping tests: %s", viper.Get("skip"))
 	}
 
 	if extraArgs := viper.GetStringSlice("extra-args"); len(extraArgs) != 0 {
@@ -81,14 +88,12 @@ func ValidateConformanceArgs() error {
 		}
 	}
 
-	log.Printf("Test framework will start '%d' threads and use verbosity '%d'",
+	log.Printf("Test framework will start %d thread(s) and use verbosity level %d.",
 		viper.Get("parallel"), viper.Get("verbosity"))
 
 	outputDir := viper.GetString("output-dir")
-	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-		if err = os.MkdirAll(outputDir, 0755); err != nil {
-			return fmt.Errorf("error creating output directory [%s] : %v", outputDir, err)
-		}
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
+		return fmt.Errorf("error creating output directory [%s]: %w", outputDir, err)
 	}
 	return nil
 }
@@ -98,7 +103,7 @@ func trimVersion(version string) (string, error) {
 
 	parsedVersion, err := semver.Parse(version)
 	if err != nil {
-		return "", fmt.Errorf("error parsing conformance image tag: %v", err)
+		return "", fmt.Errorf("error parsing conformance image tag: %w", err)
 	}
 
 	return "v" + parsedVersion.FinalizeVersion(), nil

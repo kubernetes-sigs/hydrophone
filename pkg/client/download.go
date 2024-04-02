@@ -17,7 +17,9 @@ limitations under the License.
 package client
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"io"
 
 	corev1 "k8s.io/api/core/v1"
@@ -45,7 +47,7 @@ func downloadFile(ctx context.Context, config *rest.Config, clientset *kubernete
 	// Configure exec options
 	option := &corev1.PodExecOptions{
 		Stdout:  true,
-		Stderr:  false,
+		Stderr:  true,
 		Command: []string{"cat", filePath},
 	}
 	parameterCodec := runtime.NewParameterCodec(scheme)
@@ -58,10 +60,17 @@ func downloadFile(ctx context.Context, config *rest.Config, clientset *kubernete
 	}
 
 	// Stream the file content from the container to the writer
-	return exec.StreamWithContext(
+	var stderr bytes.Buffer
+
+	err = exec.StreamWithContext(
 		ctx,
 		remotecommand.StreamOptions{
 			Stdout: writer,
-			Stderr: nil,
+			Stderr: &stderr,
 		})
+	if err != nil {
+		return fmt.Errorf("download failed: %w (stderr: %s)", err, stderr.String())
+	}
+
+	return nil
 }

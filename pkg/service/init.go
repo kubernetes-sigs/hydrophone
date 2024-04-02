@@ -37,21 +37,21 @@ import (
 )
 
 // Init Initializes the kube config clientset
-func Init(kubeconfig string) (*rest.Config, *kubernetes.Clientset) {
+func Init(kubeconfig string) (*rest.Config, *kubernetes.Clientset, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
-			log.Fatalf("kubeconfig can't be loaded: %v\n", err)
+			return nil, nil, fmt.Errorf("error loading kubeconfig: %w", err)
 		}
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Fatalf("error getting config client: %v\n", err)
+		return nil, nil, fmt.Errorf("error getting config client: %w", err)
 	}
 
-	return config, clientset
+	return config, clientset, nil
 }
 
 // GetKubeConfig returns the path to the Kubernetes configuration file
@@ -73,7 +73,7 @@ func GetKubeConfig(kubeconfig string) string {
 }
 
 // RunE2E sets up the necessary resources and runs E2E conformance tests.
-func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) {
+func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: viper.GetString("namespace"),
@@ -169,7 +169,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) {
 						},
 						{
 							Name:  "E2E_EXTRA_ARGS",
-							Value: fmt.Sprintf("%s", strings.Join(viper.GetStringSlice("extra-args"), " ")),
+							Value: strings.Join(viper.GetStringSlice("extra-args"), " "),
 						},
 					},
 					VolumeMounts: []v1.VolumeMount{
@@ -213,56 +213,58 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) {
 	}
 
 	if viper.GetBool("dry-run") {
-		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, DryRun())
+		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
+			Name:  "E2E_DRYRUN",
+			Value: "true",
+		})
 	}
 
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Fatalf("namespace already exist %s. Please run cleanup first", conformanceNS.ObjectMeta.Name)
-		} else {
-			log.Fatal(err)
+			err = fmt.Errorf("Namespace %s already exist, please run --cleanup first", conformanceNS.Name)
 		}
+
+		return err
 	}
-	log.Printf("namespace created %s\n", ns.Name)
+	log.Printf("Created Namespace %s.", ns.Name)
 
 	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Fatalf("serviceaccount already exist %s. Please run cleanup first", conformanceSA.ObjectMeta.Name)
-		} else {
-			log.Fatal(err)
+			err = fmt.Errorf("ServiceAccount %s already exist, please run --cleanup first", conformanceSA.Name)
 		}
+
+		return err
 	}
-	log.Printf("serviceaccount created %s\n", sa.Name)
+	log.Printf("Created ServiceAccount %s.", sa.Name)
 
 	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrole already exist %s", conformanceClusterRole.ObjectMeta.Name)
-		} else {
-			log.Fatal(err)
+			err = fmt.Errorf("ClusterRole %s already exist, please run --cleanup first", conformanceClusterRole.Name)
 		}
-	} else {
-		log.Printf("clusterrole created %s\n", clusterRole.Name)
+
+		return err
 	}
+	log.Printf("Created Clusterrole %s.", clusterRole.Name)
 
 	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Printf("clusterrolebinding already exist %s", conformanceClusterRoleBinding.ObjectMeta.Name)
-		} else {
-			log.Fatal(err)
+			err = fmt.Errorf("ClusterRoleBinding %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
 		}
-	} else {
-		log.Printf("clusterrolebinding created %s\n", clusterRoleBinding.Name)
+
+		return err
 	}
+	log.Printf("Created ClusterRoleBinding %s.", clusterRoleBinding.Name)
 
 	if viper.GetString("test-repo-list") != "" {
 		RepoListData, err := os.ReadFile(viper.GetString("test-repo-list"))
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("failed to read repo list: %w", err)
 		}
+
 		configMap := &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "repo-list-config",
@@ -300,12 +302,12 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) {
 		cm, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				log.Fatalf("configmap already exists %s. Please run cleanup first", configMap.ObjectMeta.Name)
-			} else {
-				log.Fatal(err)
+				err = fmt.Errorf("ConfigMap %s already exist, please run --cleanup first", configMap.Name)
 			}
+
+			return err
 		}
-		log.Printf("configmap created %s\n", cm.Name)
+		log.Printf("Created ConfigMap %s.", cm.Name)
 	}
 
 	if viper.GetString("test-repo") != "" {
@@ -318,79 +320,64 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) {
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			log.Fatalf("pod already exist %s. Please run cleanup first", conformancePod.ObjectMeta.Name)
-		} else {
-			log.Fatal(err)
+			err = fmt.Errorf("Pod %s already exist, please run --cleanup first", conformancePod.Name)
 		}
+
+		return err
 	}
-	log.Printf("pod created %s\n", pod.Name)
+	log.Printf("Created Pod %s.", pod.Name)
+
+	return nil
 }
 
 // Cleanup removes all resources created during E2E tests.
-func Cleanup(ctx context.Context, clientset *kubernetes.Clientset) {
+func Cleanup(ctx context.Context, clientset *kubernetes.Clientset) error {
 	namespace := viper.GetString("namespace")
-	log.Printf("using namespace: %v", namespace)
 
 	err := clientset.CoreV1().Pods(namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
-			log.Printf("pod %s doesn't exist\n", common.PodName)
-		} else {
-			log.Fatal(err)
+		if !errors.IsNotFound(err) {
+			return err
 		}
 	} else {
-		log.Printf("pod deleted %s\n", common.PodName)
+		log.Printf("Deleted Pod %s.", common.PodName)
 	}
 
 	err = clientset.RbacV1().ClusterRoleBindings().Delete(ctx, common.ClusterRoleBindingName, metav1.DeleteOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
-			log.Printf("clusterrolebinding %s doesn't exist\n", common.ClusterRoleBindingName)
-		} else {
-			log.Fatal(err)
+		if !errors.IsNotFound(err) {
+			return err
 		}
 	} else {
-		log.Printf("clusterrolebinding deleted %s\n", common.ClusterRoleBindingName)
+		log.Printf("Deleted ClusterRoleBinding %s.", common.ClusterRoleBindingName)
 	}
 
 	err = clientset.RbacV1().ClusterRoles().Delete(ctx, common.ClusterRoleName, metav1.DeleteOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
-			log.Printf("clusterrole %s doesn't exist\n", common.ClusterRoleName)
-		} else {
-			log.Fatal(err)
+		if !errors.IsNotFound(err) {
+			return err
 		}
 	} else {
-		log.Printf("clusterrole deleted %s\n", common.ClusterRoleName)
+		log.Printf("Deleted ClusterRole %s.", common.ClusterRoleName)
 	}
 
 	err = clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
-			log.Printf("serviceaccount %s doesn't exist\n", common.ServiceAccountName)
-		} else {
-			log.Fatal(err)
+		if !errors.IsNotFound(err) {
+			return err
 		}
 	} else {
-		log.Printf("serviceaccount deleted %s\n", common.ServiceAccountName)
+		log.Printf("Deleted ServiceAccount %s.", common.ServiceAccountName)
 	}
 
 	err = clientset.CoreV1().Namespaces().Delete(ctx, namespace, metav1.DeleteOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
-			log.Printf("namespace %s doesn't exist\n", namespace)
-		} else {
-			log.Fatal(err)
+		if !errors.IsNotFound(err) {
+			return err
 		}
 	} else {
-		log.Printf("namespace deleted %s\n", namespace)
+		log.Printf("Deleted Namespace %s.", namespace)
 	}
-}
 
-// DryRun returns an environment variable to tell the conformance test to run in dry run mode.
-func DryRun() v1.EnvVar {
-	return v1.EnvVar{
-		Name:  "E2E_DRYRUN",
-		Value: "true",
-	}
+	return nil
 }
