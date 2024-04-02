@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-func downloadFile(config *rest.Config, clientset *kubernetes.Clientset,
+func downloadFile(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset,
 	namespace, podName, containerName, filePath string,
 	writer io.Writer) error {
 	// Create an exec request
@@ -59,7 +59,7 @@ func downloadFile(config *rest.Config, clientset *kubernetes.Clientset,
 
 	// Stream the file content from the container to the writer
 	return exec.StreamWithContext(
-		context.Background(),
+		ctx,
 		remotecommand.StreamOptions{
 			Stdout: writer,
 			Stderr: nil,

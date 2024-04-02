@@ -18,6 +18,7 @@ package client
 
 import (
 	"bufio"
+	"context"
 
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
@@ -27,7 +28,7 @@ import (
 )
 
 // List pod resource with the given namespace
-func getPodLogs(clientset *kubernetes.Clientset, stream streamLogs) {
+func getPodLogs(ctx context.Context, clientset *kubernetes.Clientset, stream streamLogs) {
 	podLogOpts := v1.PodLogOptions{
 		Container: common.ConformanceContainer,
 		Follow:    true,

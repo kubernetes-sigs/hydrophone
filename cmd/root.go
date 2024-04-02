@@ -53,28 +53,30 @@ var rootCmd = &cobra.Command{
 	Short: "Hydrophone is a lightweight runner for kubernetes tests.",
 	Long:  `Hydrophone is a lightweight runner for kubernetes tests.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		ctx := cmd.Context()
+
 		client := client.NewClient()
 		config, clientSet := service.Init(viper.GetString("kubeconfig"))
 		client.ClientSet = clientSet
 		common.SetDefaults(client.ClientSet, config)
 		if cleanup {
-			service.Cleanup(client.ClientSet)
+			service.Cleanup(ctx, client.ClientSet)
 		} else if listImages {
-			service.PrintListImages(client.ClientSet)
+			service.PrintListImages(ctx, client.ClientSet)
 		} else {
 			if err := common.ValidateConformanceArgs(); err != nil {
 				log.Fatal(err)
 			}
 			spinner := common.NewSpinner(os.Stdout)
 
-			service.RunE2E(client.ClientSet)
+			service.RunE2E(ctx, client.ClientSet)
 			spinner.Start()
 			// PrintE2ELogs is a long running method
-			client.PrintE2ELogs()
+			client.PrintE2ELogs(ctx)
 			spinner.Stop()
-			client.FetchFiles(config, clientSet, viper.GetString("output-dir"))
-			client.FetchExitCode()
-			service.Cleanup(client.ClientSet)
+			client.FetchFiles(ctx, config, clientSet, viper.GetString("output-dir"))
+			client.FetchExitCode(ctx)
+			service.Cleanup(ctx, client.ClientSet)
 			spinner.Stop()
 		}
 		log.Println("Exiting with code: ", client.ExitCode)

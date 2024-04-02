@@ -40,7 +40,7 @@ type streamLogs struct {
 }
 
 // PrintE2ELogs checks for Pod and start a go routine if new deployment added
-func (c *Client) PrintE2ELogs() {
+func (c *Client) PrintE2ELogs(ctx context.Context) {
 	informerFactory := informers.NewSharedInformerFactory(c.ClientSet, 10*time.Second)
 
 	podInformer := informerFactory.Core().V1().Pods()
@@ -60,7 +60,7 @@ func (c *Client) PrintE2ELogs() {
 				doneCh: make(chan bool),
 			}
 
-			go getPodLogs(c.ClientSet, stream)
+			go getPodLogs(ctx, c.ClientSet, stream)
 
 		loop:
 			for {
@@ -82,9 +82,9 @@ func (c *Client) PrintE2ELogs() {
 }
 
 // FetchExitCode waits for pod to be in terminated state and get the exit code
-func (c *Client) FetchExitCode() {
+func (c *Client) FetchExitCode(ctx context.Context) {
 	// Watching the pod's status
-	watchInterface, err := c.ClientSet.CoreV1().Pods(viper.GetString("namespace")).Watch(context.TODO(), metav1.ListOptions{
+	watchInterface, err := c.ClientSet.CoreV1().Pods(viper.GetString("namespace")).Watch(ctx, metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("metadata.name=%s", common.PodName),
 	})
 	if err != nil {
