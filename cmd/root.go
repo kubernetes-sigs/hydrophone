@@ -98,7 +98,7 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.Flags().StringVar(&cfgFile, "config", "", fmt.Sprintf("Default config file (%s/hydrophone/hydrophone.yaml)", xdg.ConfigHome))
+	rootCmd.Flags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (defaults to %s/hydrophone.yaml).", xdg.ConfigHome))
 	rootCmd.Flags().StringVar(&kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 
 	rootCmd.Flags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework.")
