@@ -52,7 +52,7 @@ func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset
 	if err != nil {
 		log.Fatalf("unable to download e2e.log: %v\n", err)
 	}
-	log.Println("downloading junit_01.xml to", filepath.Join(outputDir, "junit_01.xml"))
+	log.Println("downloading junit_01.xml to ", filepath.Join(outputDir, "junit_01.xml"))
 	junitXMLFile, err := os.OpenFile(filepath.Join(outputDir, "junit_01.xml"), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		log.Fatalf("unable to create junit_01.xml: %v\n", err)
