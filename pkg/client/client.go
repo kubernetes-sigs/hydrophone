@@ -29,26 +29,27 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
-var (
-	ctx = context.TODO()
-)
-
 // Client is a struct that holds the clientset and exit code
 type Client struct {
 	ClientSet *kubernetes.Clientset
 	ExitCode  int
 }
 
+// NewClient returns a new client
+func NewClient() *Client {
+	return &Client{}
+}
+
 // FetchFiles downloads the e2e.log and junit_01.xml files from the pod
 // and writes them to the output directory
-func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset, outputDir string) {
+func (c *Client) FetchFiles(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset, outputDir string) {
 	log.Println("downloading e2e.log to ", filepath.Join(outputDir, "e2e.log"))
 	e2eLogFile, err := os.OpenFile(filepath.Join(outputDir, "e2e.log"), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		log.Fatalf("unable to create e2e.log: %v\n", err)
 	}
 	defer e2eLogFile.Close()
-	err = downloadFile(config, clientset, viper.GetString("namespace"), common.PodName, common.OutputContainer, "/tmp/results/e2e.log", e2eLogFile)
+	err = downloadFile(ctx, config, clientset, viper.GetString("namespace"), common.PodName, common.OutputContainer, "/tmp/results/e2e.log", e2eLogFile)
 	if err != nil {
 		log.Fatalf("unable to download e2e.log: %v\n", err)
 	}
@@ -58,13 +59,8 @@ func (c *Client) FetchFiles(config *rest.Config, clientset *kubernetes.Clientset
 		log.Fatalf("unable to create junit_01.xml: %v\n", err)
 	}
 	defer junitXMLFile.Close()
-	err = downloadFile(config, clientset, viper.GetString("namespace"), common.PodName, common.OutputContainer, "/tmp/results/junit_01.xml", junitXMLFile)
+	err = downloadFile(ctx, config, clientset, viper.GetString("namespace"), common.PodName, common.OutputContainer, "/tmp/results/junit_01.xml", junitXMLFile)
 	if err != nil {
 		log.Fatalf("unable to download junit_01.xml: %v\n", err)
 	}
-}
-
-// NewClient returns a new client
-func NewClient() *Client {
-	return &Client{}
 }

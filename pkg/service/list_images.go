@@ -36,7 +36,7 @@ import (
 
 // PrintListImages creates and runs a conformance image with the --list-images flag
 // This will print a list of all the images used by the conformance image.
-func PrintListImages(clientSet *kubernetes.Clientset) {
+func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) {
 	// Create a pod object definition
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -62,7 +62,7 @@ func PrintListImages(clientSet *kubernetes.Clientset) {
 	}
 
 	// Create the pod in the cluster
-	pod, err := clientSet.CoreV1().Pods("default").Create(context.TODO(), pod, metav1.CreateOptions{})
+	pod, err := clientSet.CoreV1().Pods("default").Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		panic(fmt.Errorf("failed to create pod: %w", err))
 	}
@@ -70,7 +70,7 @@ func PrintListImages(clientSet *kubernetes.Clientset) {
 	log.Printf("Pod created successfully")
 
 	// Watch for pod events
-	watcher, err := clientSet.CoreV1().Pods("default").Watch(context.TODO(), metav1.ListOptions{
+	watcher, err := clientSet.CoreV1().Pods("default").Watch(ctx, metav1.ListOptions{
 		FieldSelector: "metadata.name=" + pod.Name,
 	})
 	if err != nil {
@@ -100,7 +100,7 @@ func PrintListImages(clientSet *kubernetes.Clientset) {
 
 				// Fetch the logs
 				req := clientSet.CoreV1().Pods("default").GetLogs(pod.Name, &corev1.PodLogOptions{})
-				podLogs, err := req.Stream(context.TODO())
+				podLogs, err := req.Stream(ctx)
 				if err != nil {
 					log.Fatal("failed to fetch pod logs: %w", err)
 				}

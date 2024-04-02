@@ -36,10 +36,6 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
-var (
-	ctx = context.Background()
-)
-
 // Init Initializes the kube config clientset
 func Init(kubeconfig string) (*rest.Config, *kubernetes.Clientset) {
 	config, err := rest.InClusterConfig()
@@ -77,7 +73,7 @@ func GetKubeConfig(kubeconfig string) string {
 }
 
 // RunE2E sets up the necessary resources and runs E2E conformance tests.
-func RunE2E(clientset *kubernetes.Clientset) {
+func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) {
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: viper.GetString("namespace"),
@@ -331,7 +327,7 @@ func RunE2E(clientset *kubernetes.Clientset) {
 }
 
 // Cleanup removes all resources created during E2E tests.
-func Cleanup(clientset *kubernetes.Clientset) {
+func Cleanup(ctx context.Context, clientset *kubernetes.Clientset) {
 	namespace := viper.GetString("namespace")
 	log.Printf("using namespace: %v", namespace)
 
