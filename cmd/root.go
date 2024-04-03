@@ -20,6 +20,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"sigs.k8s.io/hydrophone/pkg/client"
 	"sigs.k8s.io/hydrophone/pkg/common"
@@ -89,6 +90,8 @@ var rootCmd = &cobra.Command{
 				log.Fatalf("Failed to run tests: %v.", err)
 			}
 
+			before := time.Now()
+
 			var spinner *common.Spinner
 			if showSpinner {
 				spinner = common.NewSpinner(os.Stdout)
@@ -103,6 +106,8 @@ var rootCmd = &cobra.Command{
 			if showSpinner {
 				spinner.Stop()
 			}
+
+			log.Printf("Tests finished after %v.", time.Since(before).Round(time.Second))
 
 			if err := client.FetchFiles(ctx, config, clientSet, viper.GetString("output-dir")); err != nil {
 				log.Fatalf("Failed to download results: %v.", err)
