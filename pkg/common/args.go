@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/viper"
@@ -33,7 +32,6 @@ import (
 // SetDefaults sets the default values for various configuration options used in the application.
 // Finally, it logs the API endpoint, server version, namespace, conformance image, and busybox image.
 func SetDefaults(clientSet *kubernetes.Clientset, config *rest.Config) {
-	time.Sleep(2 * time.Second)
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		log.Fatalf("Error fetching server version: %v", err)
