@@ -168,10 +168,6 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset, verboseGinkgo 
 
 	if threads := viper.GetInt("parallel"); threads > 1 {
 		extraGinkgoArgs = append(extraGinkgoArgs, fmt.Sprintf("--procs=%d", threads))
-		containerEnv = append(containerEnv, v1.EnvVar{
-			Name:  "E2E_PARALLEL",
-			Value: "true",
-		})
 	}
 
 	if verboseGinkgo {
