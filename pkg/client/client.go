@@ -42,25 +42,30 @@ func NewClient() *Client {
 
 // FetchFiles downloads the e2e.log and junit_01.xml files from the pod
 // and writes them to the output directory
-func (c *Client) FetchFiles(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset, outputDir string) {
-	log.Println("downloading e2e.log to ", filepath.Join(outputDir, "e2e.log"))
-	e2eLogFile, err := os.OpenFile(filepath.Join(outputDir, "e2e.log"), os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		log.Fatalf("unable to create e2e.log: %v\n", err)
+func (c *Client) FetchFiles(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset, outputDir string) error {
+	if err := c.fetchFile(ctx, config, clientset, outputDir, "e2e.log"); err != nil {
+		return err
 	}
-	defer e2eLogFile.Close()
-	err = downloadFile(ctx, config, clientset, viper.GetString("namespace"), common.PodName, common.OutputContainer, "/tmp/results/e2e.log", e2eLogFile)
-	if err != nil {
-		log.Fatalf("unable to download e2e.log: %v\n", err)
+
+	if err := c.fetchFile(ctx, config, clientset, outputDir, "junit_01.xml"); err != nil {
+		return err
 	}
-	log.Println("downloading junit_01.xml to ", filepath.Join(outputDir, "junit_01.xml"))
-	junitXMLFile, err := os.OpenFile(filepath.Join(outputDir, "junit_01.xml"), os.O_WRONLY|os.O_CREATE, 0600)
+
+	return nil
+}
+
+// FetchFiles downloads a single file from the output container to the local machine.
+func (c *Client) fetchFile(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset, outputDir string, filename string) error {
+	dest := filepath.Join(outputDir, filename)
+	log.Printf("Downloading %s to %s...", filename, dest)
+
+	localFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
-		log.Fatalf("unable to create junit_01.xml: %v\n", err)
+		return err
 	}
-	defer junitXMLFile.Close()
-	err = downloadFile(ctx, config, clientset, viper.GetString("namespace"), common.PodName, common.OutputContainer, "/tmp/results/junit_01.xml", junitXMLFile)
-	if err != nil {
-		log.Fatalf("unable to download junit_01.xml: %v\n", err)
-	}
+	defer localFile.Close()
+
+	containerFile := "/tmp/results/" + filename
+
+	return downloadFile(ctx, config, clientset, viper.GetString("namespace"), common.PodName, common.OutputContainer, containerFile, localFile)
 }

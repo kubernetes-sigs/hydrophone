@@ -40,12 +40,14 @@ type streamLogs struct {
 }
 
 // PrintE2ELogs checks for Pod and start a go routine if new deployment added
-func (c *Client) PrintE2ELogs(ctx context.Context) {
+func (c *Client) PrintE2ELogs(ctx context.Context) error {
 	informerFactory := informers.NewSharedInformerFactory(c.ClientSet, 10*time.Second)
 
 	podInformer := informerFactory.Core().V1().Pods()
 
-	podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+	if _, err := podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{}); err != nil {
+		return fmt.Errorf("failed to add event handler: %w", err)
+	}
 
 	informerFactory.Start(wait.NeverStop)
 	informerFactory.WaitForCacheSync(wait.NeverStop)
@@ -79,25 +81,27 @@ func (c *Client) PrintE2ELogs(ctx context.Context) {
 			break
 		}
 	}
+
+	return nil
 }
 
 // FetchExitCode waits for pod to be in terminated state and get the exit code
-func (c *Client) FetchExitCode(ctx context.Context) {
+func (c *Client) FetchExitCode(ctx context.Context) error {
 	// Watching the pod's status
 	watchInterface, err := c.ClientSet.CoreV1().Pods(viper.GetString("namespace")).Watch(ctx, metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("metadata.name=%s", common.PodName),
 	})
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to watch Pods: %w", err)
 	}
 
-	log.Println("Waiting for pod to terminate...")
+	log.Println("Waiting for Pod to terminate...")
 	for event := range watchInterface.ResultChan() {
 		pod, ok := event.Object.(*v1.Pod)
 		if !ok {
-			log.Println("unexpected type")
+			log.Printf("Received unexpected %T object from Watch.", pod)
 			c.ExitCode = -1
-			return
+			return nil
 		}
 
 		if pod.Status.Phase == v1.PodSucceeded || pod.Status.Phase == v1.PodFailed {
@@ -113,7 +117,7 @@ func (c *Client) FetchExitCode(ctx context.Context) {
 			for _, containerStatus := range pod.Status.ContainerStatuses {
 				if containerStatus.State.Terminated != nil {
 					terminated = true
-					log.Printf("container %s terminated.\n", containerStatus.Name)
+					log.Printf("Container %s terminated.", containerStatus.Name)
 					if containerStatus.Name == common.ConformanceContainer {
 						c.ExitCode = int(containerStatus.State.Terminated.ExitCode)
 					}
@@ -124,4 +128,6 @@ func (c *Client) FetchExitCode(ctx context.Context) {
 			}
 		}
 	}
+
+	return nil
 }
