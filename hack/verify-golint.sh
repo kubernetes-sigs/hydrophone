@@ -22,12 +22,12 @@ KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 
 cd "${KUBE_ROOT}"
 
-LINT=${LINT:-golint}
+LINT=${LINT:-golangci-lint}
 
 if [[ -z "$(command -v ${LINT})" ]]; then
   echo "${LINT} is missing. Installing it now."
-  go install golang.org/x/lint/golint@latest >/dev/null 2>&1
-  LINT=$(go env GOPATH)/bin/golint
+  go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.2 >/dev/null 2>&1
+  LINT=$(go env GOPATH)/bin/golangci-lint
 fi
 
 ${LINT} run
