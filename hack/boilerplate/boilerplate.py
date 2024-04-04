@@ -203,12 +203,17 @@ def main():
     regexs = get_regexs()
     refs = get_refs()
     filenames = get_files(refs.keys())
+    failures = 0
 
     for filename in filenames:
         if not file_passes(filename, refs, regexs):
+            failures += 1
             print(filename, file=sys.stdout)
 
-    return 0
+    if failures == 0:
+        return 0
+
+    return 1
 
 
 if __name__ == "__main__":
