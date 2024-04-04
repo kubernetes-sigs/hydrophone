@@ -63,7 +63,7 @@ func TestValidateConformanceArgs(t *testing.T) {
 			extraArgs:     []string{"invalid-arg"},
 			expectedArgs:  []string{},
 			wantErr:       true,
-			expectedErr:   "expected [[invalid-arg]] in [[invalid-arg]] to be of --key=value format",
+			expectedErr:   "invalid --extra-args: expected [[invalid-arg]] in [[invalid-arg]] to be of --key=value format",
 		},
 		{
 			name:          "Extra args with missing values",
@@ -72,7 +72,7 @@ func TestValidateConformanceArgs(t *testing.T) {
 			extraArgs:     []string{"--key1=value1", "--key2"},
 			expectedArgs:  []string{},
 			wantErr:       true,
-			expectedErr:   "expected [[--key2]] in [[--key1=value1 --key2]] to be of --key=value format",
+			expectedErr:   "invalid --extra-args: expected [[--key2]] in [[--key1=value1 --key2]] to be of --key=value format",
 		},
 		{
 			name:          "Extra args with invalid key format",
@@ -81,7 +81,7 @@ func TestValidateConformanceArgs(t *testing.T) {
 			extraArgs:     []string{"key1=value1", "--key2=value2"},
 			expectedArgs:  []string{},
 			wantErr:       true,
-			expectedErr:   "expected key [key1] in [[key1=value1 --key2=value2]] to start with prefix --",
+			expectedErr:   "invalid --extra-args: expected key [key1] in [[key1=value1 --key2=value2]] to start with prefix --",
 		},
 	}
 
