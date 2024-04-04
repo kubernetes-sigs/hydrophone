@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/adrg/xdg"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"sigs.k8s.io/hydrophone/pkg/client"
 	"sigs.k8s.io/hydrophone/pkg/common"
 	"sigs.k8s.io/hydrophone/pkg/log"
 	"sigs.k8s.io/hydrophone/pkg/service"
+
+	"github.com/adrg/xdg"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -52,7 +53,7 @@ var rootCmd = &cobra.Command{
 	Use:   "hydrophone",
 	Short: "Hydrophone is a lightweight runner for Kubernetes tests.",
 	Long:  `Hydrophone is a lightweight runner for Kubernetes tests.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		ctx := cmd.Context()
 
 		client := client.NewClient()

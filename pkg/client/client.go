@@ -55,7 +55,7 @@ func (c *Client) FetchFiles(ctx context.Context, config *rest.Config, clientset 
 }
 
 // FetchFiles downloads a single file from the output container to the local machine.
-func (c *Client) fetchFile(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset, outputDir string, filename string) error {
+func (c *Client) fetchFile(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset, outputDir, filename string) error {
 	dest := filepath.Join(outputDir, filename)
 	log.Printf("Downloading %s to %s...", filename, dest)
 
