@@ -59,7 +59,7 @@ func (c *Client) fetchFile(ctx context.Context, config *rest.Config, clientset *
 	dest := filepath.Join(outputDir, filename)
 	log.Printf("Downloading %s to %s...", filename, dest)
 
-	localFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE, 0600)
+	localFile, err := os.Create(dest)
 	if err != nil {
 		return err
 	}
