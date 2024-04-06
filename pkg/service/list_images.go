@@ -25,9 +25,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/viper"
 	"sigs.k8s.io/hydrophone/pkg/common"
 	"sigs.k8s.io/hydrophone/pkg/log"
+
+	"github.com/spf13/viper"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -94,39 +95,43 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) error
 
 			// Check if the pod is in a terminal state
 			if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
-				// Trigger desired action (e.g., fetching and printing logs)
-				log.Printf("Pod completed: %s", pod.Status.Phase)
-
-				// Fetch the logs
-				req := clientSet.CoreV1().Pods("default").GetLogs(pod.Name, &corev1.PodLogOptions{})
-				podLogs, err := req.Stream(ctx)
-				if err != nil {
-					return fmt.Errorf("failed to fetch Pod logs: %w", err)
-				}
-				defer podLogs.Close()
-
-				// Read and print the logs
-				buf := new(bytes.Buffer)
-				_, err = io.Copy(buf, podLogs)
-				if err != nil {
-					return fmt.Errorf("failed to read Pod logs: %w", err)
-				}
-
-				lines := strings.Split(buf.String(), "\n")
-				sort.Strings(lines)
-				for _, line := range lines {
-					fmt.Println(line)
-				}
-
-				err = clientSet.CoreV1().Pods("default").Delete(ctx, pod.Name, metav1.DeleteOptions{})
-				if err != nil {
-					return fmt.Errorf("failed to delete Pod: %w", err)
-				}
-				return nil
+				return handlePod(ctx, clientSet, pod)
 			}
-
 		case <-time.After(2 * time.Second):
 			// Check status every 2 seconds
 		}
 	}
+}
+
+func handlePod(ctx context.Context, clientSet *kubernetes.Clientset, pod *corev1.Pod) error {
+	// Trigger desired action (e.g., fetching and printing logs)
+	log.Printf("Pod completed: %s", pod.Status.Phase)
+
+	// Fetch the logs
+	req := clientSet.CoreV1().Pods("default").GetLogs(pod.Name, &corev1.PodLogOptions{})
+	podLogs, err := req.Stream(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to fetch Pod logs: %w", err)
+	}
+	defer podLogs.Close()
+
+	// Read and print the logs
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return fmt.Errorf("failed to read Pod logs: %w", err)
+	}
+
+	lines := strings.Split(buf.String(), "\n")
+	sort.Strings(lines)
+	for _, line := range lines {
+		fmt.Println(line)
+	}
+
+	err = clientSet.CoreV1().Pods("default").Delete(ctx, pod.Name, metav1.DeleteOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to delete Pod: %w", err)
+	}
+
+	return nil
 }

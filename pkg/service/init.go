@@ -59,7 +59,7 @@ func GetKubeConfig(kubeconfig string) string {
 	homeDir := os.Getenv("HOME")
 	if kubeconfig == "" {
 		kubeconfig = filepath.Join(homeDir, ".kube", "config")
-		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
+		if envvar := os.Getenv("KUBECONFIG"); envvar != "" {
 			kubeconfig = envvar
 		}
 	}
@@ -222,6 +222,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
+			//nolint:stylecheck // error message references a Kubernetes resource type.
 			err = fmt.Errorf("Namespace %s already exist, please run --cleanup first", conformanceNS.Name)
 		}
 
@@ -232,6 +233,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 	sa, err := clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
+			//nolint:stylecheck // error message references a Kubernetes resource type.
 			err = fmt.Errorf("ServiceAccount %s already exist, please run --cleanup first", conformanceSA.Name)
 		}
 
@@ -242,6 +244,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 	clusterRole, err := clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
+			//nolint:stylecheck // error message references a Kubernetes resource type.
 			err = fmt.Errorf("ClusterRole %s already exist, please run --cleanup first", conformanceClusterRole.Name)
 		}
 
@@ -252,6 +255,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 	clusterRoleBinding, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
+			//nolint:stylecheck // error message references a Kubernetes resource type.
 			err = fmt.Errorf("ClusterRoleBinding %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
 		}
 
@@ -302,6 +306,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 		cm, err := clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
+				//nolint:stylecheck // error message references a Kubernetes resource type.
 				err = fmt.Errorf("ConfigMap %s already exist, please run --cleanup first", configMap.Name)
 			}
 
@@ -320,6 +325,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 	pod, err := clientset.CoreV1().Pods(ns.Name).Create(ctx, &conformancePod, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
+			//nolint:stylecheck // error message references a Kubernetes resource type.
 			err = fmt.Errorf("Pod %s already exist, please run --cleanup first", conformancePod.Name)
 		}
 
