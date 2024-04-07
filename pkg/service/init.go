@@ -23,6 +23,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
+
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -31,9 +34,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"sigs.k8s.io/hydrophone/pkg/common"
-	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // Init Initializes the kube config clientset

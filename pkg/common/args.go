@@ -22,12 +22,12 @@ import (
 	"os"
 	"strings"
 
+	"sigs.k8s.io/hydrophone/pkg/log"
+
 	"github.com/blang/semver/v4"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // SetDefaults sets the default values for various configuration options used in the application.

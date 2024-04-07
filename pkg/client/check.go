@@ -21,15 +21,15 @@ import (
 	"fmt"
 	"time"
 
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
+
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
-
-	"sigs.k8s.io/hydrophone/pkg/common"
-	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // Contains all the necessary channels to transfer data
