@@ -31,7 +31,7 @@ nodes:
 - role: worker
 - role: worker
 EOF
-  
+
   # Retrieve cluster information
   kubectl cluster-info --context kind-kind
   kubectl get nodes
@@ -48,25 +48,26 @@ function run_test {
     --output-dir ${ARTIFACTS}/results/ \
     --focus "${FOCUS}" \
     --skip "${SKIP}" \
-    $EXTRA_ARGS| tee /tmp/test.log
-  
+    --namespace "${NAMESPACE}" \
+    $EXTRA_ARGS | tee /tmp/test.log
+
   # Check if $CHECK_DURATION is set to true
   if [[ ${CHECK_DURATION} == "true" ]]; then
     # Check duration
     DURATION=$(grep -oP 'Ran \d+ of \d+ Specs in \K[0-9.]+(?= seconds)' /tmp/test.log | cut -d. -f1)
-    
+
     if [[ ${DRYRUN} == "true" ]]; then
-      if [[ ${DURATION} -gt ${DRYRUN_THRESHOLD} ]]; then 
+      if [[ ${DURATION} -gt ${DRYRUN_THRESHOLD} ]]; then
         echo "Focused test took too long to run. Expected less than ${DRYRUN_THRESHOLD} seconds, got ${DURATION} seconds"
         exit 1
       fi
     else
-      if [[ ${DURATION} -lt ${DRYRUN_THRESHOLD} ]]; then 
+      if [[ ${DURATION} -lt ${DRYRUN_THRESHOLD} ]]; then
         echo "Focused test exited too quickly, check if dry-run is enabled. Expected more than ${DRYRUN_THRESHOLD} seconds, got ${DURATION} seconds"
         exit 1
       fi
     fi
-  fi  
+  fi
 
   # If EXPECTED_NUM_TESTS is set, run the evaluate_test_num function
   if [[ ! -z ${EXPECTED_NUM_TESTS+x} ]]; then
@@ -95,6 +96,7 @@ DRYRUN_THRESHOLD=${DRYRUN_DURATION:-5}
 FOCUS=${FOCUS:-""}
 SKIP=${SKIP:-""}
 DRYRUN=${DRYRUN:-"false"}
+NAMESPACE=${NAMESPACE:-""}
 CONFORMANCE=${CONFORMANCE:-"false"}
 EXTRA_ARGS=${EXTRA_ARGS:-""}
 CHECK_DURATION=${CHECK_DURATION:-"false"}
