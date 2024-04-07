@@ -194,7 +194,7 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// the config will belocated under `~/.config/hydrophone.yaml` on linux
+		// the config will be located under `~/.config/hydrophone.yaml` on linux
 		configDir := xdg.ConfigHome
 		viper.AddConfigPath(configDir)
 		viper.SetConfigType("yaml")

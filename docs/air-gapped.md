@@ -22,7 +22,7 @@ To print the list of images, run:
 hydrophone --list-images
 ```
 
-This list contains images required to run the tests inside the conformance image. However, it does not include the conformance image itself or the busybox image that hydrophone uses to pull test results. The images identified will need to be pulled from the public registry and transfered to the internal registry.
+This list contains images required to run the tests inside the conformance image. However, it does not include the conformance image itself or the busybox image that hydrophone uses to pull test results. The images identified will need to be pulled from the public registry and transferred to the internal registry.
 
 ## Preparing the Internal Registry
 
