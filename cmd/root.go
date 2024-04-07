@@ -82,17 +82,27 @@ var rootCmd = &cobra.Command{
 				log.Fatalf("Invalid arguments: %v.", err)
 			}
 
-			if err := service.RunE2E(ctx, client.ClientSet); err != nil {
+			verboseGinkgo := verbosity >= 6
+			showSpinner := !verboseGinkgo && verbosity > 2
+
+			if err := service.RunE2E(ctx, client.ClientSet, verboseGinkgo); err != nil {
 				log.Fatalf("Failed to run tests: %v.", err)
 			}
 
-			spinner := common.NewSpinner(os.Stdout)
-			spinner.Start()
+			var spinner *common.Spinner
+			if showSpinner {
+				spinner = common.NewSpinner(os.Stdout)
+				spinner.Start()
+			}
+
 			// PrintE2ELogs is a long running method
 			if err := client.PrintE2ELogs(ctx); err != nil {
 				log.Fatalf("Failed to get test logs: %v.", err)
 			}
-			spinner.Stop()
+
+			if showSpinner {
+				spinner.Stop()
+			}
 
 			if err := client.FetchFiles(ctx, config, clientSet, viper.GetString("output-dir")); err != nil {
 				log.Fatalf("Failed to download results: %v.", err)
@@ -103,13 +113,13 @@ var rootCmd = &cobra.Command{
 			if err := service.Cleanup(ctx, client.ClientSet); err != nil {
 				log.Fatalf("Failed to cleanup: %v.", err)
 			}
-		}
 
-		if client.ExitCode == 0 {
-			log.Println("Tests completed successfully.")
-		} else {
-			log.Printf("Tests failed (code %d).", client.ExitCode)
-			os.Exit(client.ExitCode)
+			if client.ExitCode == 0 {
+				log.Println("Tests completed successfully.")
+			} else {
+				log.Printf("Tests failed (code %d).", client.ExitCode)
+				os.Exit(client.ExitCode)
+			}
 		}
 	},
 }
@@ -184,7 +194,7 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// the config will belocated under `~/.config/hydrophone.yaml` on linux
+		// the config will be located under `~/.config/hydrophone.yaml` on linux
 		configDir := xdg.ConfigHome
 		viper.AddConfigPath(configDir)
 		viper.SetConfigType("yaml")

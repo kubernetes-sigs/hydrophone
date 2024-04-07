@@ -60,7 +60,7 @@ do
     echo "Skipping $t"
     continue
   fi
-  echo "Runnint: $t"
+  echo "Running: $t"
   if $SILENT ; then
     echo -e "Verifying $t"
     if bash "$t" &> /dev/null; then
