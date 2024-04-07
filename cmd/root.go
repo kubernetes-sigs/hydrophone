@@ -151,7 +151,7 @@ func init() {
 	rootCmd.Flags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework (automatically sets the --nodes Ginkgo flag).")
 	viper.BindPFlag("parallel", rootCmd.Flags().Lookup("parallel"))
 
-	rootCmd.Flags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework.")
+	rootCmd.Flags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag).")
 	viper.BindPFlag("verbosity", rootCmd.Flags().Lookup("verbosity"))
 
 	rootCmd.Flags().StringVar(&outputDir, "output-dir", workingDir, "directory for logs.")
