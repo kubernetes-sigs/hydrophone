@@ -49,6 +49,7 @@ function run_test {
     --focus "${FOCUS}" \
     --skip "${SKIP}" \
     --namespace "${NAMESPACE}" \
+    --verbosity 2 \
     $EXTRA_ARGS | tee /tmp/test.log
 
   # Check if $CHECK_DURATION is set to true
