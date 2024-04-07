@@ -77,7 +77,7 @@ func namespacedName(basename string) string {
 }
 
 // RunE2E sets up the necessary resources and runs E2E conformance tests.
-func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
+func RunE2E(ctx context.Context, clientset *kubernetes.Clientset, verboseGinkgo bool) error {
 	namespace := viper.GetString("namespace")
 
 	conformanceNS := v1.Namespace{
@@ -222,6 +222,13 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
 			Name:  "E2E_DRYRUN",
 			Value: "true",
+		})
+	}
+
+	if verboseGinkgo {
+		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
+			Name:  "E2E_EXTRA_GINKGO_ARGS",
+			Value: "-v",
 		})
 	}
 
