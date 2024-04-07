@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -69,7 +70,7 @@ func downloadFile(ctx context.Context, config *rest.Config, clientset *kubernete
 			Stderr: &stderr,
 		})
 	if err != nil {
-		return fmt.Errorf("download failed: %w (stderr: %s)", err, stderr.String())
+		return fmt.Errorf("download failed: %w (stderr: %s)", err, strings.TrimSpace(stderr.String()))
 	}
 
 	return nil

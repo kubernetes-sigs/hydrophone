@@ -72,11 +72,17 @@ func GetKubeConfig(kubeconfig string) string {
 	return kubeconfig
 }
 
+func namespacedName(basename string) string {
+	return fmt.Sprintf("%s:%s", basename, viper.GetString("namespace"))
+}
+
 // RunE2E sets up the necessary resources and runs E2E conformance tests.
 func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
+	namespace := viper.GetString("namespace")
+
 	conformanceNS := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: viper.GetString("namespace"),
+			Name: namespace,
 		},
 	}
 
@@ -86,7 +92,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 				"component": "conformance",
 			},
 			Name:      common.ServiceAccountName,
-			Namespace: conformanceNS.Name,
+			Namespace: namespace,
 		},
 	}
 
@@ -95,7 +101,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name: common.ClusterRoleName,
+			Name: namespacedName(common.ClusterRoleName),
 		},
 		Rules: []rbac.PolicyRule{
 			{
@@ -115,18 +121,18 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 			Labels: map[string]string{
 				"component": "conformance",
 			},
-			Name: common.ClusterRoleBindingName,
+			Name: namespacedName(common.ClusterRoleBindingName),
 		},
 		RoleRef: rbac.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
 			Kind:     "ClusterRole",
-			Name:     "conformance-serviceaccount",
+			Name:     namespacedName(common.ClusterRoleName),
 		},
 		Subjects: []rbac.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      "conformance-serviceaccount",
-				Namespace: conformanceNS.Name,
+				Name:      common.ServiceAccountName,
+				Namespace: namespace,
 			},
 		},
 	}
@@ -134,7 +140,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 	conformancePod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "e2e-conformance-test",
-			Namespace: conformanceNS.Name,
+			Namespace: namespace,
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
@@ -200,7 +206,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 				},
 			},
 			RestartPolicy:      v1.RestartPolicyNever,
-			ServiceAccountName: "conformance-serviceaccount",
+			ServiceAccountName: common.ServiceAccountName,
 			Tolerations: []v1.Toleration{
 				{
 					// An empty key with operator Exists matches all keys,
@@ -272,7 +278,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 		configMap := &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "repo-list-config",
-				Namespace: ns.Name,
+				Namespace: namespace,
 			},
 			Data: map[string]string{
 				"repo-list.yaml": string(RepoListData),
@@ -338,51 +344,34 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset) error {
 
 // Cleanup removes all resources created during E2E tests.
 func Cleanup(ctx context.Context, clientset *kubernetes.Clientset) error {
-	namespace := viper.GetString("namespace")
-
-	err := clientset.CoreV1().Pods(namespace).Delete(ctx, common.PodName, metav1.DeleteOptions{})
+	name := namespacedName(common.ClusterRoleBindingName)
+	err := clientset.RbacV1().ClusterRoleBindings().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	} else {
-		log.Printf("Deleted Pod %s.", common.PodName)
+		log.Printf("Deleted ClusterRoleBinding %s.", name)
 	}
 
-	err = clientset.RbacV1().ClusterRoleBindings().Delete(ctx, common.ClusterRoleBindingName, metav1.DeleteOptions{})
+	name = namespacedName(common.ClusterRoleName)
+	err = clientset.RbacV1().ClusterRoles().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	} else {
-		log.Printf("Deleted ClusterRoleBinding %s.", common.ClusterRoleBindingName)
+		log.Printf("Deleted ClusterRole %s.", name)
 	}
 
-	err = clientset.RbacV1().ClusterRoles().Delete(ctx, common.ClusterRoleName, metav1.DeleteOptions{})
+	name = viper.GetString("namespace")
+	err = clientset.CoreV1().Namespaces().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	} else {
-		log.Printf("Deleted ClusterRole %s.", common.ClusterRoleName)
-	}
-
-	err = clientset.CoreV1().ServiceAccounts(namespace).Delete(ctx, common.ServiceAccountName, metav1.DeleteOptions{})
-	if err != nil {
-		if !errors.IsNotFound(err) {
-			return err
-		}
-	} else {
-		log.Printf("Deleted ServiceAccount %s.", common.ServiceAccountName)
-	}
-
-	err = clientset.CoreV1().Namespaces().Delete(ctx, namespace, metav1.DeleteOptions{})
-	if err != nil {
-		if !errors.IsNotFound(err) {
-			return err
-		}
-	} else {
-		log.Printf("Deleted Namespace %s.", namespace)
+		log.Printf("Deleted Namespace %s.", name)
 	}
 
 	return nil
