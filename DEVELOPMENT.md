@@ -1,29 +1,31 @@
 # hydrophone
 
-This document describes the process for running hydrophone on your local machine.
+This document describes the process for running `hydrophone` on your local machine.
 
 ## Getting Started
-###  Prerequisites
+
+### Prerequisites
+
 - [Go](https://go.dev/dl/)
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
 
 ### Build
 
-```
+```bash
 $ make build
 go build -o bin/hydrophone main.go
 ```
 
 ### Install
 
-```
-go install sigs.k8s.io/hydrophone@latest
+```bash
+$ go install sigs.k8s.io/hydrophone@latest
 ```
 
 ### Command line options
 
-```
+```bash
 $ bin/hydrophone --help
 Usage of bin/hydrophone:
   -busybox-image string
@@ -56,55 +58,46 @@ Usage of bin/hydrophone:
         verbosity of test framework. (default 4)
 ```
 
-### Run
+## Run
 
 Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone` Alternatively, you can specify the path to the kubeconfig file with the `--kubeconfig` option.
 
 To run conformance tests use:
 
-```
-bin/hydrophone --conformance
+```bash
+$ bin/hydrophone --conformance
 ```
 
 To run a specific test use:
 
-```
-bin/hydrophone --focus 'Simple pod should contain last line of the log'
+```bash
+$ bin/hydrophone --focus 'Simple pod should contain last line of the log'
 ```
 
 To specify a version of conformance image use:
 
+```bash
+$ bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.29.0'
 ```
-bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.29.0'
-```
-
 
 ## Cleanup
 
-Delete the pod
+Use `hydrophone`'s `--cleanup` flag to remove the tests from your cluster again:
 
-```
-kubectl delete -n conformance pods/e2e-conformance-test
-```
-
-Delete the namespace
-
-```
-kubectl delete -n conformance pods/e2e-conformance-test && kubectl delete ns conformance
+```bash
+$ hydrophone --cleanup
 ```
 
+Note that interrupted tests might leave behind namespaces, check with
+`kubectl get namespaces` for those ending with a numeric suffix like `-NNNN` and
+delete those as necessary.
 
-### Troubleshooting
+## Troubleshooting
 
-Check if the pod is running:
+Check if the Pod is running:
 
+```bash
+$ kubectl --namespace conformance get pods
 ```
-kubectl get pods -n conformance
-```
 
-use `kubectl logs` or `kubectl exec` to see what is happening in the pod.
-
-
-
-
-
+Use `kubectl logs` or `kubectl exec` to see what is happening in the Pod.
