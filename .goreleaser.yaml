@@ -60,3 +60,9 @@ release:
   draft: true
   prerelease: false
   name_template: "v{{.Version}}"
+  brews:
+    - name: hydrophone
+      desc: Lightweight Kubernetes conformance tests runner
+      homepage: https://github.com/kubernetes-sigs/hydrophone
+      version: :latest
+      tap: ./homebrew
