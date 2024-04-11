@@ -97,6 +97,7 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) error
 			if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
 				return handlePod(ctx, clientSet, pod)
 			}
+			common.ExitWhenImagePullBackOff(pod)
 		case <-time.After(2 * time.Second):
 			// Check status every 2 seconds
 		}

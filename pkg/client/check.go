@@ -80,6 +80,7 @@ func (c *Client) PrintE2ELogs(ctx context.Context) error {
 			}
 			break
 		}
+		common.ExitWhenImagePullBackOff(pod)
 	}
 
 	return nil
