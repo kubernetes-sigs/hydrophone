@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 
 	"github.com/spf13/viper"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

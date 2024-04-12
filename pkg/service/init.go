@@ -23,6 +23,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
+
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -31,9 +34,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"sigs.k8s.io/hydrophone/pkg/common"
-	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // Init Initializes the kube config clientset
@@ -137,10 +137,59 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset, verboseGinkgo 
 		},
 	}
 
+	containerEnv := []v1.EnvVar{
+		{
+			Name:  "E2E_FOCUS",
+			Value: fmt.Sprintf("%s", viper.Get("focus")),
+		},
+		{
+			Name:  "E2E_SKIP",
+			Value: fmt.Sprintf("%s", viper.Get("skip")),
+		},
+		{
+			Name:  "E2E_PROVIDER",
+			Value: "skeleton",
+		},
+		{
+			Name:  "E2E_VERBOSITY",
+			Value: fmt.Sprintf("%d", viper.Get("verbosity")),
+		},
+		{
+			Name:  "E2E_USE_GO_RUNNER",
+			Value: "true",
+		},
+		{
+			Name:  "E2E_EXTRA_ARGS",
+			Value: strings.Join(viper.GetStringSlice("extra-args"), " "),
+		},
+	}
+
+	extraGinkgoArgs := viper.GetStringSlice("extra-ginkgo-args")
+
+	if threads := viper.GetInt("parallel"); threads > 1 {
+		extraGinkgoArgs = append(extraGinkgoArgs, fmt.Sprintf("--procs=%d", threads))
+	}
+
+	if verboseGinkgo {
+		extraGinkgoArgs = append(extraGinkgoArgs, "-v")
+	}
+
+	containerEnv = append(containerEnv, v1.EnvVar{
+		Name:  "E2E_EXTRA_GINKGO_ARGS",
+		Value: strings.Join(extraGinkgoArgs, " "),
+	})
+
+	if viper.GetBool("dry-run") {
+		containerEnv = append(containerEnv, v1.EnvVar{
+			Name:  "E2E_DRYRUN",
+			Value: "true",
+		})
+	}
+
 	conformancePod := v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "e2e-conformance-test",
-			Namespace: namespace,
+			Namespace: conformanceNS.Name,
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
@@ -148,36 +197,7 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset, verboseGinkgo 
 					Name:            common.ConformanceContainer,
 					Image:           viper.GetString("conformance-image"),
 					ImagePullPolicy: v1.PullIfNotPresent,
-					Env: []v1.EnvVar{
-						{
-							Name:  "E2E_FOCUS",
-							Value: fmt.Sprintf("%s", viper.Get("focus")),
-						},
-						{
-							Name:  "E2E_SKIP",
-							Value: fmt.Sprintf("%s", viper.Get("skip")),
-						},
-						{
-							Name:  "E2E_PROVIDER",
-							Value: "skeleton",
-						},
-						{
-							Name:  "E2E_PARALLEL",
-							Value: fmt.Sprintf("%d", viper.Get("parallel")),
-						},
-						{
-							Name:  "E2E_VERBOSITY",
-							Value: fmt.Sprintf("%d", viper.Get("verbosity")),
-						},
-						{
-							Name:  "E2E_USE_GO_RUNNER",
-							Value: "true",
-						},
-						{
-							Name:  "E2E_EXTRA_ARGS",
-							Value: strings.Join(viper.GetStringSlice("extra-args"), " "),
-						},
-					},
+					Env:             containerEnv,
 					VolumeMounts: []v1.VolumeMount{
 						{
 							Name:      "output-volume",
@@ -216,20 +236,6 @@ func RunE2E(ctx context.Context, clientset *kubernetes.Clientset, verboseGinkgo 
 				},
 			},
 		},
-	}
-
-	if viper.GetBool("dry-run") {
-		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
-			Name:  "E2E_DRYRUN",
-			Value: "true",
-		})
-	}
-
-	if verboseGinkgo {
-		conformancePod.Spec.Containers[0].Env = append(conformancePod.Spec.Containers[0].Env, v1.EnvVar{
-			Name:  "E2E_EXTRA_GINKGO_ARGS",
-			Value: "-v",
-		})
 	}
 
 	ns, err := clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})

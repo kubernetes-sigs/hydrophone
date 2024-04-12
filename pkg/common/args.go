@@ -17,16 +17,17 @@ limitations under the License.
 package common
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
+
+	"sigs.k8s.io/hydrophone/pkg/log"
 
 	"github.com/blang/semver/v4"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // SetDefaults sets the default values for various configuration options used in the application.
@@ -57,9 +58,16 @@ func SetDefaults(clientset *kubernetes.Clientset, config *rest.Config) error {
 	log.Printf("Using conformance image: %s", viper.Get("conformance-image"))
 	log.Printf("Using busybox image: %s", viper.Get("busybox-image"))
 
+	if viper.Get("skip") != "" {
+		log.Printf("Skipping tests: %s", viper.Get("skip"))
+	}
+
 	if viper.GetBool("dry-run") {
 		log.Println("Dry-run enabled.")
 	}
+
+	log.Printf("Test framework will start %d thread(s) and use verbosity level %d.",
+		viper.Get("parallel"), viper.Get("verbosity"))
 
 	return nil
 }
@@ -71,11 +79,33 @@ func ValidateConformanceArgs() error {
 		viper.Set("focus", "\\[Conformance\\]")
 	}
 
-	if viper.Get("skip") != "" {
-		log.Printf("Skipping tests: %s", viper.Get("skip"))
+	if err := validateArgsFlag(viper.GetStringSlice("extra-args")); err != nil {
+		return fmt.Errorf("invalid --extra-args: %w", err)
 	}
 
-	if extraArgs := viper.GetStringSlice("extra-args"); len(extraArgs) != 0 {
+	if err := validateArgsFlag(viper.GetStringSlice("extra-ginkgo-args")); err != nil {
+		return fmt.Errorf("invalid --extra-ginkgo-args: %w", err)
+	}
+
+	if viper.GetInt("parallel") > 1 {
+		extraArgs := viper.GetStringSlice("extra-ginkgo-args")
+		for _, arg := range extraArgs {
+			if strings.Contains(arg, "--nodes=") || strings.Contains(arg, "--procs=") {
+				return errors.New("--nodes/--procs is automatically set when --parallel is greater than 1")
+			}
+		}
+	}
+
+	outputDir := viper.GetString("output-dir")
+	if err := os.MkdirAll(outputDir, 0o755); err != nil {
+		return fmt.Errorf("error creating output directory [%s]: %w", outputDir, err)
+	}
+
+	return nil
+}
+
+func validateArgsFlag(extraArgs []string) error {
+	if len(extraArgs) != 0 {
 		for _, kv := range extraArgs {
 			keyValuePair := strings.SplitN(kv, "=", 2)
 			if len(keyValuePair) != 2 {
@@ -88,13 +118,6 @@ func ValidateConformanceArgs() error {
 		}
 	}
 
-	log.Printf("Test framework will start %d thread(s) and use verbosity level %d.",
-		viper.Get("parallel"), viper.Get("verbosity"))
-
-	outputDir := viper.GetString("output-dir")
-	if err := os.MkdirAll(outputDir, 0o755); err != nil {
-		return fmt.Errorf("error creating output directory [%s]: %w", outputDir, err)
-	}
 	return nil
 }
 

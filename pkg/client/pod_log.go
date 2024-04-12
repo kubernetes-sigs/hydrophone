@@ -20,11 +20,11 @@ import (
 	"bufio"
 	"context"
 
+	"sigs.k8s.io/hydrophone/pkg/common"
+
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-
-	"sigs.k8s.io/hydrophone/pkg/common"
 )
 
 // List pod resource with the given namespace

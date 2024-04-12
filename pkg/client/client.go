@@ -21,12 +21,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/log"
+
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"sigs.k8s.io/hydrophone/pkg/common"
-	"sigs.k8s.io/hydrophone/pkg/log"
 )
 
 // Client is a struct that holds the clientset and exit code

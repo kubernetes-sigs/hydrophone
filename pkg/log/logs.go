@@ -22,9 +22,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/mattn/go-isatty"
-
 	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 )
 
 func init() {

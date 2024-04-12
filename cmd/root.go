@@ -20,6 +20,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"sigs.k8s.io/hydrophone/pkg/client"
 	"sigs.k8s.io/hydrophone/pkg/common"
@@ -89,6 +90,8 @@ var rootCmd = &cobra.Command{
 				log.Fatalf("Failed to run tests: %v.", err)
 			}
 
+			before := time.Now()
+
 			var spinner *common.Spinner
 			if showSpinner {
 				spinner = common.NewSpinner(os.Stdout)
@@ -103,6 +106,8 @@ var rootCmd = &cobra.Command{
 			if showSpinner {
 				spinner.Stop()
 			}
+
+			log.Printf("Tests finished after %v.", time.Since(before).Round(time.Second))
 
 			if err := client.FetchFiles(ctx, config, clientSet, viper.GetString("output-dir")); err != nil {
 				log.Fatalf("Failed to download results: %v.", err)
@@ -143,10 +148,10 @@ func init() {
 	rootCmd.Flags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (defaults to %s/hydrophone.yaml).", xdg.ConfigHome))
 	rootCmd.Flags().StringVar(&kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 
-	rootCmd.Flags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework.")
+	rootCmd.Flags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework (automatically sets the --nodes Ginkgo flag).")
 	viper.BindPFlag("parallel", rootCmd.Flags().Lookup("parallel"))
 
-	rootCmd.Flags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework.")
+	rootCmd.Flags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag).")
 	viper.BindPFlag("verbosity", rootCmd.Flags().Lookup("verbosity"))
 
 	rootCmd.Flags().StringVar(&outputDir, "output-dir", workingDir, "directory for logs.")
@@ -184,6 +189,9 @@ func init() {
 
 	rootCmd.Flags().StringSlice("extra-args", []string{}, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)")
 	viper.BindPFlag("extra-args", rootCmd.Flags().Lookup("extra-args"))
+
+	rootCmd.Flags().StringSlice("extra-ginkgo-args", []string{}, "Additional parameters to be provided to Ginkgo runner. This flag has the same format as --extra-args.")
+	viper.BindPFlag("extra-ginkgo-args", rootCmd.Flags().Lookup("extra-ginkgo-args"))
 
 	rootCmd.MarkFlagsMutuallyExclusive("conformance", "focus", "cleanup", "list-images")
 }
