@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//nolint:errcheck // TODO(embik): temporary put in place to ensure PRs do not conflict
 package cmd
 
 import (
@@ -149,13 +148,13 @@ func init() {
 	rootCmd.Flags().StringVar(&kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
 
 	rootCmd.Flags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework (automatically sets the --nodes Ginkgo flag).")
-	viper.BindPFlag("parallel", rootCmd.Flags().Lookup("parallel"))
+	must(viper.BindPFlag("parallel", rootCmd.Flags().Lookup("parallel")))
 
 	rootCmd.Flags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag).")
-	viper.BindPFlag("verbosity", rootCmd.Flags().Lookup("verbosity"))
+	must(viper.BindPFlag("verbosity", rootCmd.Flags().Lookup("verbosity")))
 
 	rootCmd.Flags().StringVar(&outputDir, "output-dir", workingDir, "directory for logs.")
-	viper.BindPFlag("output-dir", rootCmd.Flags().Lookup("output-dir"))
+	must(viper.BindPFlag("output-dir", rootCmd.Flags().Lookup("output-dir")))
 
 	rootCmd.Flags().BoolVar(&cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
 
@@ -164,34 +163,34 @@ func init() {
 	rootCmd.Flags().BoolVar(&conformance, "conformance", false, "run conformance tests.")
 
 	rootCmd.Flags().StringVar(&focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
-	viper.BindPFlag("focus", rootCmd.Flags().Lookup("focus"))
+	must(viper.BindPFlag("focus", rootCmd.Flags().Lookup("focus")))
 
 	rootCmd.Flags().StringVar(&skip, "skip", "", "skip specific tests. allows regular expressions.")
-	viper.BindPFlag("skip", rootCmd.Flags().Lookup("skip"))
+	must(viper.BindPFlag("skip", rootCmd.Flags().Lookup("skip")))
 
 	rootCmd.Flags().StringVar(&conformanceImage, "conformance-image", "", "specify a conformance container image of your choice.")
-	viper.BindPFlag("conformance-image", rootCmd.Flags().Lookup("conformance-image"))
+	must(viper.BindPFlag("conformance-image", rootCmd.Flags().Lookup("conformance-image")))
 
 	rootCmd.Flags().StringVar(&busyboxImage, "busybox-image", "", "specify an alternate busybox container image.")
-	viper.BindPFlag("busybox-image", rootCmd.Flags().Lookup("busybox-image"))
+	must(viper.BindPFlag("busybox-image", rootCmd.Flags().Lookup("busybox-image")))
 
 	rootCmd.Flags().StringVar(&namespace, "namespace", "", "the namespace where the conformance pod is created.")
-	viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace"))
+	must(viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace")))
 
 	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "run in dry run mode.")
-	viper.BindPFlag("dry-run", rootCmd.Flags().Lookup("dry-run"))
+	must(viper.BindPFlag("dry-run", rootCmd.Flags().Lookup("dry-run")))
 
 	rootCmd.Flags().StringVar(&testRepoList, "test-repo-list", "", "yaml file to override registries for test images.")
-	viper.BindPFlag("test-repo-list", rootCmd.Flags().Lookup("test-repo-list"))
+	must(viper.BindPFlag("test-repo-list", rootCmd.Flags().Lookup("test-repo-list")))
 
 	rootCmd.Flags().StringVar(&testRepo, "test-repo", "", "skip specific tests. allows regular expressions.")
-	viper.BindPFlag("test-repo", rootCmd.Flags().Lookup("test-repo"))
+	must(viper.BindPFlag("test-repo", rootCmd.Flags().Lookup("test-repo")))
 
 	rootCmd.Flags().StringSlice("extra-args", []string{}, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)")
-	viper.BindPFlag("extra-args", rootCmd.Flags().Lookup("extra-args"))
+	must(viper.BindPFlag("extra-args", rootCmd.Flags().Lookup("extra-args")))
 
 	rootCmd.Flags().StringSlice("extra-ginkgo-args", []string{}, "Additional parameters to be provided to Ginkgo runner. This flag has the same format as --extra-args.")
-	viper.BindPFlag("extra-ginkgo-args", rootCmd.Flags().Lookup("extra-ginkgo-args"))
+	must(viper.BindPFlag("extra-ginkgo-args", rootCmd.Flags().Lookup("extra-ginkgo-args")))
 
 	rootCmd.MarkFlagsMutuallyExclusive("conformance", "focus", "cleanup", "list-images")
 }
@@ -221,4 +220,10 @@ func initConfig() {
 	}
 	kubeconfig = service.GetKubeConfig(kubeconfig)
 	viper.Set("kubeconfig", kubeconfig)
+}
+
+func must(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
