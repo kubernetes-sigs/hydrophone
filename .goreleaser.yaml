@@ -101,7 +101,7 @@ brews:
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 
     # Directory inside the repository to put the formula.
-    directory: homebew/Formula
+    directory: homebrew/Formula
     homepage: "https://github.com/kubernetes-sigs/hydrophone"
 
     # Your app's description.
@@ -143,17 +143,3 @@ brews:
       # Default: default repository branch
       # Templates: allowed
       branch: main
-
-      # Optionally a token can be provided, if it differs from the token
-      # provided to GoReleaser
-      # Templates: allowed
-      #token: "{{ .Env.GITHUB_PERSONAL_AUTH_TOKEN }}"
-
-      # Sets up pull request creation instead of just pushing to the given branch.
-      # Make sure the 'branch' property is different from base before enabling
-      # it.
-      #
-      # Since: v1.17
-      pull_request:
-        # Whether to enable it or not.
-        enabled: true
