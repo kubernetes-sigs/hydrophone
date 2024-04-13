@@ -101,7 +101,7 @@ brews:
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 
     # Directory inside the repository to put the formula.
-    directory: homebrew/Formula
+    directory: Formula
     homepage: "https://github.com/kubernetes-sigs/hydrophone"
 
     # Your app's description.
