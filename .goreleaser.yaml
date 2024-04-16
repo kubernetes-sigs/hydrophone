@@ -61,7 +61,6 @@ release:
   prerelease: false
   name_template: "v{{.Version}}"
   
-# .goreleaser.yaml
 brews:
   -
     # Name of the recipe
@@ -69,23 +68,7 @@ brews:
     # Default: ProjectName
     # Templates: allowed
     name: hydrophone
-
-    # NOTE: make sure the url_template, the token and given repo (github or
-    # gitlab) owner and name are from the same kind.
-    # We will probably unify this in the next major version like it is
-    # done with scoop.
-
-    # URL which is determined by the given Token (github, gitlab or gitea).
-    #
-    # Default depends on the client.
-    # Templates: allowed
     url_template: "https://github.com/kubernetes-sigs/hydrophone/archive/refs/tags/{{ .Tag }}/{{ .ArtifactName }}"
-
-    # Headers to include in the `url` stanza.
-    # This can be a more modern alternative to `download_strategy` in some
-    # cases.
-    #
-    # Since: v1.25
     url_headers:
       - "Accept: application/octet-stream"
       - 'Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}'
@@ -103,43 +86,17 @@ brews:
     # Directory inside the repository to put the formula.
     directory: Formula
     homepage: "https://github.com/kubernetes-sigs/hydrophone"
-
-    # Your app's description.
-    #
-    # Templates: allowed
     description: "Lightweight Kubernetes conformance tests runner"
-
-    # Packages your package depends on.
     dependencies:
       - name: go
-
-    # So you can `brew test` your formula.
-    #
-    # Template: allowed
     test: |
       assert_match "Hydrophone is a lightweight runner for kubernetes tests", shell_output("#{bin}/hydrophone --help")
 
-    # Custom install script for brew.
-    #
-    # Template: allowed
-    # Default: 'bin.install "BinaryName"'
     install: |
       system "go", "build", *std_go_args(ldflags: "-s -w")
 
     # Repository to push the generated files to.
     repository:
-      # Repository owner.
-      #
-      # Templates: allowed
       owner: kubernetes-sigs
-
-      # Repository name.
-      #
-      # Templates: allowed
       name: hydrophone
-
-      # Optionally a branch can be provided.
-      #
-      # Default: default repository branch
-      # Templates: allowed
       branch: main
