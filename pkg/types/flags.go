@@ -105,13 +105,13 @@ func (c *Configuration) Complete(fs *pflag.FlagSet) (*Configuration, error) {
 
 func overwrite[T comparable](fs *pflag.FlagSet, flagName string, dst *T, src T) {
 	empty := new(T)
-	if fs.Changed(flagName) || *dst == *empty {
+	if src != *empty && (fs.Changed(flagName) || *dst == *empty) {
 		*dst = src
 	}
 }
 
 func overwriteSlice[T comparable](fs *pflag.FlagSet, flagName string, dst *[]T, src []T) {
-	if fs.Changed(flagName) || len(*dst) == 0 {
+	if len(src) > 0 && (fs.Changed(flagName) || len(*dst) == 0) {
 		*dst = src
 	}
 }
