@@ -207,10 +207,10 @@ func applyClusterDefaults(config *types.Configuration, clientset *kubernetes.Cli
 	return config, serverVersion, nil
 }
 
-func normalizeVersion(version string) (string, error) {
-	version = strings.TrimPrefix(version, "v")
+func normalizeVersion(ver string) (string, error) {
+	ver = strings.TrimPrefix(ver, "v")
 
-	parsedVersion, err := semver.Parse(version)
+	parsedVersion, err := semver.Parse(ver)
 	if err != nil {
 		return "", fmt.Errorf("error parsing conformance image tag: %w", err)
 	}

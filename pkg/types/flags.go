@@ -139,7 +139,7 @@ func resolveKubeconfig(kubeconfig string) (string, error) {
 			return "", fmt.Errorf("failed to determine home directory: %w", err)
 		}
 
-		kubeconfig = strings.Replace(kubeconfig, "~", homeDir, -1)
+		kubeconfig = strings.ReplaceAll(kubeconfig, "~", homeDir)
 	}
 
 	return kubeconfig, nil

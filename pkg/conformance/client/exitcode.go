@@ -41,7 +41,7 @@ func (c *Client) FetchExitCode(ctx context.Context) (int, error) {
 	for event := range watchInterface.ResultChan() {
 		pod, ok := event.Object.(*corev1.Pod)
 		if !ok {
-			log.Printf("Received unexpected %T object from Watch.", pod)
+			log.Errorf("Received unexpected %T object from Watch.", pod)
 			return -1, nil
 		}
 
@@ -53,7 +53,7 @@ func (c *Client) FetchExitCode(ctx context.Context) (int, error) {
 				}
 			}
 
-			return -1, fmt.Errorf("%s Pod is not terminated.", conformance.ConformanceContainer)
+			return -1, fmt.Errorf("%s container is not terminated", conformance.ConformanceContainer)
 		}
 
 		if pod.Status.Phase == corev1.PodRunning {
