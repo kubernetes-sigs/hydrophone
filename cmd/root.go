@@ -181,7 +181,7 @@ func action(ctx context.Context, config *types.Configuration) error {
 		if exitCode == 0 {
 			log.Println("Tests completed successfully.")
 		} else {
-			log.Printf("Tests failed (code %d).", exitCode)
+			log.Errorf("Tests failed (code %d).", exitCode)
 			os.Exit(exitCode)
 		}
 	}
