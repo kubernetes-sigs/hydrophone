@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package conformance
 
 import (
 	"bytes"
@@ -28,20 +28,20 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/common"
 	"sigs.k8s.io/hydrophone/pkg/log"
 
-	"github.com/spf13/viper"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 // PrintListImages creates and runs a conformance image with the --list-images flag
 // This will print a list of all the images used by the conformance image.
-func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) error {
+func (r *TestRunner) PrintListImages(ctx context.Context, timeout time.Duration) error {
+	namespace := metav1.NamespaceDefault
+
 	// Create a pod object definition
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "list-images-",
-			Namespace:    "default",
+			Namespace:    namespace,
 			Annotations: map[string]string{
 				"list-images": "true",
 			},
@@ -50,8 +50,8 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) error
 			RestartPolicy: corev1.RestartPolicyOnFailure,
 			Containers: []corev1.Container{
 				{
-					Name:  common.ConformanceContainer,
-					Image: viper.GetString("conformance-image"),
+					Name:  ConformanceContainer,
+					Image: r.config.ConformanceImage,
 					Command: []string{
 						"/usr/local/bin/e2e.test",
 						"--list-images",
@@ -62,14 +62,14 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) error
 	}
 
 	// Create the pod in the cluster
-	pod, err := clientSet.CoreV1().Pods("default").Create(ctx, pod, metav1.CreateOptions{})
+	pod, err := common.CreatePod(ctx, r.clientset, pod, timeout)
 	if err != nil {
 		return fmt.Errorf("failed to create Pod: %w", err)
 	}
 	log.Printf("Created Pod %s.", pod.Name)
 
 	// Watch for pod events
-	watcher, err := clientSet.CoreV1().Pods("default").Watch(ctx, metav1.ListOptions{
+	watcher, err := r.clientset.CoreV1().Pods(namespace).Watch(ctx, metav1.ListOptions{
 		FieldSelector: "metadata.name=" + pod.Name,
 	})
 	if err != nil {
@@ -94,21 +94,21 @@ func PrintListImages(ctx context.Context, clientSet *kubernetes.Clientset) error
 
 			// Check if the pod is in a terminal state
 			if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
-				return handlePod(ctx, clientSet, pod)
+				return r.handlePod(ctx, pod)
 			}
-			common.ExitWhenImagePullBackOff(pod)
+
 		case <-time.After(2 * time.Second):
 			// Check status every 2 seconds
 		}
 	}
 }
 
-func handlePod(ctx context.Context, clientSet *kubernetes.Clientset, pod *corev1.Pod) error {
+func (r *TestRunner) handlePod(ctx context.Context, pod *corev1.Pod) error {
 	// Trigger desired action (e.g., fetching and printing logs)
 	log.Printf("Pod completed: %s", pod.Status.Phase)
 
 	// Fetch the logs
-	req := clientSet.CoreV1().Pods("default").GetLogs(pod.Name, &corev1.PodLogOptions{})
+	req := r.clientset.CoreV1().Pods("default").GetLogs(pod.Name, &corev1.PodLogOptions{})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch Pod logs: %w", err)
@@ -128,7 +128,7 @@ func handlePod(ctx context.Context, clientSet *kubernetes.Clientset, pod *corev1
 		fmt.Println(line)
 	}
 
-	err = clientSet.CoreV1().Pods("default").Delete(ctx, pod.Name, metav1.DeleteOptions{})
+	err = r.clientset.CoreV1().Pods("default").Delete(ctx, pod.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to delete Pod: %w", err)
 	}

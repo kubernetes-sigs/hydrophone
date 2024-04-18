@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,37 +14,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package types
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGetKubeConfig(t *testing.T) {
+func TestResolveKubeconfig(t *testing.T) {
+	// reset environment
+	os.Setenv("KUBECONFIG", "")
+
+	homeDir, err := os.UserHomeDir()
+	assert.NoError(t, err)
+
 	// Test case 1: kubeconfig is empty
 	kubeconfig := ""
-	expected := filepath.Join(os.Getenv("HOME"), ".kube", "config")
-	actual := GetKubeConfig(kubeconfig)
-	if actual != expected {
-		t.Errorf("Expected %s, but got %s", expected, actual)
-	}
+	expected := filepath.Join(homeDir, ".kube", "config")
+
+	actual, err := resolveKubeconfig(kubeconfig)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 
 	// Test case 2: kubeconfig is set through environment variable
 	kubeconfig = "/path/to/kubeconfig"
 	os.Setenv("KUBECONFIG", kubeconfig)
 	expected = kubeconfig
-	actual = GetKubeConfig("")
-	if actual != expected {
-		t.Errorf("Expected %s, but got %s", expected, actual)
-	}
 
-	// Test case 3: kubeconfig starts with "~"
+	actual, err = resolveKubeconfig("")
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+
+	// Test case 3: kubeconfig contains with "~"
 	kubeconfig = "~/custom/kubeconfig"
-	expected = filepath.Join(os.Getenv("HOME"), "custom", "kubeconfig")
-	actual = GetKubeConfig(kubeconfig)
-	if actual != expected {
-		t.Errorf("Expected %s, but got %s", expected, actual)
-	}
+	expected = filepath.Join(homeDir, "custom", "kubeconfig")
+
+	actual, err = resolveKubeconfig(kubeconfig)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 }

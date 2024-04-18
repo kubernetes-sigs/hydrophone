@@ -17,21 +17,71 @@ limitations under the License.
 package common
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"sigs.k8s.io/hydrophone/pkg/log"
 
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
-// Exit process if conformance pod happen ImagePullBackOff.
-func ExitWhenImagePullBackOff(pod *v1.Pod) {
-	if pod.Status.Phase != v1.PodPending {
-		return
+// CreatePod creates a new Pod and waits for it to be Running.
+func CreatePod(ctx context.Context, cs *kubernetes.Clientset, pod *corev1.Pod, timeout time.Duration) (*corev1.Pod, error) {
+	// Create the pod in the cluster
+	created, err := cs.CoreV1().Pods(pod.Namespace).Create(ctx, pod, metav1.CreateOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Pod: %w", err)
 	}
-	for _, cs := range pod.Status.ContainerStatuses {
-		if cs.State.Waiting != nil && cs.State.Waiting.Reason == "ImagePullBackOff" {
-			log.Fatal(errors.New(cs.State.Waiting.Message))
+
+	// Watch for pod events
+	watcher, err := cs.CoreV1().Pods(created.Namespace).Watch(ctx, metav1.ListOptions{
+		FieldSelector: "metadata.name=" + created.Name,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to watch Pod events: %w", err)
+	}
+	defer watcher.Stop()
+
+	log.Printf("Waiting up to %v for Pod to start...", timeout)
+
+	deadline := time.After(timeout)
+	var lastStatus *corev1.PodStatus
+
+	for {
+		select {
+		case event, ok := <-watcher.ResultChan():
+			if !ok {
+				return created, nil
+			}
+
+			pod, ok := event.Object.(*corev1.Pod)
+			if !ok {
+				continue
+			}
+
+			lastStatus = &pod.Status
+
+			if lastStatus.Phase == corev1.PodRunning {
+				return created, nil
+			}
+
+			for _, cs := range lastStatus.ContainerStatuses {
+				if cs.State.Waiting != nil && cs.State.Waiting.Reason == "ImagePullBackOff" {
+					return nil, errors.New(cs.State.Waiting.Message)
+				}
+			}
+
+		case <-deadline:
+			phase := corev1.PodUnknown
+			if lastStatus != nil {
+				phase = lastStatus.Phase
+			}
+
+			return nil, fmt.Errorf("timed out waiting for Pod, last status was %v", phase)
 		}
 	}
 }

@@ -14,15 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package conformance
 
 import (
-	"sigs.k8s.io/hydrophone/cmd"
-	"sigs.k8s.io/hydrophone/pkg/log"
+	"fmt"
+
+	"sigs.k8s.io/hydrophone/pkg/types"
+
+	"k8s.io/client-go/kubernetes"
 )
 
-func main() {
-	if err := cmd.New().Execute(); err != nil {
-		log.Fatalf("Error: %v.", err)
+type TestRunner struct {
+	config    types.Configuration
+	clientset *kubernetes.Clientset
+}
+
+func NewTestRunner(config types.Configuration, clientset *kubernetes.Clientset) *TestRunner {
+	return &TestRunner{
+		config:    config,
+		clientset: clientset,
 	}
+}
+
+func (r *TestRunner) namespacedName(basename string) string {
+	return fmt.Sprintf("%s:%s", basename, r.config.Namespace)
 }
