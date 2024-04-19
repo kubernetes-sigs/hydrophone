@@ -17,6 +17,7 @@ limitations under the License.
 package types
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,15 +27,15 @@ import (
 )
 
 func (c *Configuration) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&c.configFile, "config", "", "path to an optional base configuration file.")
+	fs.StringVarP(&c.configFile, "config", "c", "", "path to an optional base configuration file.")
 	fs.StringVar(&c.Kubeconfig, "kubeconfig", c.Kubeconfig, "path to the kubeconfig file.")
-	fs.IntVar(&c.Parallel, "parallel", c.Parallel, "number of parallel threads in test framework (automatically sets the --nodes Ginkgo flag).")
-	fs.IntVar(&c.Verbosity, "verbosity", c.Verbosity, "verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag).")
-	fs.StringVar(&c.OutputDir, "output-dir", c.OutputDir, "directory for logs.")
+	fs.IntVarP(&c.Parallel, "parallel", "p", c.Parallel, "number of parallel threads in test framework (automatically sets the --nodes Ginkgo flag).")
+	fs.IntVarP(&c.Verbosity, "verbosity", "v", c.Verbosity, "verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag).")
+	fs.StringVarP(&c.OutputDir, "output-dir", "o", c.OutputDir, "directory for logs.")
 	fs.StringVar(&c.Skip, "skip", c.Skip, "skip specific tests. allows regular expressions.")
 	fs.StringVar(&c.ConformanceImage, "conformance-image", c.ConformanceImage, "specify a conformance container image of your choice.")
 	fs.StringVar(&c.BusyboxImage, "busybox-image", c.BusyboxImage, "specify an alternate busybox container image.")
-	fs.StringVar(&c.Namespace, "namespace", c.Namespace, "the namespace where the conformance pod is created.")
+	fs.StringVarP(&c.Namespace, "namespace", "n", c.Namespace, "the namespace where the conformance pod is created.")
 	fs.BoolVar(&c.DryRun, "dry-run", c.DryRun, "run in dry run mode.")
 	fs.StringVar(&c.TestRepoList, "test-repo-list", c.TestRepoList, "yaml file to override registries for test images.")
 	fs.StringVar(&c.TestRepo, "test-repo", c.TestRepo, "skip specific tests. allows regular expressions.")
@@ -45,6 +46,32 @@ func (c *Configuration) AddFlags(fs *pflag.FlagSet) {
 
 func (c *Configuration) Complete(fs *pflag.FlagSet) (*Configuration, error) {
 	result := c
+
+	defaults := NewDefaultConfiguration()
+
+	if c.Namespace == "" {
+		c.Namespace = defaults.Namespace
+	}
+
+	if c.BusyboxImage == "" {
+		c.BusyboxImage = defaults.BusyboxImage
+	}
+
+	if c.OutputDir == "" {
+		c.OutputDir = defaults.OutputDir
+	}
+
+	if c.StartupTimeout == 0 {
+		c.StartupTimeout = defaults.StartupTimeout
+	}
+
+	if c.Parallel <= 0 {
+		return nil, errors.New("--parallel cannot be less than 1")
+	}
+
+	if c.Verbosity <= 0 {
+		return nil, errors.New("--verbosity cannot be less than 1")
+	}
 
 	if c.configFile != "" {
 		loaded, err := loadConfiguration(c.configFile)
