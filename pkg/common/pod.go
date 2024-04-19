@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"sigs.k8s.io/hydrophone/pkg/log"
@@ -29,7 +30,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// CreatePod creates a new Pod and waits for it to be Running.
+// CreatePod creates a new Pod and waits for it to be Running/Succeeded.
 func CreatePod(ctx context.Context, cs *kubernetes.Clientset, pod *corev1.Pod, timeout time.Duration) (*corev1.Pod, error) {
 	// Create the pod in the cluster
 	created, err := cs.CoreV1().Pods(pod.Namespace).Create(ctx, pod, metav1.CreateOptions{})
@@ -37,12 +38,17 @@ func CreatePod(ctx context.Context, cs *kubernetes.Clientset, pod *corev1.Pod, t
 		return nil, fmt.Errorf("failed to create Pod: %w", err)
 	}
 
+	log.Printf("Created Pod %s.", pod.Name)
+
+	// From now on, even in errors return the created Pod
+	// to allow the caller to perform cleanups if desired.
+
 	// Watch for pod events
 	watcher, err := cs.CoreV1().Pods(created.Namespace).Watch(ctx, metav1.ListOptions{
 		FieldSelector: "metadata.name=" + created.Name,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to watch Pod events: %w", err)
+		return created, fmt.Errorf("failed to watch Pod events: %w", err)
 	}
 	defer watcher.Stop()
 
@@ -63,17 +69,15 @@ func CreatePod(ctx context.Context, cs *kubernetes.Clientset, pod *corev1.Pod, t
 				continue
 			}
 
-			lastStatus = &pod.Status
+			if err := CheckFailedPod(pod); err != nil {
+				return created, err
+			}
 
-			if lastStatus.Phase == corev1.PodRunning {
+			if pod.Status.Phase != corev1.PodPending {
 				return created, nil
 			}
 
-			for _, cs := range lastStatus.ContainerStatuses {
-				if cs.State.Waiting != nil && cs.State.Waiting.Reason == "ImagePullBackOff" {
-					return nil, errors.New(cs.State.Waiting.Message)
-				}
-			}
+			lastStatus = &pod.Status
 
 		case <-deadline:
 			phase := corev1.PodUnknown
@@ -81,7 +85,30 @@ func CreatePod(ctx context.Context, cs *kubernetes.Clientset, pod *corev1.Pod, t
 				phase = lastStatus.Phase
 			}
 
-			return nil, fmt.Errorf("timed out waiting for Pod, last status was %v", phase)
+			return created, fmt.Errorf("timed out waiting for Pod, last status was %v", phase)
 		}
 	}
+}
+
+// containerErrorReasons is a list of possible reasons a container in a Pod can have.
+// If a container has this status, CreatePod() considers it fails and aborts.
+var containerErrorReasons = []string{"ErrImagePull", "ImagePullBackOff", "Error", "CrashLoopBackOff"}
+
+func CheckFailedPod(pod *corev1.Pod) error {
+	for _, cs := range pod.Status.ContainerStatuses {
+		if s := cs.State.Waiting; s != nil && slices.Contains(containerErrorReasons, s.Reason) {
+			return errors.New(s.Message)
+		}
+
+		if s := cs.State.Terminated; s != nil && slices.Contains(containerErrorReasons, s.Reason) {
+			msg := s.Message
+			if msg == "" {
+				msg = "Pod has encountered an error"
+			}
+
+			return errors.New(msg)
+		}
+	}
+
+	return nil
 }

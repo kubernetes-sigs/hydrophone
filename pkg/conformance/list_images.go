@@ -63,10 +63,17 @@ func (r *TestRunner) PrintListImages(ctx context.Context, timeout time.Duration)
 
 	// Create the pod in the cluster
 	pod, err := common.CreatePod(ctx, r.clientset, pod, timeout)
+	defer func() {
+		if pod != nil {
+			err = r.clientset.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, metav1.DeleteOptions{})
+			if err != nil {
+				log.Errorf("Failed to delete Pod: %v.", err)
+			}
+		}
+	}()
 	if err != nil {
 		return fmt.Errorf("failed to create Pod: %w", err)
 	}
-	log.Printf("Created Pod %s.", pod.Name)
 
 	// Watch for pod events
 	watcher, err := r.clientset.CoreV1().Pods(namespace).Watch(ctx, metav1.ListOptions{
@@ -92,6 +99,10 @@ func (r *TestRunner) PrintListImages(ctx context.Context, timeout time.Duration)
 				continue
 			}
 
+			if err := common.CheckFailedPod(pod); err != nil {
+				return err
+			}
+
 			// Check if the pod is in a terminal state
 			if pod.Status.Phase == corev1.PodSucceeded || pod.Status.Phase == corev1.PodFailed {
 				return r.handlePod(ctx, pod)
@@ -108,7 +119,7 @@ func (r *TestRunner) handlePod(ctx context.Context, pod *corev1.Pod) error {
 	log.Printf("Pod completed: %s", pod.Status.Phase)
 
 	// Fetch the logs
-	req := r.clientset.CoreV1().Pods("default").GetLogs(pod.Name, &corev1.PodLogOptions{})
+	req := r.clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &corev1.PodLogOptions{})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch Pod logs: %w", err)
@@ -126,11 +137,6 @@ func (r *TestRunner) handlePod(ctx context.Context, pod *corev1.Pod) error {
 	sort.Strings(lines)
 	for _, line := range lines {
 		fmt.Println(line)
-	}
-
-	err = r.clientset.CoreV1().Pods("default").Delete(ctx, pod.Name, metav1.DeleteOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to delete Pod: %w", err)
 	}
 
 	return nil

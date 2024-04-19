@@ -299,12 +299,11 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
 			//nolint:stylecheck // error message references a Kubernetes resource type.
-			err = fmt.Errorf("Pod %s already exist, please run --cleanup first", conformancePod.Name)
+			err = fmt.Errorf("Pod %s already exist, please run --cleanup first", pod.Name)
 		}
 
 		return err
 	}
-	log.Printf("Created Pod %s.", pod.Name)
 
 	return nil
 }
