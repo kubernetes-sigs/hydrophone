@@ -52,23 +52,7 @@ func (c *Configuration) Complete(fs *pflag.FlagSet) (*Configuration, error) {
 			return nil, err
 		}
 
-		// overwrite config loaded from file with ad-hoc CLI flags
-		overwrite(fs, "kubeconfig", &loaded.Kubeconfig, c.Kubeconfig)
-		overwrite(fs, "parallel", &loaded.Parallel, c.Parallel)
-		overwrite(fs, "verbosity", &loaded.Verbosity, c.Verbosity)
-		overwrite(fs, "output-dir", &loaded.OutputDir, c.OutputDir)
-		overwrite(fs, "skip", &loaded.Skip, c.Skip)
-		overwrite(fs, "conformance-image", &loaded.ConformanceImage, c.ConformanceImage)
-		overwrite(fs, "busybox-image", &loaded.BusyboxImage, c.BusyboxImage)
-		overwrite(fs, "namespace", &loaded.Namespace, c.Namespace)
-		overwrite(fs, "dry-run", &loaded.DryRun, c.DryRun)
-		overwrite(fs, "startup-timeout", &loaded.StartupTimeout, c.StartupTimeout)
-		overwrite(fs, "test-repo-list", &loaded.TestRepoList, c.TestRepoList)
-		overwrite(fs, "test-repo", &loaded.TestRepo, c.TestRepo)
-		overwriteSlice(fs, "extra-args", &loaded.ExtraArgs, c.ExtraArgs)
-		overwriteSlice(fs, "extra-ginkgo-args", &loaded.ExtraGinkgoArgs, c.ExtraGinkgoArgs)
-
-		result = loaded
+		result = mergeConfigs(fs.Changed, loaded, c)
 	}
 
 	if result.Kubeconfig == "" {
@@ -103,15 +87,38 @@ func (c *Configuration) Complete(fs *pflag.FlagSet) (*Configuration, error) {
 	return result, nil
 }
 
-func overwrite[T comparable](fs *pflag.FlagSet, flagName string, dst *T, src T) {
+// changeDetector is allowing to mock pflag during tests.
+type changeDetector func(flag string) bool
+
+// mergeConfigs combines the configuration loaded from a config file with the CLI flags.
+func mergeConfigs(changed changeDetector, fromFlags, loaded *Configuration) *Configuration {
+	overwrite(changed, "kubeconfig", &loaded.Kubeconfig, fromFlags.Kubeconfig)
+	overwrite(changed, "parallel", &loaded.Parallel, fromFlags.Parallel)
+	overwrite(changed, "verbosity", &loaded.Verbosity, fromFlags.Verbosity)
+	overwrite(changed, "output-dir", &loaded.OutputDir, fromFlags.OutputDir)
+	overwrite(changed, "skip", &loaded.Skip, fromFlags.Skip)
+	overwrite(changed, "conformance-image", &loaded.ConformanceImage, fromFlags.ConformanceImage)
+	overwrite(changed, "busybox-image", &loaded.BusyboxImage, fromFlags.BusyboxImage)
+	overwrite(changed, "namespace", &loaded.Namespace, fromFlags.Namespace)
+	overwrite(changed, "dry-run", &loaded.DryRun, fromFlags.DryRun)
+	overwrite(changed, "startup-timeout", &loaded.StartupTimeout, fromFlags.StartupTimeout)
+	overwrite(changed, "test-repo-list", &loaded.TestRepoList, fromFlags.TestRepoList)
+	overwrite(changed, "test-repo", &loaded.TestRepo, fromFlags.TestRepo)
+	overwriteSlice(changed, "extra-args", &loaded.ExtraArgs, fromFlags.ExtraArgs)
+	overwriteSlice(changed, "extra-ginkgo-args", &loaded.ExtraGinkgoArgs, fromFlags.ExtraGinkgoArgs)
+
+	return loaded
+}
+
+func overwrite[T comparable](changed changeDetector, flagName string, dst *T, src T) {
 	empty := new(T)
-	if src != *empty && (fs.Changed(flagName) || *dst == *empty) {
+	if src != *empty && (changed(flagName) || *dst == *empty) {
 		*dst = src
 	}
 }
 
-func overwriteSlice[T comparable](fs *pflag.FlagSet, flagName string, dst *[]T, src []T) {
-	if len(src) > 0 && (fs.Changed(flagName) || len(*dst) == 0) {
+func overwriteSlice[T comparable](changed changeDetector, flagName string, dst *[]T, src []T) {
+	if len(src) > 0 && (changed(flagName) || len(*dst) == 0) {
 		*dst = src
 	}
 }

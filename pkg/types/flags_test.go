@@ -19,6 +19,7 @@ package types
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,4 +56,61 @@ func TestResolveKubeconfig(t *testing.T) {
 	actual, err = resolveKubeconfig(kubeconfig)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
+}
+
+func TestMergeConfigs(t *testing.T) {
+	testcases := []struct {
+		name          string
+		flagConfig    Configuration
+		loaded        Configuration
+		changedFields []string
+		expected      Configuration
+	}{
+		{
+			name:          "empty testcase",
+			flagConfig:    Configuration{},
+			loaded:        Configuration{},
+			changedFields: nil,
+			expected:      Configuration{},
+		},
+		{
+			name:          "no config, only --output-dir given",
+			flagConfig:    Configuration{OutputDir: "foo"},
+			loaded:        Configuration{},
+			changedFields: []string{"output-dir"},
+			expected:      Configuration{OutputDir: "foo"},
+		},
+		{
+			name:          "only load config from file",
+			flagConfig:    Configuration{},
+			loaded:        Configuration{OutputDir: "foo"},
+			changedFields: nil,
+			expected:      Configuration{OutputDir: "foo"},
+		},
+		{
+			name:          "CLI flag has priority over loaded config file",
+			flagConfig:    Configuration{OutputDir: "foo"},
+			loaded:        Configuration{OutputDir: "bar"},
+			changedFields: []string{"output-dir"},
+			expected:      Configuration{OutputDir: "foo"},
+		},
+		{
+			name:          "CLI flag has priority, but only if a non-empty value is given",
+			flagConfig:    Configuration{OutputDir: ""},
+			loaded:        Configuration{OutputDir: "bar"},
+			changedFields: []string{"output-dir"},
+			expected:      Configuration{OutputDir: "bar"},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			merged := mergeConfigs(func(flag string) bool {
+				return slices.Contains(tc.changedFields, flag)
+			}, &tc.flagConfig, &tc.loaded)
+
+			assert.NotNil(t, merged)
+			assert.Equal(t, tc.expected, *merged)
+		})
+	}
 }
