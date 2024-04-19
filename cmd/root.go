@@ -37,10 +37,11 @@ import (
 )
 
 var (
-	runCleanup       bool
-	runListImages    bool
-	runConformance   bool
-	conformanceFocus string
+	runCleanup          bool
+	runListImages       bool
+	runConformance      bool
+	continueConformance bool
+	conformanceFocus    string
 )
 
 func New() *cobra.Command {
@@ -73,6 +74,7 @@ func New() *cobra.Command {
 	rootCmd.Flags().BoolVar(&runCleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
 	rootCmd.Flags().BoolVar(&runListImages, "list-images", false, "list all images that will be used during conformance tests.")
 	rootCmd.Flags().BoolVar(&runConformance, "conformance", false, "run conformance tests.")
+	rootCmd.Flags().BoolVar(&continueConformance, "continue", false, "connect to an already running conformance test pod.")
 	rootCmd.Flags().StringVar(&conformanceFocus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 
 	rootCmd.MarkFlagsMutuallyExclusive("conformance", "focus", "cleanup", "list-images")
@@ -142,8 +144,12 @@ func action(ctx context.Context, config *types.Configuration) error {
 		verboseGinkgo := config.Verbosity >= 6
 		showSpinner := !verboseGinkgo && config.Verbosity > 2
 
-		if err := testRunner.Deploy(ctx, conformanceFocus, verboseGinkgo, config.StartupTimeout); err != nil {
-			return fmt.Errorf("failed to deploy tests: %w", err)
+		if continueConformance {
+			log.Println("Attempting to continue with already running tests...")
+		} else {
+			if err := testRunner.Deploy(ctx, conformanceFocus, verboseGinkgo, config.StartupTimeout); err != nil {
+				return fmt.Errorf("failed to deploy tests: %w", err)
+			}
 		}
 
 		before := time.Now()

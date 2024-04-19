@@ -38,6 +38,7 @@ Flags:
   -c, --config string               path to an optional base configuration file.
       --conformance                 run conformance tests.
       --conformance-image string    specify a conformance container image of your choice.
+      --continue                    connect to an already running conformance test pod.
       --dry-run                     run in dry run mode.
       --extra-args strings          Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)
       --extra-ginkgo-args strings   Additional parameters to be provided to Ginkgo runner. This flag has the same format as --extra-args.
