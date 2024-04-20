@@ -55,6 +55,33 @@ Flags:
   -v, --verbosity int               verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag). (default 4)
 ```
 
+## Configuration
+
+`hydrophone` can be configured using solely the command line or by providing a configuration file. It's also possible to give both, in which case CLI arguments take priority to values loaded from a configuration file.
+
+Configuration files are YAML and contain most of the CLI flags, with names camelCased:
+
+```yaml
+busyboxImage: "..."
+conformanceImage: "..."
+dryRun: false
+extraArgs:
+  - "--example=flag"
+  - "--enable-thing=true" # just "--enable-thing" would be invalid
+extraGinkgoArgs: []
+kubeconfig: "..."
+namespace: "..."
+outputDir: "..."
+parallel: 1
+skip: "..."
+startupTimeout: 5m # must be a valid Go duration expression, like 5m or 30s
+testRepo: "..."
+testRepoList: "..."
+verbosity: 4
+```
+
+The flags affecting the current run mode (`--conformance`, `--focus`, `--cleanup` and `--list-images`) are not part of the configuration file.
+
 ## Run
 
 Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone` Alternatively, you can specify the path to the kubeconfig file with the `--kubeconfig` option.
