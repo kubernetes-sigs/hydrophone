@@ -23,11 +23,19 @@ KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 cd "${KUBE_ROOT}"
 
 LINT=${LINT:-golangci-lint}
+VERSION=1.57.2
 
 if [[ -z "$(command -v ${LINT})" ]]; then
-  echo "${LINT} is missing. Installing it now."
-  go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.2 >/dev/null 2>&1
+  echo "${LINT} is missing. Installing it now..."
+
   LINT=$(go env GOPATH)/bin/golangci-lint
+  mkdir -p "$(dirname "$LINT")"
+
+  base="golangci-lint-$VERSION-$(go env GOOS)-$(go env GOARCH)"
+  curl --fail -L https://github.com/golangci/golangci-lint/releases/download/v$VERSION/$base.tar.gz | tar xzOf - "$base/golangci-lint" > $LINT
+  chmod +x $LINT
+
+  echo "$(basename $LINT) v$VERSION is now set up."
 fi
 
 ${LINT} run
