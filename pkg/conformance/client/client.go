@@ -14,15 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package client
 
 import (
-	"sigs.k8s.io/hydrophone/cmd"
-	"sigs.k8s.io/hydrophone/pkg/log"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
-func main() {
-	if err := cmd.New().Execute(); err != nil {
-		log.Fatalf("Error: %v.", err)
+// Client is used to retrieve conformance test logs, results and status information.
+type Client struct {
+	config    *rest.Config
+	clientset *kubernetes.Clientset
+	namespace string
+}
+
+func NewClient(config *rest.Config, clientset *kubernetes.Clientset, namespace string) *Client {
+	return &Client{
+		config:    config,
+		clientset: clientset,
+		namespace: namespace,
 	}
 }

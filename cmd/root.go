@@ -17,213 +17,203 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
-	"sigs.k8s.io/hydrophone/pkg/client"
 	"sigs.k8s.io/hydrophone/pkg/common"
+	"sigs.k8s.io/hydrophone/pkg/conformance"
+	"sigs.k8s.io/hydrophone/pkg/conformance/client"
 	"sigs.k8s.io/hydrophone/pkg/log"
-	"sigs.k8s.io/hydrophone/pkg/service"
+	"sigs.k8s.io/hydrophone/pkg/types"
 
-	"github.com/adrg/xdg"
+	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
-	cfgFile          string
-	kubeconfig       string
-	parallel         int
-	verbosity        int
-	outputDir        string
-	cleanup          bool
-	listImages       bool
-	conformance      bool
-	focus            string
-	skip             string
-	conformanceImage string
-	busyboxImage     string
-	namespace        string
-	dryRun           bool
-	testRepoList     string
-	testRepo         string
+	runCleanup       bool
+	runListImages    bool
+	runConformance   bool
+	conformanceFocus string
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "hydrophone",
-	Short: "Hydrophone is a lightweight runner for Kubernetes tests.",
-	Long:  `Hydrophone is a lightweight runner for Kubernetes tests.`,
-	Run: func(cmd *cobra.Command, _ []string) {
-		ctx := cmd.Context()
+func New() *cobra.Command {
+	var (
+		rootCmd *cobra.Command
+		config  types.Configuration
+	)
 
-		client := client.NewClient()
-		config, clientSet, err := service.Init(viper.GetString("kubeconfig"))
-		if err != nil {
-			log.Fatalf("Failed to init kube client: %v.", err)
-		}
-
-		client.ClientSet = clientSet
-		err = common.SetDefaults(client.ClientSet, config)
-		if err != nil {
-			log.Fatalf("Failed to apply default values: %v.", err)
-		}
-
-		if cleanup {
-			if err := service.Cleanup(ctx, client.ClientSet); err != nil {
-				log.Fatalf("Failed to cleanup: %v.", err)
-			}
-		} else if listImages {
-			if err := service.PrintListImages(ctx, client.ClientSet); err != nil {
-				log.Fatalf("Failed to list images: %v.", err)
-			}
-		} else {
-			if err := common.ValidateConformanceArgs(); err != nil {
-				log.Fatalf("Invalid arguments: %v.", err)
+	rootCmd = &cobra.Command{
+		Use:   "hydrophone",
+		Short: "Hydrophone is a lightweight runner for Kubernetes tests.",
+		Long:  "Hydrophone is a lightweight runner for Kubernetes tests.",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			effectiveConfig, err := config.Complete(rootCmd.Flags())
+			if err != nil {
+				_ = rootCmd.Usage()
+				return err
 			}
 
-			verboseGinkgo := verbosity >= 6
-			showSpinner := !verboseGinkgo && verbosity > 2
-
-			if err := service.RunE2E(ctx, client.ClientSet, verboseGinkgo); err != nil {
-				log.Fatalf("Failed to run tests: %v.", err)
-			}
-
-			before := time.Now()
-
-			var spinner *common.Spinner
-			if showSpinner {
-				spinner = common.NewSpinner(os.Stdout)
-				spinner.Start()
-			}
-
-			// PrintE2ELogs is a long running method
-			if err := client.PrintE2ELogs(ctx); err != nil {
-				log.Fatalf("Failed to get test logs: %v.", err)
-			}
-
-			if showSpinner {
-				spinner.Stop()
-			}
-
-			log.Printf("Tests finished after %v.", time.Since(before).Round(time.Second))
-
-			if err := client.FetchFiles(ctx, config, clientSet, viper.GetString("output-dir")); err != nil {
-				log.Fatalf("Failed to download results: %v.", err)
-			}
-			if err := client.FetchExitCode(ctx); err != nil {
-				log.Fatalf("Failed to determine exit code: %v.", err)
-			}
-			if err := service.Cleanup(ctx, client.ClientSet); err != nil {
-				log.Fatalf("Failed to cleanup: %v.", err)
-			}
-
-			if client.ExitCode == 0 {
-				log.Println("Tests completed successfully.")
-			} else {
-				log.Printf("Tests failed (code %d).", client.ExitCode)
-				os.Exit(client.ExitCode)
-			}
-		}
-	},
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func init() {
-	workingDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
+			return action(cmd.Context(), effectiveConfig)
+		},
+		SilenceErrors: true,
+		SilenceUsage:  true,
 	}
 
-	cobra.OnInitialize(initConfig)
+	config = types.NewDefaultConfiguration()
+	config.AddFlags(rootCmd.Flags())
 
-	rootCmd.Flags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (defaults to %s/hydrophone.yaml).", xdg.ConfigHome))
-	rootCmd.Flags().StringVar(&kubeconfig, "kubeconfig", "", "path to the kubeconfig file.")
-
-	rootCmd.Flags().IntVar(&parallel, "parallel", 1, "number of parallel threads in test framework (automatically sets the --nodes Ginkgo flag).")
-	must(viper.BindPFlag("parallel", rootCmd.Flags().Lookup("parallel")))
-
-	rootCmd.Flags().IntVar(&verbosity, "verbosity", 4, "verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag).")
-	must(viper.BindPFlag("verbosity", rootCmd.Flags().Lookup("verbosity")))
-
-	rootCmd.Flags().StringVar(&outputDir, "output-dir", workingDir, "directory for logs.")
-	must(viper.BindPFlag("output-dir", rootCmd.Flags().Lookup("output-dir")))
-
-	rootCmd.Flags().BoolVar(&cleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
-
-	rootCmd.Flags().BoolVar(&listImages, "list-images", false, "list all images that will be used during conformance tests.")
-
-	rootCmd.Flags().BoolVar(&conformance, "conformance", false, "run conformance tests.")
-
-	rootCmd.Flags().StringVar(&focus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
-	must(viper.BindPFlag("focus", rootCmd.Flags().Lookup("focus")))
-
-	rootCmd.Flags().StringVar(&skip, "skip", "", "skip specific tests. allows regular expressions.")
-	must(viper.BindPFlag("skip", rootCmd.Flags().Lookup("skip")))
-
-	rootCmd.Flags().StringVar(&conformanceImage, "conformance-image", "", "specify a conformance container image of your choice.")
-	must(viper.BindPFlag("conformance-image", rootCmd.Flags().Lookup("conformance-image")))
-
-	rootCmd.Flags().StringVar(&busyboxImage, "busybox-image", "", "specify an alternate busybox container image.")
-	must(viper.BindPFlag("busybox-image", rootCmd.Flags().Lookup("busybox-image")))
-
-	rootCmd.Flags().StringVar(&namespace, "namespace", "", "the namespace where the conformance pod is created.")
-	must(viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace")))
-
-	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "run in dry run mode.")
-	must(viper.BindPFlag("dry-run", rootCmd.Flags().Lookup("dry-run")))
-
-	rootCmd.Flags().StringVar(&testRepoList, "test-repo-list", "", "yaml file to override registries for test images.")
-	must(viper.BindPFlag("test-repo-list", rootCmd.Flags().Lookup("test-repo-list")))
-
-	rootCmd.Flags().StringVar(&testRepo, "test-repo", "", "skip specific tests. allows regular expressions.")
-	must(viper.BindPFlag("test-repo", rootCmd.Flags().Lookup("test-repo")))
-
-	rootCmd.Flags().StringSlice("extra-args", []string{}, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)")
-	must(viper.BindPFlag("extra-args", rootCmd.Flags().Lookup("extra-args")))
-
-	rootCmd.Flags().StringSlice("extra-ginkgo-args", []string{}, "Additional parameters to be provided to Ginkgo runner. This flag has the same format as --extra-args.")
-	must(viper.BindPFlag("extra-ginkgo-args", rootCmd.Flags().Lookup("extra-ginkgo-args")))
+	// the different ways to run hydrophone are not part of the configuration file
+	rootCmd.Flags().BoolVar(&runCleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
+	rootCmd.Flags().BoolVar(&runListImages, "list-images", false, "list all images that will be used during conformance tests.")
+	rootCmd.Flags().BoolVar(&runConformance, "conformance", false, "run conformance tests.")
+	rootCmd.Flags().StringVar(&conformanceFocus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 
 	rootCmd.MarkFlagsMutuallyExclusive("conformance", "focus", "cleanup", "list-images")
+
+	return rootCmd
 }
 
-func initConfig() {
-	// Don't forget to read config either from cfgFile or from home directory!
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// the config will be located under `~/.config/hydrophone.yaml` on linux
-		configDir := xdg.ConfigHome
-		viper.AddConfigPath(configDir)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName("hydrophone")
+func action(ctx context.Context, config *types.Configuration) error {
+	if err := os.MkdirAll(config.OutputDir, 0o755); err != nil {
+		return fmt.Errorf("error creating output directory: %w", err)
+	}
 
-		if err := viper.ReadInConfig(); err != nil {
-			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-				err := viper.SafeWriteConfig()
-				if err != nil {
-					log.Fatal("Error:", err)
-				}
-			} else {
-				log.Fatal(err)
-			}
+	restConfig, err := clientcmd.BuildConfigFromFlags("", config.Kubeconfig)
+	if err != nil {
+		return fmt.Errorf("error loading kubeconfig: %w", err)
+	}
+
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return fmt.Errorf("error getting config client: %w", err)
+	}
+
+	// some defaults can only be applied after we connected to the cluster
+	config, serverVersion, err := applyClusterDefaults(config, clientset)
+	if err != nil {
+		return fmt.Errorf("error applying cluster configuration: %w", err)
+	}
+
+	// print effective runtime config before we begin
+	log.Printf("API endpoint: %s", restConfig.Host)
+	log.Printf("Server version: %#v", *serverVersion)
+	log.Printf("Using namespace: %s", config.Namespace)
+	log.Printf("Using conformance image: %s", config.ConformanceImage)
+	log.Printf("Using busybox image: %s", config.BusyboxImage)
+
+	if config.Skip != "" {
+		log.Printf("Skipping tests: %s", config.Skip)
+	}
+
+	if config.DryRun {
+		log.Println("Dry-run enabled.")
+	}
+
+	log.Printf("Test framework will start %d thread(s) and use verbosity level %d.", config.Parallel, config.Verbosity)
+
+	// prepare test runner and the client to monitor it
+	testRunner := conformance.NewTestRunner(*config, clientset)
+	testClient := client.NewClient(restConfig, clientset, config.Namespace)
+
+	switch {
+	case runCleanup:
+		if err := testRunner.Cleanup(ctx); err != nil {
+			return fmt.Errorf("failed to cleanup: %w", err)
+		}
+
+	case runListImages:
+		if err := testRunner.PrintListImages(ctx, config.StartupTimeout); err != nil {
+			return fmt.Errorf("failed to list images: %w", err)
+		}
+
+	default:
+		// `hydrophone --conformance` is an alias for `hydrophone --focus '\[Conformance\]'`
+		if conformanceFocus == "" {
+			conformanceFocus = `\[Conformance\]`
+		}
+
+		verboseGinkgo := config.Verbosity >= 6
+		showSpinner := !verboseGinkgo && config.Verbosity > 2
+
+		if err := testRunner.Deploy(ctx, conformanceFocus, verboseGinkgo, config.StartupTimeout); err != nil {
+			return fmt.Errorf("failed to deploy tests: %w", err)
+		}
+
+		before := time.Now()
+
+		var spinner *common.Spinner
+		if showSpinner {
+			spinner = common.NewSpinner(os.Stdout)
+			spinner.Start()
+		}
+
+		// PrintE2ELogs is a long running method
+		if err := testClient.PrintE2ELogs(ctx); err != nil {
+			return fmt.Errorf("failed to get test logs: %w", err)
+		}
+
+		if showSpinner {
+			spinner.Stop()
+		}
+
+		log.Printf("Tests finished after %v.", time.Since(before).Round(time.Second))
+
+		if err := testClient.FetchFiles(ctx, config.OutputDir); err != nil {
+			return fmt.Errorf("failed to download results: %w", err)
+		}
+
+		exitCode, err := testClient.FetchExitCode(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to determine exit code: %w", err)
+		}
+
+		if err := testRunner.Cleanup(ctx); err != nil {
+			return fmt.Errorf("failed to cleanup: %w", err)
+		}
+
+		if exitCode == 0 {
+			log.Println("Tests completed successfully.")
+		} else {
+			log.Errorf("Tests failed (code %d).", exitCode)
+			os.Exit(exitCode)
 		}
 	}
-	kubeconfig = service.GetKubeConfig(kubeconfig)
-	viper.Set("kubeconfig", kubeconfig)
+
+	return nil
 }
 
-func must(err error) {
+func applyClusterDefaults(config *types.Configuration, clientset *kubernetes.Clientset) (*types.Configuration, *version.Info, error) {
+	serverVersion, err := clientset.ServerVersion()
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, fmt.Errorf("failed fetching server version: %w", err)
 	}
+
+	normalized, err := normalizeVersion(serverVersion.String())
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed parsing server version: %w", err)
+	}
+
+	if config.ConformanceImage == "" {
+		config.ConformanceImage = fmt.Sprintf("registry.k8s.io/conformance:%s", normalized)
+	}
+
+	return config, serverVersion, nil
+}
+
+func normalizeVersion(ver string) (string, error) {
+	ver = strings.TrimPrefix(ver, "v")
+
+	parsedVersion, err := semver.Parse(ver)
+	if err != nil {
+		return "", fmt.Errorf("error parsing conformance image tag: %w", err)
+	}
+
+	return "v" + parsedVersion.FinalizeVersion(), nil
 }

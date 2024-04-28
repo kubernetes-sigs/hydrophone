@@ -21,23 +21,54 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
+
+	"sigs.k8s.io/hydrophone/pkg/conformance"
+	"sigs.k8s.io/hydrophone/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-func downloadFile(ctx context.Context, config *rest.Config, clientset *kubernetes.Clientset,
-	namespace, podName, containerName, filePath string,
-	writer io.Writer) error {
+// FetchFiles downloads the e2e.log and junit_01.xml files from the pod
+// and writes them to the output directory.
+func (c *Client) FetchFiles(ctx context.Context, outputDir string) error {
+	if err := c.fetchFile(ctx, outputDir, "e2e.log"); err != nil {
+		return err
+	}
+
+	if err := c.fetchFile(ctx, outputDir, "junit_01.xml"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// FetchFiles downloads a single file from the output container to the local machine.
+func (c *Client) fetchFile(ctx context.Context, outputDir, filename string) error {
+	dest := filepath.Join(outputDir, filename)
+	log.Printf("Downloading %s to %s...", filename, dest)
+
+	localFile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer localFile.Close()
+
+	containerFile := "/tmp/results/" + filename
+
+	return c.downloadFile(ctx, conformance.PodName, conformance.OutputContainer, containerFile, localFile)
+}
+
+func (c *Client) downloadFile(ctx context.Context, podName, containerName, filePath string, writer io.Writer) error {
 	// Create an exec request
-	req := clientset.CoreV1().RESTClient().Post().
+	req := c.clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
-		Namespace(namespace).
+		Namespace(c.namespace).
 		SubResource("exec").
 		Param("container", containerName)
 
@@ -55,7 +86,7 @@ func downloadFile(ctx context.Context, config *rest.Config, clientset *kubernete
 	req.VersionedParams(option, parameterCodec)
 
 	// Create an executor
-	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	exec, err := remotecommand.NewSPDYExecutor(c.config, "POST", req.URL())
 	if err != nil {
 		return err
 	}

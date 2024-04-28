@@ -14,13 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package common
+package conformance
 
 const (
-	// busyboxImage is the image used to extract the e2e logs
-	busyboxImage = "registry.k8s.io/e2e-test-images/busybox:1.36.1-1"
-	// DefaultNamespace is the default namespace where the conformance pod is created
-	DefaultNamespace = "conformance"
 	// PodName is the name of the conformance pod
 	PodName = "e2e-conformance-test"
 	// ClusterRoleBindingName is the name of the cluster role binding

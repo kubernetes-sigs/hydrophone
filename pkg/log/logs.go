@@ -39,14 +39,24 @@ func init() {
 
 // Fatal logs an error message from the given arguments and exits the program.
 func Fatal(v ...any) {
-	slog.Error(fmt.Sprint(v...))
+	Error(v...)
 	os.Exit(1)
 }
 
 // Fatalf logs an error message with formatted output and exits the program.
 func Fatalf(format string, v ...any) {
-	slog.Error(fmt.Sprintf(format, v...))
+	Errorf(format, v...)
 	os.Exit(1)
+}
+
+// Error logs an error message from the given arguments.
+func Error(v ...any) {
+	slog.Error(fmt.Sprint(v...))
+}
+
+// Errorf logs an error message with formatted output.
+func Errorf(format string, v ...any) {
+	slog.Error(fmt.Sprintf(format, v...))
 }
 
 // Printf logs an info message with formatted output.
