@@ -20,6 +20,46 @@ namespace, waits for it to finish and then prints out the results.
 - **Broad Tool Integration**: Limited integration with third-party tools; maintains simplicity.
 
 
+## Getting Started
+
+### Prerequisites
+
+Ensure you have Go installed on your system and the `GOPATH` is set. You will also need access to a Kubernetes cluster.
+
+### Install
+
+Install Hydrophone using the following command:
+
+```bash
+$ go install sigs.k8s.io/hydrophone@latest
+```
+
+Alternatively you can download the latest release from the [releases page](https://github.com/kubernetes-sigs/hydrophone/releases)
+
+### Running Tests
+
+
+Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone` Alternatively, you can specify the path to the kubeconfig file with the `--kubeconfig` option.
+
+To run conformance tests use:
+
+```bash
+$ bin/hydrophone --conformance
+```
+
+To run a specific test use:
+
+```bash
+$ bin/hydrophone --focus 'Simple pod should contain last line of the log'
+```
+
+To specify a version of conformance image use:
+
+```bash
+$ bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.29.0'
+```
+
+
 ## Community
 
 Please reach out for bugs, feature requests, and other issues!
