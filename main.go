@@ -22,6 +22,8 @@ import (
 )
 
 func main() {
+	log.SetDefaultLogger()
+
 	if err := cmd.New().Execute(); err != nil {
 		log.Fatalf("Error: %v.", err)
 	}
