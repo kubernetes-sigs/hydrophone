@@ -26,8 +26,8 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
-func init() {
-	// set global logger with custom options
+// SetDefaultLogger set global logger with custom options.
+func SetDefaultLogger() {
 	slog.SetDefault(slog.New(
 		tint.NewHandler(os.Stderr, &tint.Options{
 			Level:      slog.LevelDebug,
