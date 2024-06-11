@@ -26,7 +26,6 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 )
@@ -48,8 +47,8 @@ func (c *Client) PrintE2ELogs(ctx context.Context) error {
 		return fmt.Errorf("failed to add event handler: %w", err)
 	}
 
-	informerFactory.Start(wait.NeverStop)
-	informerFactory.WaitForCacheSync(wait.NeverStop)
+	informerFactory.Start(ctx.Done())
+	informerFactory.WaitForCacheSync(ctx.Done())
 
 	for {
 		pod, _ := podInformer.Lister().Pods(c.namespace).Get(conformance.PodName)
