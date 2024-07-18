@@ -60,3 +60,43 @@ release:
   draft: true
   prerelease: false
   name_template: "v{{.Version}}"
+  
+brews:
+  -
+    # Name of the recipe
+    #
+    # Default: ProjectName
+    # Templates: allowed
+    name: hydrophone
+    url_template: "https://github.com/kubernetes-sigs/hydrophone/archive/refs/tags/{{ .Tag }}/{{ .ArtifactName }}"
+    url_headers:
+      - "Accept: application/octet-stream"
+      - 'Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}'
+
+    # Allows you to set a custom download strategy. Note that you'll need
+    # to implement the strategy and add it to your tap repository.
+    # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
+    download_strategy: CurlDownloadStrategy
+
+    # The project name and current git tag are used in the format string.
+    #
+    # Templates: allowed
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+
+    # Directory inside the repository to put the formula.
+    directory: Formula
+    homepage: "https://github.com/kubernetes-sigs/hydrophone"
+    description: "Lightweight Kubernetes conformance tests runner"
+    dependencies:
+      - name: go
+    test: |
+      assert_match "Hydrophone is a lightweight runner for kubernetes tests", shell_output("#{bin}/hydrophone --help")
+
+    install: |
+      system "go", "build", *std_go_args(ldflags: "-s -w")
+
+    # Repository to push the generated files to.
+    repository:
+      owner: kubernetes-sigs
+      name: hydrophone
+      branch: main
