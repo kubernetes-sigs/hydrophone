@@ -38,7 +38,7 @@ func (c *Configuration) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&c.Namespace, "namespace", "n", c.Namespace, "the namespace where the conformance pod is created.")
 	fs.BoolVar(&c.DryRun, "dry-run", c.DryRun, "run in dry run mode.")
 	fs.StringVar(&c.TestRepoList, "test-repo-list", c.TestRepoList, "yaml file to override registries for test images.")
-	fs.StringVar(&c.TestRepo, "test-repo", c.TestRepo, "skip specific tests. allows regular expressions.")
+	fs.StringVar(&c.TestRepo, "test-repo", c.TestRepo, "registry for pulling Kubernetes test images.")
 	fs.DurationVar(&c.StartupTimeout, "startup-timeout", c.StartupTimeout, "max time to wait for the conformance test pod to start up.")
 	fs.StringSliceVar(&c.ExtraArgs, "extra-args", c.ExtraArgs, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)")
 	fs.StringSliceVar(&c.ExtraGinkgoArgs, "extra-ginkgo-args", c.ExtraGinkgoArgs, "Additional parameters to be provided to Ginkgo runner. This flag has the same format as --extra-args.")
