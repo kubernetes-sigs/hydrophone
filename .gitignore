@@ -2,6 +2,7 @@ vendor/
 bin/
 e2e.log
 junit_01.xml
+settings.json
 
 dist/
 
