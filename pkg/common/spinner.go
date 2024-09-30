@@ -19,6 +19,7 @@ package common
 import (
 	"fmt"
 	"io"
+	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -55,7 +56,16 @@ func NewSpinner(w io.Writer) *Spinner {
 	}
 }
 
+func isCIEnvironment() bool {
+	return os.Getenv("CI") != "" || os.Getenv("GITHUB_ACTIONS") != ""
+}
+
 func (s *Spinner) Start() {
+	if isCIEnvironment() {
+		fmt.Println("CI/CD environment detected; skipping spinner.")
+		return
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.running {
