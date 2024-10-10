@@ -23,6 +23,8 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"golang.org/x/term"
 )
 
 var spinnerFrames = []string{
@@ -56,18 +58,14 @@ func NewSpinner(w io.Writer) *Spinner {
 	}
 }
 
-func isCIEnvironment() bool {
-	return os.Getenv("CI") != "" || os.Getenv("GITHUB_ACTIONS") != ""
-}
-
 func (s *Spinner) Start() {
-	if isCIEnvironment() {
-		fmt.Println("CI/CD environment detected; skipping spinner.")
-		return
-	}
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if !term.IsTerminal(int(os.Stderr.Fd())){
+		return
+	}
+	
 	if s.running {
 		return
 	}
