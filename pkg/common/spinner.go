@@ -19,9 +19,12 @@ package common
 import (
 	"fmt"
 	"io"
+	"os"
 	"runtime"
 	"sync"
 	"time"
+
+	"golang.org/x/term"
 )
 
 var spinnerFrames = []string{
@@ -58,6 +61,11 @@ func NewSpinner(w io.Writer) *Spinner {
 func (s *Spinner) Start() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if !term.IsTerminal(int(os.Stderr.Fd())) {
+		return
+	}
+
 	if s.running {
 		return
 	}
