@@ -62,10 +62,10 @@ func (s *Spinner) Start() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !term.IsTerminal(int(os.Stderr.Fd())){
+	if !term.IsTerminal(int(os.Stderr.Fd())) {
 		return
 	}
-	
+
 	if s.running {
 		return
 	}
