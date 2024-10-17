@@ -19,6 +19,7 @@ package conformance
 import (
 	"context"
 	"fmt"
+	"k8s.io/utils/ptr"
 	"os"
 	"strings"
 	"time"
@@ -158,6 +159,18 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 							MountPath: "/tmp/results",
 						},
 					},
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: ptr.To(false),
+						Capabilities: &corev1.Capabilities{
+							Drop: []corev1.Capability{
+								"ALL",
+							},
+						},
+						RunAsNonRoot: ptr.To(true),
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: corev1.SeccompProfileTypeRuntimeDefault,
+						},
+					},
 				},
 				{
 					Name:    OutputContainer,
@@ -167,6 +180,18 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 						{
 							Name:      "output-volume",
 							MountPath: "/tmp/results",
+						},
+					},
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: ptr.To(false),
+						Capabilities: &corev1.Capabilities{
+							Drop: []corev1.Capability{
+								"ALL",
+							},
+						},
+						RunAsNonRoot: ptr.To(true),
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: corev1.SeccompProfileTypeRuntimeDefault,
 						},
 					},
 				},
