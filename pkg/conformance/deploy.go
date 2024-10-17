@@ -19,10 +19,11 @@ package conformance
 import (
 	"context"
 	"fmt"
-	"k8s.io/utils/ptr"
 	"os"
 	"strings"
 	"time"
+
+	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/hydrophone/pkg/common"
 	"sigs.k8s.io/hydrophone/pkg/log"
