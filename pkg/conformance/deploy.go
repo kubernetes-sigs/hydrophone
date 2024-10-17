@@ -170,6 +170,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 						SeccompProfile: &corev1.SeccompProfile{
 							Type: corev1.SeccompProfileTypeRuntimeDefault,
 						},
+						RunAsUser: ptr.To(int64(65534)),
 					},
 				},
 				{
@@ -193,6 +194,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 						SeccompProfile: &corev1.SeccompProfile{
 							Type: corev1.SeccompProfileTypeRuntimeDefault,
 						},
+						RunAsUser: ptr.To(int64(65534)),
 					},
 				},
 			},
