@@ -20,7 +20,7 @@ HYDROPHONE_ROOT=$(git rev-parse --show-toplevel)
 echo "HYDROPHONE_ROOT: $HYDROPHONE_ROOT"
 
 pushd "${HYDROPHONE_ROOT}" >/dev/null
-  go mod edit -json | jq -r ".Require[] | .Path | select(contains(\"k8s.io/\"))" | xargs xargs -L1 go get -d
+  go mod edit -json | jq -r ".Require[] | .Path | select(contains(\"k8s.io/\"))" | xargs -L1 go get -d
   go mod tidy
 
   K8S_VERSION=$(curl https://cdn.dl.k8s.io/release/stable.txt -s)
