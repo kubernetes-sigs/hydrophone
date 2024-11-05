@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/utils/ptr"
+
 	"sigs.k8s.io/hydrophone/pkg/common"
 	"sigs.k8s.io/hydrophone/pkg/log"
 
@@ -158,6 +160,19 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 							MountPath: "/tmp/results",
 						},
 					},
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: ptr.To(false),
+						Capabilities: &corev1.Capabilities{
+							Drop: []corev1.Capability{
+								"ALL",
+							},
+						},
+						RunAsNonRoot: ptr.To(true),
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: corev1.SeccompProfileTypeRuntimeDefault,
+						},
+						RunAsUser: ptr.To(int64(65534)),
+					},
 				},
 				{
 					Name:    OutputContainer,
@@ -168,6 +183,19 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 							Name:      "output-volume",
 							MountPath: "/tmp/results",
 						},
+					},
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: ptr.To(false),
+						Capabilities: &corev1.Capabilities{
+							Drop: []corev1.Capability{
+								"ALL",
+							},
+						},
+						RunAsNonRoot: ptr.To(true),
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: corev1.SeccompProfileTypeRuntimeDefault,
+						},
+						RunAsUser: ptr.To(int64(65534)),
 					},
 				},
 			},
