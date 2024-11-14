@@ -35,7 +35,7 @@ import (
 )
 
 // Deploy sets up the necessary resources and runs E2E conformance tests.
-func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo bool, timeout time.Duration) error {
+func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, verboseGinkgo bool, timeout time.Duration) error {
 	conformanceNS := corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: r.config.Namespace,
@@ -223,46 +223,66 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 	ns, err := r.clientset.CoreV1().Namespaces().Create(ctx, &conformanceNS, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			//nolint:stylecheck // error message references a Kubernetes resource type.
-			err = fmt.Errorf("Namespace %s already exist, please run --cleanup first", conformanceNS.Name)
+			if skipPreflight != "" {
+				log.Printf("Using existing namespace: %s", r.config.Namespace)
+			} else {
+				//nolint:stylecheck // error message references a Kubernetes resource type.
+				return fmt.Errorf("namespace %s already exists, please run with --cleanup first", conformanceNS.Name)
+			}
+		} else {
+			return fmt.Errorf("failed to create namespace: %w", err)
 		}
-
-		return err
+	} else {
+		log.Printf("Created namespace %s.", ns.Name)
 	}
-	log.Printf("Created Namespace %s.", ns.Name)
 
-	sa, err := r.clientset.CoreV1().ServiceAccounts(ns.Name).Create(ctx, &conformanceSA, metav1.CreateOptions{})
+	sa, err := r.clientset.CoreV1().ServiceAccounts(r.config.Namespace).Create(ctx, &conformanceSA, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			//nolint:stylecheck // error message references a Kubernetes resource type.
-			err = fmt.Errorf("ServiceAccount %s already exist, please run --cleanup first", conformanceSA.Name)
+			if skipPreflight != "" {
+				log.Printf("using existing ServiceAccount: %s/%s", r.config.Namespace, ServiceAccountName)
+			} else {
+				//nolint:stylecheck // error message references a Kubernetes resource type.
+				return fmt.Errorf("ServiceAccount %s already exist, please run --cleanup first", conformanceSA.Name)
+			}
+		} else {
+			return fmt.Errorf("failed to create ServiceAccount: %w", err)
 		}
-
-		return err
+	} else {
+		log.Printf("Created ServiceAccount %s.", sa.Name)
 	}
-	log.Printf("Created ServiceAccount %s.", sa.Name)
 
 	clusterRole, err := r.clientset.RbacV1().ClusterRoles().Create(ctx, &conformanceClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			//nolint:stylecheck // error message references a Kubernetes resource type.
-			err = fmt.Errorf("ClusterRole %s already exist, please run --cleanup first", conformanceClusterRole.Name)
+			if skipPreflight != "" {
+				log.Printf("using existing ClusterRole: %s/%s", r.config.Namespace, r.namespacedName(ClusterRoleName))
+			} else {
+				//nolint:stylecheck // error message references a Kubernetes resource type.
+				return fmt.Errorf("ClusterRole %s already exist, please run --cleanup first", conformanceClusterRole.Name)
+			}
+		} else {
+			return fmt.Errorf("failed to create ClusterRole: %w", err)
 		}
-
-		return err
+	} else {
+		log.Printf("Created ClusterRole %s.", clusterRole.Name)
 	}
-	log.Printf("Created Clusterrole %s.", clusterRole.Name)
 
 	clusterRoleBinding, err := r.clientset.RbacV1().ClusterRoleBindings().Create(ctx, &conformanceClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			//nolint:stylecheck // error message references a Kubernetes resource type.
-			err = fmt.Errorf("ClusterRoleBinding %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
+			if skipPreflight != "" {
+				log.Printf("using existing ClusterRoleBinding: %s/%s", r.config.Namespace, r.namespacedName(ClusterRoleBindingName))
+			} else {
+				//nolint:stylecheck // error message references a Kubernetes resource type.
+				return fmt.Errorf("ClusterRoleBinding %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
+			}
+		} else {
+			return fmt.Errorf("failed to create ClusterRoleBinding: %w", err)
 		}
-
-		return err
+	} else {
+		log.Printf("Created ClusterRoleBinding %s.", clusterRoleBinding.Name)
 	}
-	log.Printf("Created ClusterRoleBinding %s.", clusterRoleBinding.Name)
 
 	if filename := r.config.TestRepoList; filename != "" {
 		repoListData, err := os.ReadFile(filename)
@@ -326,11 +346,17 @@ func (r *TestRunner) Deploy(ctx context.Context, focus string, verboseGinkgo boo
 	pod, err := common.CreatePod(ctx, r.clientset, &conformancePod, timeout)
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
-			//nolint:stylecheck // error message references a Kubernetes resource type.
-			err = fmt.Errorf("Pod %s already exist, please run --cleanup first", pod.Name)
+			if skipPreflight != "" {
+				log.Printf("using existing Pod: %s/%s", r.config.Namespace, "e2e-conformance-test")
+			} else {
+				//nolint:stylecheck // error message references a Kubernetes resource type.
+				return fmt.Errorf("Pod %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
+			}
+		} else {
+			return fmt.Errorf("failed to create Pod: %w", err)
 		}
-
-		return err
+	} else {
+		log.Printf("Created ConformancePod %s.", pod.Name)
 	}
 
 	return nil
