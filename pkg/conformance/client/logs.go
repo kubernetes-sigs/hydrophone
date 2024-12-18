@@ -18,16 +18,22 @@ package client
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
 	"time"
 
 	"sigs.k8s.io/hydrophone/pkg/conformance"
 	"sigs.k8s.io/hydrophone/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 // Contains all the necessary channels to transfer data
@@ -60,7 +66,8 @@ func (c *Client) PrintE2ELogs(ctx context.Context) error {
 				doneCh: make(chan bool),
 			}
 
-			go c.streamPodLogs(ctx, stream)
+			go c.watchStatus(ctx, stream)
+			//go c.streamPodLogs(ctx, stream)
 
 		loop:
 			for {
@@ -81,6 +88,86 @@ func (c *Client) PrintE2ELogs(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// kubectl exec -n=conformance e2e-conformance-test -c output-container -- cat /tmp/results/e2e.log | grep -o "•" | wc -l
+func (c *Client) watchStatus(ctx context.Context, stream streamLogs) {
+	for {
+
+		cmd := []string{
+			"sh",
+			"-c",
+			"cat /tmp/results/e2e.log",
+		}
+		req := c.clientset.CoreV1().RESTClient().Post().
+			Resource("pods").
+			Name(conformance.PodName).
+			Namespace(c.namespace).
+			SubResource("exec").
+			Param("container", conformance.ConformanceContainer)
+
+		scheme := runtime.NewScheme()
+		if err := corev1.AddToScheme(scheme); err != nil {
+			return
+		}
+		// Configure exec options
+		option := &corev1.PodExecOptions{
+			Stdout:  true,
+			Stderr:  true,
+			Command: cmd,
+		}
+		parameterCodec := runtime.NewParameterCodec(scheme)
+		req.VersionedParams(option, parameterCodec)
+
+		// Create an executor
+		exec, err := remotecommand.NewSPDYExecutor(c.config, "POST", req.URL())
+		if err != nil {
+			stream.doneCh <- true
+		}
+
+		// Stream the file content from the container to the writer
+		var stderr, stdout bytes.Buffer
+
+		err = exec.StreamWithContext(
+			ctx,
+			remotecommand.StreamOptions{
+				Stdout: &stdout,
+				Stderr: &stderr,
+			})
+		if err != nil {
+			stream.doneCh <- true
+		}
+
+		reStartLine := regexp.MustCompile(`Will run (0|[1-9]\d{0,3}|10000) of (0|[1-9]\d{0,3}|10000) specs`)
+
+		specs := reStartLine.FindStringSubmatch(strings.TrimSpace(stdout.String()))
+		if len(specs) < 1 {
+			fmt.Printf("Num %s\n", specs)
+			continue
+		}
+		totalTests, err := strconv.Atoi(specs[1])
+		if err != nil {
+			stream.errCh <- err
+		}
+
+		// Extract substring after that line
+		loc := reStartLine.FindStringIndex(strings.TrimSpace(stdout.String()))
+		if loc == nil {
+			stream.doneCh <- true
+		}
+		substringAfter := strings.TrimSpace(stdout.String())[loc[1]:]
+
+		// Count all "•" characters in the substring
+		reDots := regexp.MustCompile(`•`)
+		dots := reDots.FindAllString(substringAfter, -1)
+
+		if len(dots) >= totalTests {
+			stream.doneCh <- true
+		}
+
+		fmt.Printf(" Running test %d of %d", len(dots)+1, totalTests)
+		time.Sleep(time.Second)
+	}
 }
 
 // List pod resource with the given namespace
