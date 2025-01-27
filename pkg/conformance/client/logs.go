@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"sigs.k8s.io/hydrophone/pkg/conformance"
@@ -28,6 +29,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/utils/ptr"
 )
 
 // Contains all the necessary channels to transfer data
@@ -76,6 +78,10 @@ func (c *Client) PrintE2ELogs(ctx context.Context) error {
 					break loop
 				}
 			}
+			if c.testsAreStillRunning(ctx) {
+				log.Println("Tests are still running, restarting stream")
+				continue
+			}
 			break
 		}
 	}
@@ -104,4 +110,44 @@ func (c *Client) streamPodLogs(ctx context.Context, stream streamLogs) {
 		stream.logCh <- line + "\n"
 	}
 	stream.doneCh <- true
+}
+
+// Tries to determine whether the ginkgo test suite has completed already. Returns false also in case streaming of logs fails over the period of a minute
+func (c *Client) testsAreStillRunning(ctx context.Context) bool {
+	reFinishedLine := regexp.MustCompile(`Ginkgo ran (00|[1-9]\d{0,2}) suite`)
+
+	podLogOpts := corev1.PodLogOptions{
+		Container: conformance.ConformanceContainer,
+		Follow:    false,
+		TailLines: ptr.To(int64(30)),
+	}
+
+	for i := 0; i < 6; i++ {
+		finished, err := func() (bool, error) {
+			req := c.clientset.CoreV1().Pods(c.namespace).GetLogs(conformance.PodName, &podLogOpts)
+			podLogs, err := req.Stream(ctx)
+			if err != nil {
+				return false, err
+			}
+			defer podLogs.Close()
+
+			logReader := bufio.NewScanner(podLogs)
+			for logReader.Scan() {
+				line := logReader.Text()
+				if reFinishedLine.MatchString(line) {
+					return true, nil
+				}
+			}
+			return false, nil
+		}()
+
+		if err != nil {
+			time.Sleep(10 * time.Second)
+			continue
+		}
+		if !finished {
+			return true
+		}
+	}
+	return false
 }
