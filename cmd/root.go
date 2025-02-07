@@ -41,6 +41,7 @@ var (
 	runListImages       bool
 	runConformance      bool
 	continueConformance bool
+	skipPreflight       string
 	conformanceFocus    string
 )
 
@@ -74,6 +75,7 @@ func New() *cobra.Command {
 	rootCmd.Flags().BoolVar(&runCleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
 	rootCmd.Flags().BoolVar(&runListImages, "list-images", false, "list all images that will be used during conformance tests.")
 	rootCmd.Flags().BoolVar(&runConformance, "conformance", false, "run conformance tests.")
+	rootCmd.Flags().StringVar(&skipPreflight, "skip-preflight", "", "skip namespace check, use the specified namespace.")
 	rootCmd.Flags().BoolVar(&continueConformance, "continue", false, "connect to an already running conformance test pod.")
 	rootCmd.Flags().StringVar(&conformanceFocus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 
@@ -147,7 +149,7 @@ func action(ctx context.Context, config *types.Configuration) error {
 		if continueConformance {
 			log.Println("Attempting to continue with already running tests...")
 		} else {
-			if err := testRunner.Deploy(ctx, conformanceFocus, verboseGinkgo, config.StartupTimeout); err != nil {
+			if err := testRunner.Deploy(ctx, conformanceFocus, skipPreflight, verboseGinkgo, config.StartupTimeout); err != nil {
 				return fmt.Errorf("failed to deploy tests: %w", err)
 			}
 		}
