@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+GOTOOLCHAIN=auto
+
 build:
 	go build -o bin/hydrophone main.go
 
