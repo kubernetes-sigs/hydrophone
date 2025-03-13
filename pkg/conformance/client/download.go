@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,6 +31,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/httpstream"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -85,16 +87,28 @@ func (c *Client) downloadFile(ctx context.Context, podName, containerName, fileP
 	parameterCodec := runtime.NewParameterCodec(scheme)
 	req.VersionedParams(option, parameterCodec)
 
-	// Create an executor
-	exec, err := remotecommand.NewSPDYExecutor(c.config, "POST", req.URL())
+	// Use a fallback executor with WebSocket as primary and SPDY as fallback protocol following KEP-4006
+	websocketExecutor, err := remotecommand.NewWebSocketExecutor(c.config, http.MethodGet, req.URL().String())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to initialize the websocket executor: %w", err)
+	}
+
+	spdyExecutor, err := remotecommand.NewSPDYExecutor(c.config, http.MethodPost, req.URL())
+	if err != nil {
+		return fmt.Errorf("failed to initialize the websocket executor: %w", err)
+	}
+
+	executor, err := remotecommand.NewFallbackExecutor(websocketExecutor, spdyExecutor, func(err error) bool {
+		return httpstream.IsUpgradeFailure(err) || httpstream.IsHTTPSProxyError(err)
+	})
+	if err != nil {
+		return fmt.Errorf("failed to initialize the command executor: %w", err)
 	}
 
 	// Stream the file content from the container to the writer
 	var stderr bytes.Buffer
 
-	err = exec.StreamWithContext(
+	err = executor.StreamWithContext(
 		ctx,
 		remotecommand.StreamOptions{
 			Stdout: writer,
