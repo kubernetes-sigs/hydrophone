@@ -227,7 +227,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 				log.Printf("Using existing namespace: %s", r.config.Namespace)
 			} else {
 				//nolint:stylecheck // error message references a Kubernetes resource type.
-				return fmt.Errorf("namespace %s already exists, please run with --cleanup first", conformanceNS.Name)
+				return fmt.Errorf("Namespace %s already exists, please run with --cleanup first", conformanceNS.Name)
 			}
 		} else {
 			return fmt.Errorf("failed to create namespace: %w", err)
