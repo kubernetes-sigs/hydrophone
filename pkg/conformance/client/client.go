@@ -28,6 +28,7 @@ type Client struct {
 	namespace string
 }
 
+// NewClient creates a client for interacting with the conformance test pod
 func NewClient(config *rest.Config, clientset *kubernetes.Clientset, namespace string) *Client {
 	return &Client{
 		config:    config,
