@@ -45,6 +45,7 @@ var (
 	conformanceFocus    string
 )
 
+// New creates and returns the root command for the hydrophone CLI
 func New() *cobra.Command {
 	var (
 		rootCmd *cobra.Command
@@ -84,6 +85,7 @@ func New() *cobra.Command {
 	return rootCmd
 }
 
+// action implements the main logic flow of the hydrophone command
 func action(ctx context.Context, config *types.Configuration) error {
 	if err := os.MkdirAll(config.OutputDir, 0o755); err != nil {
 		return fmt.Errorf("error creating output directory: %w", err)
@@ -162,7 +164,7 @@ func action(ctx context.Context, config *types.Configuration) error {
 			spinner.Start()
 		}
 
-		// PrintE2ELogs is a long running method
+		// PrintE2ELogs is a long-running method
 		if err := testClient.PrintE2ELogs(ctx); err != nil {
 			return fmt.Errorf("failed to get test logs: %w", err)
 		}
@@ -197,6 +199,7 @@ func action(ctx context.Context, config *types.Configuration) error {
 	return nil
 }
 
+// applyClusterDefaults sets configuration defaults based on the connected cluster
 func applyClusterDefaults(config *types.Configuration, clientset *kubernetes.Clientset) (*types.Configuration, *version.Info, error) {
 	serverVersion, err := clientset.ServerVersion()
 	if err != nil {
@@ -215,6 +218,7 @@ func applyClusterDefaults(config *types.Configuration, clientset *kubernetes.Cli
 	return config, serverVersion, nil
 }
 
+// normalizeVersion standardizes Kubernetes version strings for use in image tags
 func normalizeVersion(ver string) (string, error) {
 	ver = strings.TrimPrefix(ver, "v")
 

@@ -29,6 +29,7 @@ type TestRunner struct {
 	clientset *kubernetes.Clientset
 }
 
+// NewTestRunner creates a new test runner with the given configuration and Kubernetes client
 func NewTestRunner(config types.Configuration, clientset *kubernetes.Clientset) *TestRunner {
 	return &TestRunner{
 		config:    config,
@@ -36,6 +37,7 @@ func NewTestRunner(config types.Configuration, clientset *kubernetes.Clientset) 
 	}
 }
 
+// namespacedName formats a resource name with its namespace
 func (r *TestRunner) namespacedName(basename string) string {
 	return fmt.Sprintf("%s:%s", basename, r.config.Namespace)
 }

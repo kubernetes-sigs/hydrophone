@@ -94,6 +94,7 @@ func CreatePod(ctx context.Context, cs *kubernetes.Clientset, pod *corev1.Pod, t
 // If a container has this status, CreatePod() considers it fails and aborts.
 var containerErrorReasons = []string{"ErrImagePull", "ImagePullBackOff", "Error", "CrashLoopBackOff"}
 
+// CheckFailedPod examines container statuses to detect pod failure conditions
 func CheckFailedPod(pod *corev1.Pod) error {
 	for _, cs := range pod.Status.ContainerStatuses {
 		if s := cs.State.Waiting; s != nil && slices.Contains(containerErrorReasons, s.Reason) {
