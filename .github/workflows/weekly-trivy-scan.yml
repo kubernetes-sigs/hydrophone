@@ -1,0 +1,33 @@
+name: Weekly Trivy Scan 
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Run at midnight every Sunday
+  workflow_dispatch:     # Allow manual triggering
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          
+      - name: Get commit SHA
+        id: vars
+        run: echo "image_tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image (no cache)
+        run: |
+          docker build --no-cache -t hydrophone:${{ steps.vars.outputs.image_tag }} .
+
+      - name: Run vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: hydrophone:${{ steps.vars.outputs.image_tag }}
+          format: 'table'
+          exit-code: '1'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
