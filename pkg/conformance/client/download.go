@@ -65,6 +65,7 @@ func (c *Client) fetchFile(ctx context.Context, outputDir, filename string) erro
 	return c.downloadFile(ctx, conformance.PodName, conformance.OutputContainer, containerFile, localFile)
 }
 
+// downloadFile extracts test results from the container to local output directory
 func (c *Client) downloadFile(ctx context.Context, podName, containerName, filePath string, writer io.Writer) error {
 	// Create an exec request
 	req := c.clientset.CoreV1().RESTClient().Post().

@@ -89,7 +89,7 @@ func (c *Client) PrintE2ELogs(ctx context.Context) error {
 	return nil
 }
 
-// List pod resource with the given namespace
+// streamPodLogs continuously reads logs from a conformance pod and forwards them to channels
 func (c *Client) streamPodLogs(ctx context.Context, stream streamLogs) {
 	podLogOpts := corev1.PodLogOptions{
 		Container: conformance.ConformanceContainer,

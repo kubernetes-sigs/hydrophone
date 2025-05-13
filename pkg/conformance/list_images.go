@@ -114,6 +114,7 @@ func (r *TestRunner) PrintListImages(ctx context.Context, timeout time.Duration)
 	}
 }
 
+// handlePod processes completed pod logs to display container images
 func (r *TestRunner) handlePod(ctx context.Context, pod *corev1.Pod) error {
 	// Trigger desired action (e.g., fetching and printing logs)
 	log.Printf("Pod completed: %s", pod.Status.Phase)
