@@ -33,6 +33,12 @@ func SetDefaultLogger() {
 			Level:      slog.LevelDebug,
 			TimeFormat: time.TimeOnly,
 			NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
+			ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
+				if a.Key == slog.TimeKey {
+					return slog.Time(a.Key, a.Value.Time().UTC())
+				}
+				return a
+			},
 		}),
 	))
 }
