@@ -1,56 +1,60 @@
+version: "2"
 run:
   timeout: 15m
-
-# all available settings of specific linters
-linters-settings:
-  gocritic:
-    enabled-tags:
-      - performance
-      - diagnostic
-      - style
-      - experimental
-      - opinionated
-    disabled-checks:
-      - hugeParam
-      - rangeValCopy
-      - unnamedResult
-  gofmt:
-    simplify: true
-  goimports:
-    # put imports beginning with prefix after 3rd-party packages;
-    # it's a comma-separated list of prefixes
-    local-prefixes: sigs.k8s.io/hydrophone
-  errcheck:
-    check-type-assertions: false
-    check-blank: false
-  staticcheck:
-    checks:
-    - all
-
-# options for analysis running
-issues:
-  exclude-dirs:
-    - hack
-    - docs
-
-  # include test files
-  tests: true
-
 linters:
-  disable-all: true
+  default: none
   enable:
     - errcheck
     - gocritic
-    - gofmt
-    - goimports
-    - gosimple
     - govet
     - ineffassign
     - misspell
     - prealloc
     - revive
     - staticcheck
-    - stylecheck
     - unconvert
     - unparam
     - unused
+  settings:
+    errcheck:
+      check-type-assertions: false
+      check-blank: false
+    gocritic:
+      disabled-checks:
+        - hugeParam
+        - rangeValCopy
+        - unnamedResult
+      enabled-tags:
+        - performance
+        - diagnostic
+        - style
+        - experimental
+        - opinionated
+    staticcheck:
+      checks:
+        - all
+  exclusions:
+    generated: strict 
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - hack
+      - docs
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - sigs.k8s.io/hydrophone
+  exclusions:
+    generated: strict
+    paths:
+      - hack
+      - docs
