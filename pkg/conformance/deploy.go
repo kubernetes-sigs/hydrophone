@@ -349,7 +349,6 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 			if skipPreflight != "" {
 				log.Printf("using existing Pod: %s/%s", r.config.Namespace, "e2e-conformance-test")
 			} else {
-				//nolint:stylecheck // error message references a Kubernetes resource type.
 				return fmt.Errorf("pod %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
 			}
 		} else {
