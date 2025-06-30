@@ -242,8 +242,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 			if skipPreflight != "" {
 				log.Printf("using existing ServiceAccount: %s/%s", r.config.Namespace, ServiceAccountName)
 			} else {
-				//nolint:stylecheck // error message references a Kubernetes resource type.
-				return fmt.Errorf("ServiceAccount %s already exist, please run --cleanup first", conformanceSA.Name)
+				return fmt.Errorf("serviceAccount %s already exists, please run --cleanup first", conformanceSA.Name)
 			}
 		} else {
 			return fmt.Errorf("failed to create ServiceAccount: %w", err)
@@ -258,8 +257,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 			if skipPreflight != "" {
 				log.Printf("using existing ClusterRole: %s/%s", r.config.Namespace, r.namespacedName(ClusterRoleName))
 			} else {
-				//nolint:stylecheck // error message references a Kubernetes resource type.
-				return fmt.Errorf("ClusterRole %s already exist, please run --cleanup first", conformanceClusterRole.Name)
+				return fmt.Errorf("clusterRole %s already exists, please run --cleanup first", conformanceClusterRole.Name)
 			}
 		} else {
 			return fmt.Errorf("failed to create ClusterRole: %w", err)
@@ -274,8 +272,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 			if skipPreflight != "" {
 				log.Printf("using existing ClusterRoleBinding: %s/%s", r.config.Namespace, r.namespacedName(ClusterRoleBindingName))
 			} else {
-				//nolint:stylecheck // error message references a Kubernetes resource type.
-				return fmt.Errorf("ClusterRoleBinding %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
+				return fmt.Errorf("clusterRoleBinding %s already exists, please run --cleanup first", conformanceClusterRoleBinding.Name)
 			}
 		} else {
 			return fmt.Errorf("failed to create ClusterRoleBinding: %w", err)
@@ -327,8 +324,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 		cm, err := r.clientset.CoreV1().ConfigMaps(ns.Name).Create(ctx, configMap, metav1.CreateOptions{})
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				//nolint:stylecheck // error message references a Kubernetes resource type.
-				err = fmt.Errorf("ConfigMap %s already exist, please run --cleanup first", configMap.Name)
+				err = fmt.Errorf("configMap %s already exists, please run --cleanup first", configMap.Name)
 			}
 
 			return err
@@ -349,7 +345,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 			if skipPreflight != "" {
 				log.Printf("using existing Pod: %s/%s", r.config.Namespace, "e2e-conformance-test")
 			} else {
-				return fmt.Errorf("pod %s already exist, please run --cleanup first", conformanceClusterRoleBinding.Name)
+				return fmt.Errorf("pod %s already exists, please run --cleanup first", conformancePod.Name)
 			}
 		} else {
 			return fmt.Errorf("failed to create Pod: %w", err)
