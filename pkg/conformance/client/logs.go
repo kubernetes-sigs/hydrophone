@@ -109,8 +109,10 @@ func (c *Client) streamPodLogs(ctx context.Context, stream streamLogs) {
 	}
 	defer podLogs.Close()
 
-	// Start a goroutine to watch test status and provide periodic updates
-	go c.watchStatus(ctx, stream)
+	// Start a goroutine to watch test status and provide periodic updates if disable-progress-status flag not set
+	if !c.configuration.DisableProgressStatus {
+		go c.watchStatus(ctx, stream)
+	}
 
 	reader := bufio.NewScanner(podLogs)
 
@@ -225,7 +227,7 @@ func (c *Client) watchStatus(ctx context.Context, stream streamLogs) {
 			}
 
 			// Wait before checking again
-			time.Sleep(30 * time.Second)
+			time.Sleep(c.configuration.ProgressStatusInterval)
 		}
 	}
 }
