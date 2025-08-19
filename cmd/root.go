@@ -126,7 +126,7 @@ func action(ctx context.Context, config *types.Configuration) error {
 
 	// prepare test runner and the client to monitor it
 	testRunner := conformance.NewTestRunner(*config, clientset)
-	testClient := client.NewClient(restConfig, clientset, config.Namespace)
+	testClient := client.NewClient(restConfig, clientset, config.Namespace, config)
 
 	switch {
 	case runCleanup:

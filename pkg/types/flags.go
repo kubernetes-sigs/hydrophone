@@ -42,6 +42,8 @@ func (c *Configuration) AddFlags(fs *pflag.FlagSet) {
 	fs.DurationVar(&c.StartupTimeout, "startup-timeout", c.StartupTimeout, "max time to wait for the conformance test pod to start up.")
 	fs.StringSliceVar(&c.ExtraArgs, "extra-args", c.ExtraArgs, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)")
 	fs.StringSliceVar(&c.ExtraGinkgoArgs, "extra-ginkgo-args", c.ExtraGinkgoArgs, "Additional parameters to be provided to Ginkgo runner. This flag has the same format as --extra-args.")
+	fs.BoolVar(&c.DisableProgressStatus, "disable-progress-status", c.DisableProgressStatus, "disable the periodic progress status updates during test execution.")
+	fs.DurationVar(&c.ProgressStatusInterval, "progress-status-interval", c.ProgressStatusInterval, "interval duration for progress status updates")
 }
 
 func (c *Configuration) Complete(fs *pflag.FlagSet) (*Configuration, error) {
@@ -107,6 +109,10 @@ func (c *Configuration) Complete(fs *pflag.FlagSet) (*Configuration, error) {
 		result.Kubeconfig = filepath.Join(homeDir, c.Kubeconfig[1:])
 	}
 
+	if result.DisableProgressStatus && fs.Changed("progress-status-interval") {
+		return nil, errors.New("--progress-status-interval cannot be set when --disable-progress-status is true")
+	}
+
 	if err := result.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %w", err)
 	}
@@ -133,6 +139,8 @@ func mergeConfigs(changed changeDetector, fromFlags, loaded *Configuration) *Con
 	overwrite(changed, "test-repo", &loaded.TestRepo, fromFlags.TestRepo)
 	overwriteSlice(changed, "extra-args", &loaded.ExtraArgs, fromFlags.ExtraArgs)
 	overwriteSlice(changed, "extra-ginkgo-args", &loaded.ExtraGinkgoArgs, fromFlags.ExtraGinkgoArgs)
+	overwrite(changed, "disable-progress-status", &loaded.DisableProgressStatus, fromFlags.DisableProgressStatus)
+	overwrite(changed, "progress-status-interval", &loaded.ProgressStatusInterval, fromFlags.ProgressStatusInterval)
 
 	return loaded
 }

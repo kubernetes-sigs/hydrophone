@@ -48,19 +48,23 @@ type Configuration struct {
 	DryRun           bool          `yaml:"dryRun"`
 	TestRepoList     string        `yaml:"testRepoList"`
 	TestRepo         string        `yaml:"testRepo"`
-	ExtraArgs        []string      `yaml:"extraArgs"`
-	ExtraGinkgoArgs  []string      `yaml:"extraGinkgoArgs"`
-	StartupTimeout   time.Duration `yaml:"startupTimeout"`
+	ExtraArgs              []string      `yaml:"extraArgs"`
+	ExtraGinkgoArgs        []string      `yaml:"extraGinkgoArgs"`
+	StartupTimeout         time.Duration `yaml:"startupTimeout"`
+	DisableProgressStatus  bool          `yaml:"disableProgressStatus"`
+	ProgressStatusInterval time.Duration `yaml:"progressStatusInterval"`
 }
 
 func NewDefaultConfiguration() Configuration {
 	return Configuration{
-		Parallel:       1,
-		Verbosity:      4,
-		OutputDir:      ".",
-		BusyboxImage:   DefaultBusyboxImage,
-		Namespace:      DefaultNamespace,
-		StartupTimeout: 5 * time.Minute,
+		Parallel:               1,
+		Verbosity:              4,
+		OutputDir:              ".",
+		BusyboxImage:           DefaultBusyboxImage,
+		Namespace:              DefaultNamespace,
+		StartupTimeout:         5 * time.Minute,
+		DisableProgressStatus:  false,
+		ProgressStatusInterval: 30 * time.Second,
 	}
 }
 

@@ -17,22 +17,26 @@ limitations under the License.
 package client
 
 import (
+	"sigs.k8s.io/hydrophone/pkg/types"
+
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 // Client is used to retrieve conformance test logs, results and status information.
 type Client struct {
-	config    *rest.Config
-	clientset *kubernetes.Clientset
-	namespace string
+	config         *rest.Config
+	clientset      *kubernetes.Clientset
+	namespace      string
+	configuration  *types.Configuration
 }
 
 // NewClient creates a client for interacting with the conformance test pod
-func NewClient(config *rest.Config, clientset *kubernetes.Clientset, namespace string) *Client {
+func NewClient(config *rest.Config, clientset *kubernetes.Clientset, namespace string, configuration *types.Configuration) *Client {
 	return &Client{
-		config:    config,
-		clientset: clientset,
-		namespace: namespace,
+		config:        config,
+		clientset:     clientset,
+		namespace:     namespace,
+		configuration: configuration,
 	}
 }
