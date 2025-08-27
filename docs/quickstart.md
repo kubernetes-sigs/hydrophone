@@ -8,7 +8,6 @@ Before you begin, ensure you have:
 
 - **Go 1.19+** installed on your system with `GOPATH` properly set
 - Access to a Kubernetes cluster (local or cloud-based)
-- `kubectl` configured to communicate with your cluster
 
 ## Installation
 
