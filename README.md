@@ -19,8 +19,9 @@ namespace, waits for it to finish and then prints out the results.
 - **Extensive Test Development**: Focus is on running existing tests, not developing new ones.
 - **Broad Tool Integration**: Limited integration with third-party tools; maintains simplicity.
 
-
 ## Getting Started
+
+For a comprehensive quickstart guide, see our [Quickstart Guide](docs/quickstart.md) which will get you running Hydrophone in minutes!
 
 ### Prerequisites
 
@@ -37,7 +38,6 @@ $ go install sigs.k8s.io/hydrophone@latest
 Alternatively you can download the latest release from the [releases page](https://github.com/kubernetes-sigs/hydrophone/releases)
 
 ### Running Tests
-
 
 Ensure there is a `KUBECONFIG` environment variable specified or `$HOME/.kube/config` file present before running `hydrophone` Alternatively, you can specify the path to the kubeconfig file with the `--kubeconfig` option.
 
@@ -58,7 +58,6 @@ To specify a version of conformance image use:
 ```bash
 $ bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.34.0'
 ```
-
 
 ## Community
 
