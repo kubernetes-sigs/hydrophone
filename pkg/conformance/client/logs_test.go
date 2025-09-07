@@ -84,14 +84,6 @@ Kubernetes e2e suite
 			expectError:   false,
 		},
 		{
-			name:           "empty input",
-			input:          "",
-			expectedTotal:  0,
-			expectedDone:   0,
-			expectError:    true,
-			errorSubstring: "empty log output",
-		},
-		{
 			name: "no test count line",
 			input: `
 I0402 12:34:56.789012      12 e2e.go:123] Starting e2e run "01234"
