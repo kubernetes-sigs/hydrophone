@@ -125,10 +125,6 @@ func (c *Client) streamPodLogs(ctx context.Context, stream streamLogs) {
 
 // parseTestProgress extracts test counts from logs by parsing spec counts and dot markers
 func parseTestProgress(logOutput string) (int, int, error) {
-	if logOutput == "" {
-		return 0, 0, fmt.Errorf("empty log output")
-	}
-
 	// Look for the line that shows how many tests will run
 	reStartLine := regexp.MustCompile(`Will run (0|[1-9]\d{0,3}|10000) of (0|[1-9]\d{0,3}|10000) specs`)
 	specs := reStartLine.FindStringSubmatch(logOutput)
@@ -208,6 +204,12 @@ func (c *Client) watchStatus(ctx context.Context, stream streamLogs) {
 
 			// Parse test progress
 			output := strings.TrimSpace(stdout.String())
+			if output == "" {
+				// Log file not ready/created. we need to wait before proceeding
+				time.Sleep(c.configuration.ProgressStatusInterval)
+				continue
+			}
+
 			totalTests, completedTests, err := parseTestProgress(output)
 			if err != nil {
 				stream.errCh <- err
