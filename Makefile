@@ -23,8 +23,13 @@ run:
 fmt:
 	go fmt ./...
 
-test:
+test-unit:
 	go test -v ./...
+
+test-race:
+	go test --race -v ./...
+
+test: test-unit test-race
 
 verify:
 	@hack/verify-all.sh -v
