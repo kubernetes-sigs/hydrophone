@@ -25,7 +25,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.25'
 
       - name: Install Hydrophone
         run: go install sigs.k8s.io/hydrophone@latest
@@ -56,7 +56,7 @@ stages:
   - conformance
 
 hydrophone-conformance:
-  image: golang:1.22
+  image: golang:1.25.0
   stage: conformance
   script:
     - go install sigs.k8s.io/hydrophone@latest
@@ -114,7 +114,7 @@ periodics:
   cluster: default
   spec:
     containers:
-    - image: golang:1.22
+    - image: golang:1.24.0
       command:
       - /bin/sh
       - -c
@@ -148,7 +148,7 @@ periodics:
 
 ## 6. Need Help?
 
-If your CI system isn't listed here, or you run into problems, please open an issue on GitHub or reach out to the community on the [Kubernetes Slack](https://slack.k8s.io/) in the `#sig-testing` or `#sig-architecture` channels.
+If your CI system isn't listed here, or you run into problems, please open an issue on GitHub or reach out to the community on the [Kubernetes Slack](https://slack.k8s.io/) in the `#sig-testing` or `#hydrophone` channels.
 
 ---
 
