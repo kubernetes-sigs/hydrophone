@@ -132,7 +132,7 @@ periodics:
 
 **Notes:**
 
-* Prow jobs require a Kubernetes cluster and a secret containing the kubeconfig.
+* Prow jobs may require a Kubernetes cluster and a secret containing the kubeconfig.
 * You can schedule periodic runs or trigger on pull requests.
 
 ---
