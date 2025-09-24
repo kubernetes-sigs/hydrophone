@@ -56,7 +56,7 @@ $ bin/hydrophone --focus 'Simple pod should contain last line of the log'
 To specify a version of conformance image use:
 
 ```bash
-$ bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.34.0'
+$ bin/hydrophone --conformance-image 'registry.k8s.io/conformance:v1.34.1'
 ```
 
 ## Community
