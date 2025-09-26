@@ -152,3 +152,68 @@ If your CI system isn't listed here, or you run into problems, please open an is
 
 ---
 
+## 7. Beginner-Friendly Examples
+
+The following snippets show how to integrate Hydrophone into popular CI/CD systems in a simple way.  
+You can copy–paste them and then adjust for your own cluster.
+
+## GitHub Actions
+
+Create a file `.github/workflows/hydrophone.yml`:
+
+```yaml
+name: Run Hydrophone
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+      - name: Run Hydrophone
+        run: |
+          go run main.go --dry-run
+```
+
+## GitLab CI
+
+Add this to `.gitlab-ci.yml`:
+
+stages:
+  - test
+
+hydrophone:
+  stage: test
+  image: golang:1.21
+  script:
+    - go run main.go --dry-run
+
+## Jenkins Pipeline
+
+In a `Jenkinsfile`:
+
+pipeline {
+  agent any
+  stages {
+    stage('Run Hydrophone') {
+      steps {
+        sh 'go run main.go --dry-run'
+      }
+    }
+  }
+}
+
+## Why these help beginners?
+
+- **Dry Run Mode**: Hydrophone runs without requiring a full Kubernetes cluster. You can test your setup safely.  
+- **Official Images**: Uses Ubuntu/Golang images only, no complex dependencies.  
+- **Build On Top**: Later you can add kubeconfig, secrets, logs, and artifact uploads easily.  
+- **Copy–Paste Ready**: Beginners can directly use these snippets without deep CI/CD knowledge.
