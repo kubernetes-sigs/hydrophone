@@ -85,8 +85,8 @@ SUCCESS! -- 398 Passed | 0 Failed | 2 Pending | 6992 Skipped
 
 ### Understanding the Summary
 - **Ran**: Tests that actually executed
-- **Passed**: Tests that completed successfully ✅
-- **Failed**: Tests that encountered errors ❌
+- **Passed**: Tests that completed successfully 
+- **Failed**: Tests that encountered errors 
 - **Pending**: Tests marked as not yet implemented
 - **Skipped**: Tests filtered out by focus/skip patterns
 
@@ -118,9 +118,6 @@ If you're running tests for CNCF Kubernetes conformance certification, you need:
 For detailed submission instructions, see: [CNCF K8s Conformance Instructions](https://github.com/cncf/k8s-conformance/blob/master/instructions.md)
 
 ## Troubleshooting Common Issues
-
-### "empty log output" Error
-This occurs when the progress monitor tries to read logs before they're ready. The test should continue - this is a known issue being fixed.
 
 ### High Skip Count
 This is normal! Most tests are filtered out for conformance runs. Only tests tagged with `[Conformance]` are required for certification.
