@@ -4,7 +4,7 @@ Welcome to the Hydrophone documentation! This directory contains comprehensive g
 
 ## Available Guides
 
-### [Quickstart Guide](quickstart.md) 🚀
+### [Quickstart Guide](quickstart.md) 
 
 **Get started with Hydrophone in minutes!** This comprehensive guide covers:
 
@@ -14,13 +14,37 @@ Welcome to the Hydrophone documentation! This directory contains comprehensive g
 - How to view and interpret test results
 - Troubleshooting common issues
 
-### [Air-gapped Environments](air-gapped.md) 🔒
+### [Air-gapped Environments](air-gapped.md)
 
 Learn how to run Hydrophone in environments without internet access:
 
 - Setting up internal registries
 - Identifying required images
 - Configuring Hydrophone for offline use
+
+### [CI/CD Integration Guide](ci-cd-integration-guide.md)
+
+Learn how to integrate Hydrophone into your automated workflows:
+
+- GitHub Actions examples
+- GitLab CI, Jenkins, and Prow configurations
+- Automating conformance testing in CI/CD pipelines
+
+### [Flags and CLI Reference](flags-cli-ref.md)
+
+Complete reference for all Hydrophone command-line flags and options:
+
+- Execution mode flags (`--conformance`, `--focus`, `--skip`)
+- Output and configuration options
+- YAML configuration file format
+
+### [Understanding E2E Results](understanding-e2e-results.md)
+
+Learn how to read and interpret test results:
+
+- Test output symbols and their meanings
+- Understanding test status indicators
+- Analyzing failed test results
 
 ## Additional Resources
 
