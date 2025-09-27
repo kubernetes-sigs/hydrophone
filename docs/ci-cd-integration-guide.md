@@ -4,7 +4,92 @@ This guide provides examples for running **Hydrophone** in CI/CD pipelines, incl
 
 ---
 
-## 1. GitHub Actions Example
+## 1. Introduction
+
+This guide covers GitHub Actions, GitLab CI, Jenkins Pipeline, Prow jobs, tips, and beginner-friendly examples to help you integrate Hydrophone into your CI/CD system.
+
+---
+
+## 2. Beginner-Friendly Examples
+
+These snippets let you run Hydrophone in CI/CD pipelines **without needing a full Kubernetes setup**.  
+You can copy–paste them directly.
+
+---
+
+## 3. GitHub Actions
+
+Create `.github/workflows/hydrophone.yml`:
+
+```yaml
+name: Hydrophone Quick Test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  hydrophone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+      - name: Run Hydrophone (dry run)
+        run: |
+          go run main.go --dry-run
+```
+
+---
+
+## 4. GitLab CI
+
+Add this to `.gitlab-ci.yml`:
+
+```yaml
+stages:
+  - test
+
+hydrophone:
+  stage: test
+  image: golang:1.21
+  script:
+    - go run main.go --dry-run
+```
+
+---
+
+## 5. Jenkins Pipeline
+
+In a `Jenkinsfile`:
+
+```groovy
+pipeline {
+  agent any
+  stages {
+    stage('Run Hydrophone') {
+      steps {
+        sh 'go run main.go --dry-run'
+      }
+    }
+  }
+}
+```
+
+---
+## 6. Why these help beginners?
+
+- **Dry Run Mode**: Hydrophone runs without requiring a full Kubernetes cluster. You can test your setup safely.  
+- **Official Images**: Uses Ubuntu/Golang images only, no complex dependencies.  
+- **Build On Top**: Later you can add kubeconfig, secrets, logs, and artifact uploads easily.  
+- **Copy–Paste Ready**: Beginners can directly use these snippets without deep CI/CD knowledge.
+
+---
+
+## 7. GitHub Actions Example
 
 Save this workflow as `.github/workflows/hydrophone-smoke.yml` in your repository:
 
@@ -47,7 +132,7 @@ jobs:
 
 ---
 
-## 2. GitLab CI Example
+## 8. GitLab CI Example
 
 Example `.gitlab-ci.yml` snippet:
 
@@ -73,7 +158,7 @@ hydrophone-conformance:
 
 ---
 
-## 3. Jenkins Pipeline Example
+## 9. Jenkins Pipeline Example
 
 Declarative pipeline snippet:
 
@@ -102,7 +187,7 @@ pipeline {
 
 ---
 
-## 4. Prow Example
+## 10. Prow Example
 
 A Prow job snippet (`prow/config.yaml`):
 
@@ -137,7 +222,7 @@ periodics:
 
 ---
 
-## 5. Tips and Best Practices
+## 11. Tips and Best Practices
 
 * **Namespaces:** Hydrophone uses the `conformance` namespace by default. Use `--cleanup` if re-running tests.
 * **Timeouts:** Adjust `--timeout` depending on cluster size.
@@ -146,74 +231,8 @@ periodics:
 
 ---
 
-## 6. Need Help?
+## 12. Need Help?
 
 If your CI system isn't listed here, or you run into problems, please open an issue on GitHub or reach out to the community on the [Kubernetes Slack](https://slack.k8s.io/) in the `#sig-testing` or `#hydrophone` channels.
 
 ---
-
-## 7. Beginner-Friendly Examples
-
-The following snippets show how to integrate Hydrophone into popular CI/CD systems in a simple way.  
-You can copy–paste them and then adjust for your own cluster.
-
-## GitHub Actions
-
-Create a file `.github/workflows/hydrophone.yml`:
-
-```yaml
-name: Run Hydrophone
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  conformance:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21
-      - name: Run Hydrophone
-        run: |
-          go run main.go --dry-run
-```
-
-## GitLab CI
-
-Add this to `.gitlab-ci.yml`:
-
-stages:
-  - test
-
-hydrophone:
-  stage: test
-  image: golang:1.21
-  script:
-    - go run main.go --dry-run
-
-## Jenkins Pipeline
-
-In a `Jenkinsfile`:
-
-pipeline {
-  agent any
-  stages {
-    stage('Run Hydrophone') {
-      steps {
-        sh 'go run main.go --dry-run'
-      }
-    }
-  }
-}
-
-## Why these help beginners?
-
-- **Dry Run Mode**: Hydrophone runs without requiring a full Kubernetes cluster. You can test your setup safely.  
-- **Official Images**: Uses Ubuntu/Golang images only, no complex dependencies.  
-- **Build On Top**: Later you can add kubeconfig, secrets, logs, and artifact uploads easily.  
-- **Copy–Paste Ready**: Beginners can directly use these snippets without deep CI/CD knowledge.
