@@ -5,7 +5,3 @@
 
 **Special notes for your reviewer**:
 
-**Release note**:
-```
-release-note
-```
