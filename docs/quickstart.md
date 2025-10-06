@@ -368,4 +368,4 @@ For more advanced usage, check out:
 - [Contributing Guide](../CONTRIBUTING.md) - How to contribute to Hydrophone
 - [Development Guide](../DEVELOPMENT.md) - Building and developing Hydrophone
 
-Happy testing! 🚀
+Happy testing! 
