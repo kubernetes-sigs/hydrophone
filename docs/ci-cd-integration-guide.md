@@ -55,7 +55,7 @@ stages:
 
 hydrophone:
   stage: test
-  image: golang:1.21
+  image: golang:1.24
   script:
     - go run main.go --dry-run
 ```
