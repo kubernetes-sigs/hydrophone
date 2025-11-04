@@ -12,8 +12,15 @@ This guide covers GitHub Actions, GitLab CI, Jenkins Pipeline, Prow jobs, tips, 
 
 ## 2. Beginner-Friendly Examples
 
-These snippets let you run Hydrophone in CI/CD pipelines **without needing a full Kubernetes setup**.  
-You can copy–paste them directly.
+These examples help new users **validate their Hydrophone setup locally** before connecting to a real Kubernetes cluster.  
+They use **dry-run mode** to confirm the CLI, dependencies, and configuration are correct — without running full conformance tests.
+
+Once validated, the same pipeline snippets can easily be updated to connect to a cluster using a kubeconfig secret.
+
+For example:
+- GitHub Actions, GitLab CI, and Jenkins snippets below use `--dry-run` only for setup verification.
+- Replace `--dry-run` with a valid `--kubeconfig` path and cluster details for full conformance runs.
+
 
 ---
 
@@ -82,7 +89,7 @@ pipeline {
 ---
 ## 6. Why these help beginners?
 
-- **Dry Run Mode**: Hydrophone runs without requiring a full Kubernetes cluster. You can test your setup safely.  
+- **Dry Run Mode**: Lets you validate your CI/CD pipeline setup safely before connecting to a cluster.  
 - **Official Images**: Uses Ubuntu/Golang images only, no complex dependencies.  
 - **Build On Top**: Later you can add kubeconfig, secrets, logs, and artifact uploads easily.  
 - **Copy–Paste Ready**: Beginners can directly use these snippets without deep CI/CD knowledge.
@@ -234,5 +241,3 @@ periodics:
 ## 12. Need Help?
 
 If your CI system isn't listed here, or you run into problems, please open an issue on GitHub or reach out to the community on the [Kubernetes Slack](https://slack.k8s.io/) in the `#sig-testing` or `#hydrophone` channels.
-
----
