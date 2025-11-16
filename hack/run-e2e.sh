@@ -87,8 +87,8 @@ function evaluate_test_num {
 }
 
 # Default versions k8s and kind
-K8S_VERSION=${K8S_VERSION:-v1.29.2}
-KIND_VERSION=${KIND_VERSION:-v0.22.0}
+K8S_VERSION=${K8S_VERSION:-v1.34.0}
+KIND_VERSION=${KIND_VERSION:-v0.23.0}
 
 # Maximum time (in seconds) for a dry run test
 DRYRUN_THRESHOLD=${DRYRUN_DURATION:-5}
