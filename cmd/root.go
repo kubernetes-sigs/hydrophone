@@ -69,6 +69,9 @@ func New() *cobra.Command {
 		SilenceUsage:  true,
 	}
 
+	rootCmd.Version = buildVersionString()
+	rootCmd.SetVersionTemplate(`{{printf "%s\n" .Name}}{{printf "%s\n" .Version}}`)
+
 	config = types.NewDefaultConfiguration()
 	config.AddFlags(rootCmd.Flags())
 

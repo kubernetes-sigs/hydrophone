@@ -15,7 +15,7 @@
 GOTOOLCHAIN=auto
 
 build:
-	go build -o bin/hydrophone main.go
+	go build -o bin/hydrophone .
 
 run:
 	go run main.go
