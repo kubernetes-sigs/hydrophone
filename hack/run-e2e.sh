@@ -70,22 +70,39 @@ function run_test {
     fi
   fi
 
-  # If EXPECTED_NUM_TESTS is set, run the evaluate_test_num function
-  if [[ ! -z ${EXPECTED_NUM_TESTS+x} ]]; then
     evaluate_test_num
-  fi
 }
 
 function evaluate_test_num {
-  NUM_TESTS=$(grep -oP 'Ran \K\d+(?= of \d+ Specs)' /tmp/test.log)
+  # Extract planned test count from start log
+  local planned_tests=$(grep -oP 'Will run \K\d+(?= of \d+ specs)' /tmp/test.log)
 
-  # Check if NUM_TESTS is not equal to EXPECTED_NUM_TESTS
-  if [[ ${NUM_TESTS} -ne ${EXPECTED_NUM_TESTS} ]]; then
-    echo "Expected ${EXPECTED_NUM_TESTS} tests, got ${NUM_TESTS} tests"
+  # Extract completed test count from end log
+  local completed_tests=$(grep -oP 'Ran \K\d+(?= of \d+ Specs)' /tmp/test.log)
+
+  echo "Test execution summary:"
+  echo "  Planned to run: ${planned_tests:-unknown}"
+  echo "  Actually completed: ${completed_tests:-unknown}"
+
+  # Validate that planned equals completed (all tests ran)
+  if [[ -n "$planned_tests" && -n "$completed_tests" ]]; then
+    if [[ ${completed_tests} -ne ${planned_tests} ]]; then
+      echo "ERROR: Test execution incomplete!"
+      echo "  Planned: ${planned_tests} tests"
+      echo "  Completed: ${completed_tests} tests"
+      echo "  Missing: $((planned_tests - completed_tests)) tests"
+      echo ""
+      echo "This indicates the test run was interrupted, failed early, or had configuration issues."
+      exit 1
+    fi
+    echo "All planned tests completed successfully: ${completed_tests}/${planned_tests}"
+  else
+    echo "ERROR: Could not extract test counts from logs"
+    echo "Expected to find both 'Will run X of Y specs' and 'Ran X of Y Specs' in /tmp/test.log"
     exit 1
   fi
-}
 
+}
 # Default versions k8s and kind
 K8S_VERSION=${K8S_VERSION:-v1.34.0}
 KIND_VERSION=${KIND_VERSION:-v0.30.0}
