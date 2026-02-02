@@ -25,10 +25,10 @@ import (
 
 // Client is used to retrieve conformance test logs, results and status information.
 type Client struct {
-	config         *rest.Config
-	clientset      *kubernetes.Clientset
-	namespace      string
-	configuration  *types.Configuration
+	config        *rest.Config
+	clientset     *kubernetes.Clientset
+	namespace     string
+	configuration *types.Configuration
 }
 
 // NewClient creates a client for interacting with the conformance test pod

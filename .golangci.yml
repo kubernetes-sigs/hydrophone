@@ -19,6 +19,10 @@ linters:
     errcheck:
       check-type-assertions: false
       check-blank: false
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
     gocritic:
       disabled-checks:
         - hugeParam

@@ -37,17 +37,17 @@ const (
 type Configuration struct {
 	configFile string
 
-	Kubeconfig       string        `yaml:"kubeconfig"`
-	Parallel         int           `yaml:"parallel"`
-	Verbosity        int           `yaml:"verbosity"`
-	OutputDir        string        `yaml:"outputDir"`
-	Skip             string        `yaml:"skip"`
-	ConformanceImage string        `yaml:"conformanceImage"`
-	BusyboxImage     string        `yaml:"busyboxImage"`
-	Namespace        string        `yaml:"namespace"`
-	DryRun           bool          `yaml:"dryRun"`
-	TestRepoList     string        `yaml:"testRepoList"`
-	TestRepo         string        `yaml:"testRepo"`
+	Kubeconfig             string        `yaml:"kubeconfig"`
+	Parallel               int           `yaml:"parallel"`
+	Verbosity              int           `yaml:"verbosity"`
+	OutputDir              string        `yaml:"outputDir"`
+	Skip                   string        `yaml:"skip"`
+	ConformanceImage       string        `yaml:"conformanceImage"`
+	BusyboxImage           string        `yaml:"busyboxImage"`
+	Namespace              string        `yaml:"namespace"`
+	DryRun                 bool          `yaml:"dryRun"`
+	TestRepoList           string        `yaml:"testRepoList"`
+	TestRepo               string        `yaml:"testRepo"`
 	ExtraArgs              []string      `yaml:"extraArgs"`
 	ExtraGinkgoArgs        []string      `yaml:"extraGinkgoArgs"`
 	StartupTimeout         time.Duration `yaml:"startupTimeout"`
