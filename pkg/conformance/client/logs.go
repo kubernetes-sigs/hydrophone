@@ -58,7 +58,12 @@ func (c *Client) PrintE2ELogs(ctx context.Context) error {
 	informerFactory.WaitForCacheSync(ctx.Done())
 
 	for {
-		pod, _ := podInformer.Lister().Pods(c.namespace).Get(conformance.PodName)
+		pod, err := podInformer.Lister().Pods(c.namespace).Get(conformance.PodName)
+		if err != nil {
+			log.Errorf("Waiting for pod %s/%s to be created: %v", c.namespace, conformance.PodName, err)
+			time.Sleep(time.Second)
+			continue
+		}
 		if pod.Status.Phase == corev1.PodRunning {
 			var err error
 			stream := streamLogs{
