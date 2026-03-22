@@ -237,3 +237,8 @@ func generateDots(n int) string {
 	}
 	return string(dots)
 }
+
+func TestParseTestProgressEmpty(t *testing.T) {
+	_, _, err := parseTestProgress("")
+	assert.Error(t, err)
+}
