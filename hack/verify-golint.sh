@@ -23,7 +23,7 @@ KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 cd "${KUBE_ROOT}"
 
 LINT=${LINT:-golangci-lint}
-VERSION=2.8.0
+VERSION=2.12.2
 
 if [[ -z "$(command -v ${LINT})" ]]; then
   echo "${LINT} is missing. Installing it now..."
