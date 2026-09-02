@@ -39,7 +39,7 @@ Once the image is created we will need to populate it with the images required f
 We can do this by pulling the images, re-tagging them, and pushing them to the internal registry.
 
 ```bash
-$ for image in `hydrophone --list-images && echo registry.k8s.io/conformance:v1.29.0 && echo registry.k8s.io/e2e-test-images/busybox:1.36.1-1`; do
+$ for image in `hydrophone --list-images && echo registry.k8s.io/conformance:v1.37.0 && echo registry.k8s.io/e2e-test-images/busybox:1.36.1-1`; do
     docker pull $image;
     docker tag $image `echo $image | sed -E 's#^[^/]+/#127.0.0.1:5001/#'`;
     docker push `echo $image | sed -E 's#^[^/]+/#127.0.0.1:5001/#'`;
@@ -80,7 +80,7 @@ Now we can use Hydrophone to run the entire conformance suite with the following
 ```bash
 $ hydrophone \
     --conformance \
-    --conformance-image localhost:5001/conformance:v1.29.0 \
+    --conformance-image localhost:5001/conformance:v1.37.0 \
     --busybox-image localhost:5001/e2e-test-images/busybox:1.36.1-1 \
     --test-repo-list $REG_CONFIG
 ```
