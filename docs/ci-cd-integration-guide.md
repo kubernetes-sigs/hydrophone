@@ -36,7 +36,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
 
       - name: Run Hydrophone (dry run)
-        run: hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.34.0 --timeout 5m --dry-run
+        run: hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.0 --timeout 5m --dry-run
 ```
 
 **Notes:**
@@ -61,7 +61,7 @@ hydrophone-conformance:
   script:
     - go install sigs.k8s.io/hydrophone@latest
     - echo "$KUBE_CONFIG_DATA" | base64 -d > ~/.kube/config
-    - hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.34.0 --timeout 10m
+    - hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.0 --timeout 10m
   only:
     - main
 ```
@@ -88,7 +88,7 @@ pipeline {
             steps {
                 sh 'go install sigs.k8s.io/hydrophone@latest'
                 sh 'echo $KUBE_CONFIG_DATA | base64 -d > $HOME/.kube/config'
-                sh 'hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.34.0 --timeout 10m'
+                sh 'hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.0 --timeout 10m'
             }
         }
     }
@@ -121,7 +121,7 @@ periodics:
       - |
         go install sigs.k8s.io/hydrophone@latest
         echo "$KUBE_CONFIG_DATA" | base64 -d > /root/.kube/config
-        hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.34.0 --timeout 10m
+        hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.0 --timeout 10m
       env:
       - name: KUBE_CONFIG_DATA
         valueFrom:
