@@ -156,7 +156,7 @@ hydrophone --focus 'sig-network.*'
 
 ```bash
 hydrophone --conformance \
-  --conformance-image 'registry.k8s.io/conformance:v1.33.2'
+  --conformance-image 'registry.k8s.io/conformance:v1.37.1'
 ```
 
 #### Parallel Test Execution
@@ -313,7 +313,7 @@ hydrophone --kubeconfig /path/to/your/kubeconfig --conformance
 
 ```bash
 hydrophone --conformance \
-  --conformance-image 'your-registry.com/conformance:v1.33.2'
+  --conformance-image 'your-registry.com/conformance:v1.37.1'
 ```
 
 #### 3. Resource Constraints
