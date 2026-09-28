@@ -142,11 +142,11 @@ These flags determine the primary operation mode of Hydrophone. They are mutuall
 
 #### `--conformance-image`
 - **Type**: String
-- **Default**: Auto-detected based on cluster version (e.g., `registry.k8s.io/conformance:v1.28.0`)
+- **Default**: Auto-detected based on cluster version (e.g., `registry.k8s.io/conformance:v1.37.1`)
 - **Description**: Specify a conformance container image of your choice.
 - **Example**:
   ```bash
-  hydrophone --conformance-image registry.k8s.io/conformance:v1.29.0 --conformance
+  hydrophone --conformance-image registry.k8s.io/conformance:v1.37.1 --conformance
   ```
 
 #### `--busybox-image`
@@ -256,7 +256,7 @@ parallel: 4
 verbosity: 5
 outputDir: "./test-results"
 skip: "Networking|Storage"
-conformanceImage: "registry.k8s.io/conformance:v1.29.0"
+conformanceImage: "registry.k8s.io/conformance:v1.37.1"
 busyboxImage: "registry.k8s.io/e2e-test-images/busybox:1.36.1-1"
 namespace: "my-conformance"
 dryRun: false
@@ -297,7 +297,7 @@ hydrophone --conformance --parallel 4 --verbosity 6
 ### Run specific test focus with custom image
 ```bash
 hydrophone --focus "should.*create.*pod" \
-  --conformance-image registry.k8s.io/conformance:v1.29.0 \
+  --conformance-image registry.k8s.io/conformance:v1.37.1 \
   --output-dir ./pod-tests
 ```
 
@@ -311,7 +311,7 @@ hydrophone --conformance \
 ### Run in air-gapped environment with custom registries
 ```bash
 hydrophone --conformance \
-  --conformance-image my-registry.com/conformance:v1.28.0 \
+  --conformance-image my-registry.com/conformance:v1.37.1 \
   --busybox-image my-registry.com/busybox:1.36.1-1 \
   --test-repo my-registry.com/k8s-test
 ```
