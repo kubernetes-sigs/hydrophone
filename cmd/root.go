@@ -37,12 +37,13 @@ import (
 )
 
 var (
-	runCleanup          bool
-	runListImages       bool
-	runConformance      bool
-	continueConformance bool
-	skipPreflight       string
-	conformanceFocus    string
+	runCleanup           bool
+	runListImages        bool
+	runConformance       bool
+	runFutureConformance bool
+	continueConformance  bool
+	skipPreflight        string
+	conformanceFocus     string
 )
 
 // New creates and returns the root command for the hydrophone CLI
@@ -79,11 +80,12 @@ func New() *cobra.Command {
 	rootCmd.Flags().BoolVar(&runCleanup, "cleanup", false, "cleanup resources (pods, namespaces etc).")
 	rootCmd.Flags().BoolVar(&runListImages, "list-images", false, "list all images that will be used during conformance tests.")
 	rootCmd.Flags().BoolVar(&runConformance, "conformance", false, "run conformance tests.")
+	rootCmd.Flags().BoolVar(&runFutureConformance, "future-conformance", false, "run future conformance tests.")
 	rootCmd.Flags().StringVar(&skipPreflight, "skip-preflight", "", "skip namespace check, use the specified namespace.")
 	rootCmd.Flags().BoolVar(&continueConformance, "continue", false, "connect to an already running conformance test pod.")
 	rootCmd.Flags().StringVar(&conformanceFocus, "focus", "", "focus runs a specific e2e test. e.g. - sig-auth. allows regular expressions.")
 
-	rootCmd.MarkFlagsMutuallyExclusive("conformance", "focus", "cleanup", "list-images")
+	rootCmd.MarkFlagsMutuallyExclusive("conformance", "future-conformance", "focus", "cleanup", "list-images")
 
 	return rootCmd
 }
@@ -147,6 +149,8 @@ func action(ctx context.Context, config *types.Configuration) error {
 		case runConformance:
 			// `hydrophone --conformance` is an alias for `hydrophone --focus '\[Conformance\]'`
 			conformanceFocus = `\[Conformance\]`
+		case runFutureConformance:
+			conformanceFocus = `\[FutureConformance\]`
 		case conformanceFocus == "" && !continueConformance:
 			log.Println("No test options specified: assuming `--conformance`")
 			conformanceFocus = `\[Conformance\]`
