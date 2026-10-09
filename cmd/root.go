@@ -143,8 +143,12 @@ func action(ctx context.Context, config *types.Configuration) error {
 		}
 
 	default:
-		// `hydrophone --conformance` is an alias for `hydrophone --focus '\[Conformance\]'`
-		if conformanceFocus == "" {
+		switch {
+		case runConformance:
+			// `hydrophone --conformance` is an alias for `hydrophone --focus '\[Conformance\]'`
+			conformanceFocus = `\[Conformance\]`
+		case conformanceFocus == "" && !continueConformance:
+			log.Println("No test options specified: assuming `--conformance`")
 			conformanceFocus = `\[Conformance\]`
 		}
 
