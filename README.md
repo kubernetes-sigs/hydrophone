@@ -47,6 +47,12 @@ To run conformance tests use:
 $ bin/hydrophone --conformance
 ```
 
+To run "future conformance" tests use:
+
+```bash
+$ bin/hydrophone --future-conformance
+```
+
 To run a specific test use:
 
 ```bash
