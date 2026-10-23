@@ -21,6 +21,15 @@ These flags determine the primary operation mode of Hydrophone. They are mutuall
   hydrophone --conformance
   ```
 
+#### `--future-conformance`
+- **Type**: Boolean (flag)
+- **Default**: `false`
+- **Description**: Run tests marked as being future conformance requirements. This is equivalent to running `--focus '\[FutureConformance\]'`.
+- **Example**: 
+  ```bash
+  hydrophone --future-conformance
+  ```
+
 #### `--focus`
 - **Type**: String
 - **Default**: `""`
@@ -358,4 +367,4 @@ When using both configuration files and command line flags:
 - `--extra-args` and `--extra-ginkgo-args` must follow `--key=value` format
 - `--nodes` or `--procs` cannot be used in `--extra-ginkgo-args` when `--parallel` > 1
 - `--progress-status-interval` cannot be used with `--disable-progress-status`
-- Execution mode flags (`--conformance`, `--focus`, `--cleanup`, `--list-images`) are mutually exclusive
+- Execution mode flags (`--conformance`, `--future-conformance`, `--focus`, `--cleanup`, `--list-images`) are mutually exclusive
