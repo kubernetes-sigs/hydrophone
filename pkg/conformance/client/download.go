@@ -96,7 +96,7 @@ func (c *Client) downloadFile(ctx context.Context, podName, containerName, fileP
 
 	spdyExecutor, err := remotecommand.NewSPDYExecutor(c.config, http.MethodPost, req.URL())
 	if err != nil {
-		return fmt.Errorf("failed to initialize the websocket executor: %w", err)
+		return fmt.Errorf("failed to initialize the SPDY executor: %w", err)
 	}
 
 	executor, err := remotecommand.NewFallbackExecutor(websocketExecutor, spdyExecutor, func(err error) bool {
