@@ -255,7 +255,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
 			if skipPreflight != "" {
-				log.Printf("using existing ClusterRole: %s/%s", r.config.Namespace, r.namespacedName(ClusterRoleName))
+				log.Printf("using existing ClusterRole: %s", conformanceClusterRole.Name)
 			} else {
 				return fmt.Errorf("clusterRole %s already exists, please run --cleanup first", conformanceClusterRole.Name)
 			}
@@ -270,7 +270,7 @@ func (r *TestRunner) Deploy(ctx context.Context, focus, skipPreflight string, ve
 	if err != nil {
 		if errors.IsAlreadyExists(err) {
 			if skipPreflight != "" {
-				log.Printf("using existing ClusterRoleBinding: %s/%s", r.config.Namespace, r.namespacedName(ClusterRoleBindingName))
+				log.Printf("using existing ClusterRoleBinding: %s", conformanceClusterRoleBinding.Name)
 			} else {
 				return fmt.Errorf("clusterRoleBinding %s already exists, please run --cleanup first", conformanceClusterRoleBinding.Name)
 			}

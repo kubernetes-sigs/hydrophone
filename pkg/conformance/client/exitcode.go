@@ -24,7 +24,9 @@ import (
 	"sigs.k8s.io/hydrophone/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 // FetchExitCode waits for pod to be in terminated state and get the exit code
@@ -39,9 +41,13 @@ func (c *Client) FetchExitCode(ctx context.Context) (int, error) {
 
 	log.Println("Waiting for Pod to terminate...")
 	for event := range watchInterface.ResultChan() {
+		if event.Type == watch.Error {
+			return -1, fmt.Errorf("error while watching Pod: %w", apierrors.FromObject(event.Object))
+		}
+
 		pod, ok := event.Object.(*corev1.Pod)
 		if !ok {
-			log.Errorf("Received unexpected %T object from Watch.", pod)
+			log.Errorf("Received unexpected %T object from Watch.", event.Object)
 			return -1, nil
 		}
 
