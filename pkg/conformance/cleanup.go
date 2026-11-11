@@ -73,7 +73,7 @@ func (r *TestRunner) Cleanup(ctx context.Context) error {
 			return true, nil
 		}
 
-		if err != nil {
+		if err != nil && ctx.Err() == nil {
 			log.Printf("Error checking Namespace %s: %v (retrying)", name, err)
 		}
 
