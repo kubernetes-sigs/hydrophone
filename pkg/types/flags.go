@@ -40,6 +40,7 @@ func (c *Configuration) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&c.TestRepoList, "test-repo-list", c.TestRepoList, "yaml file to override registries for test images.")
 	fs.StringVar(&c.TestRepo, "test-repo", c.TestRepo, "registry for pulling Kubernetes test images.")
 	fs.DurationVar(&c.StartupTimeout, "startup-timeout", c.StartupTimeout, "max time to wait for the conformance test pod to start up.")
+	fs.DurationVar(&c.CleanupTimeout, "cleanup-timeout", c.CleanupTimeout, "max time to wait for the test namespace to be deleted during cleanup.")
 	fs.StringSliceVar(&c.ExtraArgs, "extra-args", c.ExtraArgs, "Additional parameters to be provided to the conformance container. These parameters should be specified as key-value pairs, separated by commas. Each parameter should start with -- (e.g., --clean-start=true,--allowed-not-ready-nodes=2)")
 	fs.StringSliceVar(&c.ExtraGinkgoArgs, "extra-ginkgo-args", c.ExtraGinkgoArgs, "Additional parameters to be provided to Ginkgo runner. This flag has the same format as --extra-args.")
 	fs.BoolVar(&c.DisableProgressStatus, "disable-progress-status", c.DisableProgressStatus, "disable the periodic progress status updates during test execution.")
@@ -65,6 +66,10 @@ func (c *Configuration) Complete(fs *pflag.FlagSet) (*Configuration, error) {
 
 	if c.StartupTimeout == 0 {
 		c.StartupTimeout = defaults.StartupTimeout
+	}
+
+	if c.CleanupTimeout == 0 {
+		c.CleanupTimeout = defaults.CleanupTimeout
 	}
 
 	if c.Parallel <= 0 {
@@ -135,6 +140,7 @@ func mergeConfigs(changed changeDetector, fromFlags, loaded *Configuration) *Con
 	overwrite(changed, "namespace", &loaded.Namespace, fromFlags.Namespace)
 	overwrite(changed, "dry-run", &loaded.DryRun, fromFlags.DryRun)
 	overwrite(changed, "startup-timeout", &loaded.StartupTimeout, fromFlags.StartupTimeout)
+	overwrite(changed, "cleanup-timeout", &loaded.CleanupTimeout, fromFlags.CleanupTimeout)
 	overwrite(changed, "test-repo-list", &loaded.TestRepoList, fromFlags.TestRepoList)
 	overwrite(changed, "test-repo", &loaded.TestRepo, fromFlags.TestRepo)
 	overwriteSlice(changed, "extra-args", &loaded.ExtraArgs, fromFlags.ExtraArgs)
