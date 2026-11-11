@@ -36,7 +36,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
 
       - name: Run Hydrophone (dry run)
-        run: hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --timeout 5m --dry-run
+        run: hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --startup-timeout 5m --dry-run
 ```
 
 **Notes:**
@@ -61,7 +61,7 @@ hydrophone-conformance:
   script:
     - go install sigs.k8s.io/hydrophone@latest
     - echo "$KUBE_CONFIG_DATA" | base64 -d > ~/.kube/config
-    - hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --timeout 10m
+    - hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --startup-timeout 10m
   only:
     - main
 ```
@@ -69,7 +69,7 @@ hydrophone-conformance:
 **Notes:**
 
 * Set `$KUBE_CONFIG_DATA` as a GitLab CI/CD variable (masked, protected).
-* Adjust `timeout` as needed.
+* Adjust `--startup-timeout` as needed.
 
 ---
 
@@ -88,7 +88,7 @@ pipeline {
             steps {
                 sh 'go install sigs.k8s.io/hydrophone@latest'
                 sh 'echo $KUBE_CONFIG_DATA | base64 -d > $HOME/.kube/config'
-                sh 'hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --timeout 10m'
+                sh 'hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --startup-timeout 10m'
             }
         }
     }
@@ -121,7 +121,7 @@ periodics:
       - |
         go install sigs.k8s.io/hydrophone@latest
         echo "$KUBE_CONFIG_DATA" | base64 -d > /root/.kube/config
-        hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --timeout 10m
+        hydrophone --conformance --conformance-image registry.k8s.io/conformance:v1.37.1 --startup-timeout 10m
       env:
       - name: KUBE_CONFIG_DATA
         valueFrom:
@@ -140,7 +140,7 @@ periodics:
 ## 5. Tips and Best Practices
 
 * **Namespaces:** Hydrophone uses the `conformance` namespace by default. Use `--cleanup` if re-running tests.
-* **Timeouts:** Adjust `--timeout` depending on cluster size.
+* **Timeouts:** Use `--startup-timeout` to adjust how long Hydrophone waits for the conformance pod to start (default `5m`); increase it for larger or slower clusters. To bound the test execution itself, pass a Ginkgo timeout through `--extra-ginkgo-args "--timeout=2h"`. 
 * **Artifacts:** Logs (`e2e.log`) and JUnit XML (`junit_01.xml`) can be uploaded for CI/CD reporting.
 * **Dry Run:** Use `--dry-run` to quickly verify your setup without executing full conformance tests.
 
