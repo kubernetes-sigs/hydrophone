@@ -214,6 +214,15 @@ These flags determine the primary operation mode of Hydrophone. They are mutuall
   hydrophone --startup-timeout 10m --conformance
   ```
 
+#### `--cleanup-timeout`
+- **Type**: Duration
+- **Default**: `15m`
+- **Description**: Maximum time to wait for the test namespace to be deleted during cleanup. If exceeded, hydrophone exits with an error.
+- **Example**:
+  ```bash
+  hydrophone --cleanup-timeout 30m --cleanup
+  ```
+
 ### Progress Status Flags
 
 #### `--disable-progress-status`
@@ -277,6 +286,7 @@ extraGinkgoArgs:
   - "--timeout=2h"
   - "--flake-attempts=3"
 startupTimeout: "10m"
+cleanupTimeout: "15m"
 disableProgressStatus: false
 progressStatusInterval: "1m"
 ```

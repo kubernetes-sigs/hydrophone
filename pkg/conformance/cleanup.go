@@ -19,13 +19,13 @@ package conformance
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"sigs.k8s.io/hydrophone/pkg/log"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 // Cleanup removes all resources created during E2E tests.
@@ -53,16 +53,6 @@ func (r *TestRunner) Cleanup(ctx context.Context) error {
 		log.Printf("Deleted ClusterRole %s.", name)
 	}
 
-	// start a watcher before deleting the namespace
-	watcher, err := r.clientset.CoreV1().Namespaces().Watch(ctx, metav1.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector("metadata.name", r.config.Namespace).String(),
-	})
-	if err != nil {
-		return err
-	}
-
-	defer watcher.Stop()
-
 	name = r.config.Namespace
 	err = r.clientset.CoreV1().Namespaces().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
@@ -73,22 +63,27 @@ func (r *TestRunner) Cleanup(ctx context.Context) error {
 		return nil
 	}
 
-	log.Printf("Waiting for Namespace %s to be deleted.", name)
+	log.Printf("Waiting for Namespace %s to be deleted (timeout %v).", name, r.config.CleanupTimeout)
 
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case event := <-watcher.ResultChan():
-			if event.Type == watch.Error {
-				return fmt.Errorf("error watching waiting for namespace deletion")
-			}
-
-			if event.Type == watch.Deleted {
-				log.Printf("Deleted Namespace %s.", name)
-
-				return nil
-			}
+	// Poll instead of watching: watch streams get closed by the API server and
+	// restarting them can miss the deletion event. Polling cannot.
+	err = wait.PollUntilContextTimeout(ctx, 10*time.Second, r.config.CleanupTimeout, true, func(ctx context.Context) (bool, error) {
+		_, err := r.clientset.CoreV1().Namespaces().Get(ctx, name, metav1.GetOptions{})
+		if errors.IsNotFound(err) {
+			return true, nil
 		}
+
+		if err != nil && ctx.Err() == nil {
+			log.Printf("Error checking Namespace %s: %v (retrying)", name, err)
+		}
+
+		return false, nil
+	})
+	if err != nil {
+		return fmt.Errorf("namespace %s still exists after %v: %w", name, r.config.CleanupTimeout, err)
 	}
+
+	log.Printf("Deleted Namespace %s.", name)
+
+	return nil
 }
