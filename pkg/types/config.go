@@ -51,6 +51,7 @@ type Configuration struct {
 	ExtraArgs              []string      `yaml:"extraArgs"`
 	ExtraGinkgoArgs        []string      `yaml:"extraGinkgoArgs"`
 	StartupTimeout         time.Duration `yaml:"startupTimeout"`
+	CleanupTimeout         time.Duration `yaml:"cleanupTimeout"`
 	DisableProgressStatus  bool          `yaml:"disableProgressStatus"`
 	ProgressStatusInterval time.Duration `yaml:"progressStatusInterval"`
 }
@@ -63,6 +64,7 @@ func NewDefaultConfiguration() Configuration {
 		BusyboxImage:           DefaultBusyboxImage,
 		Namespace:              DefaultNamespace,
 		StartupTimeout:         5 * time.Minute,
+		CleanupTimeout:         15 * time.Minute,
 		DisableProgressStatus:  false,
 		ProgressStatusInterval: 30 * time.Second,
 	}

@@ -51,6 +51,7 @@ Flags:
   -p, --parallel int                number of parallel threads in test framework (automatically sets the --nodes Ginkgo flag). (default 1)
       --skip string                 skip specific tests. allows regular expressions.
       --startup-timeout duration    max time to wait for the conformance test pod to start up. (default 5m0s)
+      --cleanup-timeout duration    max time to wait for the test namespace to be deleted during cleanup. (default 15m0s)
       --test-repo string            registry for pulling Kubernetes test images.
       --test-repo-list string       yaml file to override registries for test images.
   -v, --verbosity int               verbosity of test framework (values >= 6 automatically sets the -v Ginkgo flag). (default 4)
@@ -76,6 +77,7 @@ outputDir: "..."
 parallel: 1
 skip: "..."
 startupTimeout: 5m # must be a valid Go duration expression, like 5m or 30s
+cleanupTimeout: 15m
 testRepo: "..."
 testRepoList: "..."
 verbosity: 4
