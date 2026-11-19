@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit -o nounset -o xtrace
+set -o errexit -o nounset -o pipefail -o xtrace
 
 # Create a function to setup and run kind
 function setup_kind {
